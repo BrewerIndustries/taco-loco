@@ -139,12 +139,12 @@
   #orders-label { color: var(--cream); font-size: 11px; font-weight: 800; letter-spacing: 1px; opacity: .7; margin: 0 12px 4px; }
   #orders {
     flex: 1; display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden;
-    padding: 6px 12px; align-items: stretch;
+    padding: 6px 12px; align-items: flex-start;
     scrollbar-width: none;
   }
   #orders::-webkit-scrollbar { display: none; }
   .order-card {
-    flex: 0 0 108px; border-radius: 14px;
+    flex: 0 0 108px; height: 152px; border-radius: 14px;
     background: var(--cream); border: 3px solid var(--ink);
     box-shadow: 0 4px 0 var(--ink);
     padding: 7px 8px; display: flex; flex-direction: column; gap: 4px;
