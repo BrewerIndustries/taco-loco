@@ -51,16 +51,21 @@ clamped delta so tab-switching doesn't nuke a shift. Same single-file pattern as
 Stellar Ascent / Space Base Race, so it drops straight into the GitHub Pages
 dev/main pipeline.
 
-## Deploy (not yet done)
+## Deploy
 
-Follow `jarvis-launcher/NEW-PROJECT.md`, flavor **A) Static site → GitHub Pages**:
+GitHub Pages via `.github/workflows/pages.yml` (lives on `dev`, per
+`jarvis-launcher/NEW-PROJECT.md` flavor A):
 
-1. Create `BrewerIndustries/taco-loco` with `main` + `dev` branches.
-2. Add `.github/workflows/pages.yml` on `dev` (main → `/`, dev → `/dev/`,
-   CNAME `taco-loco.dabrewer.dev`); allow `dev` in the `github-pages` environment.
-3. Cloudflare CNAME `taco-loco.dabrewer.dev` → `brewerindustries.github.io` (DNS-only).
-4. Register in `jarvis-dashboard/scripts/sync-registry.mjs` (REPOS + DEFAULTS)
-   and add a launcher tile in `jarvis-launcher` `src/lib/apps.ts`.
+- **prod** `https://tacoloco.dabrewer.dev/` ← `main` branch
+- **dev** `https://tacoloco.dabrewer.dev/dev/` ← `dev` branch
+
+Pushing to `dev` redeploys both paths. Pushing to `main` alone does **not**
+redeploy — re-run the workflow (or push to dev) after a promotion PR merges.
+DNS: Cloudflare CNAME `tacoloco` → `brewerindustries.github.io` (DNS-only).
+Registered in the dashboard registry (`jarvis-dashboard/scripts/sync-registry.mjs`)
+and the launcher (`jarvis-launcher/src/lib/apps.ts`).
+
+Workflow: commit to `dev`; promote to `main` only via an approved PR.
 
 ## Backlog / next steps (from the idea-log full design)
 

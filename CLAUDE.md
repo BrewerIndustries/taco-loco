@@ -37,5 +37,6 @@ entry for the full design (progression arc, chaos event samples, core systems).
 
 - Git: work on `dev`; `main` only via PR the user approves (house rule).
 - Update README.md after any meaningful change (house rule).
-- Deploy target (when ready): GitHub Pages per `jarvis-launcher/NEW-PROJECT.md`
-  flavor A — main → `/`, dev → `/dev/`, CNAME `taco-loco.dabrewer.dev`.
+- Deployed: GitHub Pages per `jarvis-launcher/NEW-PROJECT.md` flavor A —
+  main → `https://tacoloco.dabrewer.dev/`, dev → `https://tacoloco.dabrewer.dev/dev/`.
+  The workflow lives on `dev` only; pushing `main` alone does not redeploy.
