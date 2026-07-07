@@ -1,0 +1,12 @@
+{
+  "id": "taco-loco",
+  "name": "Taco Loco",
+  "description": "Mobile-first top-down taco restaurant sim — from line cook to taco empire. Tap stations to cook, drag food onto orders, survive the shift, upgrade, repeat.",
+  "category": "games",
+  "tech": ["Vanilla JS", "single-file HTML", "localStorage", "GitHub Pages"],
+  "status": { "prod": "in_progress", "dev": "in_progress" },
+  "deploy": {
+    "prod": { "url": "https://taco-loco.dabrewer.dev/" },
+    "dev": { "url": "https://taco-loco.dabrewer.dev/dev/" }
+  }
+}

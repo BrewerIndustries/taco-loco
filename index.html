@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Taco Loco 🌮</title>
+<style>
+  :root {
+    --ink: #3a1f14;
+    --cream: #fff4e0;
+    --paper: #ffe8c2;
+    --red: #e63946;
+    --orange: #f77f00;
+    --teal: #2a9d8f;
+    --yellow: #ffc94d;
+    --green: #57cc57;
+    --bg1: #7a2a1e;
+    --bg2: #4a1510;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: ui-rounded, "Arial Rounded MT Bold", "Baloo 2", "Comic Sans MS", system-ui, sans-serif;
+    background: linear-gradient(160deg, var(--bg1), var(--bg2));
+    color: var(--ink);
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  #app {
+    max-width: 480px;
+    height: 100%;
+    height: 100dvh;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ---------- HUD ---------- */
+  #hud {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px; gap: 8px;
+    background: var(--ink); color: var(--cream);
+    font-weight: 800; font-size: 17px;
+    flex: 0 0 auto;
+  }
+  #hud .pill {
+    background: rgba(255,255,255,.12); border-radius: 999px; padding: 3px 12px;
+    white-space: nowrap;
+  }
+  #hud #hud-timer.low { color: #ff8b8b; animation: blink .6s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: .4; } }
+
+  /* ---------- Kitchen ---------- */
+  #kitchen {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    padding: 10px 12px 4px;
+    flex: 0 0 auto;
+  }
+  .station {
+    background: var(--cream);
+    border: 3px solid var(--ink);
+    border-radius: 16px;
+    box-shadow: 0 4px 0 var(--ink);
+    padding: 8px 10px 10px;
+    text-align: center;
+    position: relative;
+    cursor: pointer;
+    transition: transform .08s;
+  }
+  .station:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--ink); }
+  .station .st-emoji { font-size: 34px; line-height: 1.1; }
+  .station .st-name { font-weight: 800; font-size: 13px; letter-spacing: .5px; text-transform: uppercase; }
+  .station .st-makes { font-size: 11px; opacity: .65; min-height: 14px; }
+  .station .st-bar {
+    height: 9px; border: 2px solid var(--ink); border-radius: 999px;
+    background: #fff; overflow: hidden; margin-top: 6px;
+  }
+  .station .st-fill { height: 100%; width: 0%; background: var(--orange); transition: width .1s linear; }
+  .station .st-worker {
+    position: absolute; top: -12px; right: -6px;
+    background: var(--yellow); border: 2.5px solid var(--ink); border-radius: 999px;
+    font-size: 12px; font-weight: 800; padding: 2px 8px;
+    display: none;
+  }
+  .station.working .st-worker { display: block; }
+  .station.assign-target { outline: 4px dashed var(--teal); outline-offset: 3px; }
+  .station.shake { animation: shake .3s; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+  #st-register.has-ready { border-color: var(--green); box-shadow: 0 4px 0 var(--green), 0 0 14px rgba(87,204,87,.7); }
+
+  /* ---------- Staff bar ---------- */
+  #staffbar { padding: 4px 12px; flex: 0 0 auto; min-height: 0; }
+  #staff-chip {
+    display: none; align-items: center; gap: 8px;
+    background: var(--paper); border: 3px solid var(--ink); border-radius: 999px;
+    box-shadow: 0 3px 0 var(--ink);
+    padding: 4px 14px; font-weight: 800; font-size: 13px;
+    cursor: pointer; width: fit-content;
+  }
+  #staff-chip.visible { display: inline-flex; }
+  #staff-chip.selected { background: var(--teal); color: #fff; }
+  #staff-chip .status { font-weight: 600; opacity: .75; font-size: 12px; }
+  #staff-chip.selected .status { opacity: .95; }
+
+  /* ---------- Shelf ---------- */
+  #shelf-wrap { padding: 6px 12px; flex: 0 0 auto; }
+  #shelf-label { color: var(--cream); font-size: 11px; font-weight: 800; letter-spacing: 1px; opacity: .7; margin-bottom: 4px; }
+  #shelf {
+    display: flex; gap: 8px; min-height: 62px;
+    background: rgba(0,0,0,.25); border-radius: 14px; padding: 7px;
+    border: 2px dashed rgba(255,244,224,.35);
+  }
+  .shelf-slot {
+    width: 52px; height: 48px; border-radius: 10px;
+    background: rgba(255,255,255,.07);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .shelf-item {
+    width: 52px; height: 48px; border-radius: 10px;
+    background: var(--cream); border: 3px solid var(--ink);
+    box-shadow: 0 3px 0 var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; cursor: grab; touch-action: none;
+    animation: pop .18s ease-out;
+  }
+  @keyframes pop { from { transform: scale(.3); } to { transform: scale(1); } }
+  #drag-ghost {
+    position: fixed; z-index: 90; pointer-events: none;
+    font-size: 38px; transform: translate(-50%, -60%);
+    filter: drop-shadow(0 4px 4px rgba(0,0,0,.4));
+    display: none;
+  }
+
+  /* ---------- Orders ---------- */
+  #orders-wrap { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; padding: 4px 0 10px; }
+  #orders-label { color: var(--cream); font-size: 11px; font-weight: 800; letter-spacing: 1px; opacity: .7; margin: 0 12px 4px; }
+  #orders {
+    flex: 1; display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden;
+    padding: 6px 12px; align-items: stretch;
+    scrollbar-width: none;
+  }
+  #orders::-webkit-scrollbar { display: none; }
+  .order-card {
+    flex: 0 0 108px; border-radius: 14px;
+    background: var(--cream); border: 3px solid var(--ink);
+    box-shadow: 0 4px 0 var(--ink);
+    padding: 7px 8px; display: flex; flex-direction: column; gap: 4px;
+    position: relative;
+    animation: slidein .3s ease-out;
+  }
+  @keyframes slidein { from { transform: translateX(-60px); opacity: 0; } }
+  .order-card.ready { border-color: var(--green); box-shadow: 0 4px 0 var(--green); }
+  .order-card.droppable { outline: 4px solid var(--yellow); outline-offset: 2px; }
+  .order-card.leaving { animation: slideout .4s ease-in forwards; }
+  @keyframes slideout { to { transform: translateY(90px) rotate(6deg); opacity: 0; } }
+  .order-card.paid-anim { animation: paidpop .4s ease-in forwards; }
+  @keyframes paidpop { 40% { transform: scale(1.12); } to { transform: scale(0); opacity: 0; } }
+  .order-card .oc-top { display: flex; align-items: center; justify-content: space-between; }
+  .order-card .oc-cust { font-size: 24px; }
+  .order-card .oc-val { font-size: 12px; font-weight: 800; color: var(--teal); }
+  .order-card .oc-needs { display: flex; flex-wrap: wrap; gap: 3px; font-size: 20px; flex: 1; align-content: flex-start; }
+  .order-card .oc-needs .need { opacity: .3; filter: grayscale(1); }
+  .order-card .oc-needs .need.filled { opacity: 1; filter: none; }
+  .order-card .oc-pat {
+    height: 8px; border: 2px solid var(--ink); border-radius: 999px; background: #fff; overflow: hidden;
+  }
+  .order-card .oc-pat-fill { height: 100%; background: var(--green); }
+  .order-card .oc-ready-badge {
+    position: absolute; top: -10px; left: 50%; transform: translateX(-50%) rotate(-4deg);
+    background: var(--green); color: #fff; border: 2.5px solid var(--ink);
+    border-radius: 8px; font-size: 10px; font-weight: 800; padding: 2px 7px;
+    display: none; white-space: nowrap;
+  }
+  .order-card.ready .oc-ready-badge { display: block; }
+
+  /* ---------- Overlays ---------- */
+  .overlay {
+    position: absolute; inset: 0; z-index: 50;
+    background: rgba(35,12,8,.88);
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    padding: 24px; text-align: center; color: var(--cream);
+    overflow-y: auto;
+  }
+  .overlay.visible { display: flex; }
+  .overlay h1 { font-size: 52px; color: var(--yellow); text-shadow: 3px 3px 0 var(--red), 6px 6px 0 var(--ink); letter-spacing: 1px; }
+  .overlay h2 { font-size: 30px; color: var(--yellow); text-shadow: 2px 2px 0 var(--ink); margin-bottom: 8px; }
+  .overlay .sub { font-size: 15px; opacity: .85; margin: 8px 0 18px; max-width: 320px; line-height: 1.45; }
+  .btn {
+    font-family: inherit; font-size: 19px; font-weight: 800;
+    background: var(--red); color: #fff;
+    border: 3px solid var(--ink); border-radius: 14px;
+    box-shadow: 0 5px 0 var(--ink);
+    padding: 12px 34px; cursor: pointer; margin-top: 10px;
+  }
+  .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+  .btn.secondary { background: transparent; color: var(--cream); box-shadow: 0 5px 0 rgba(0,0,0,.5); font-size: 15px; padding: 9px 22px; }
+  .howto { font-size: 13.5px; text-align: left; background: rgba(255,255,255,.08); border-radius: 14px; padding: 14px 18px; line-height: 1.9; margin-top: 6px; }
+
+  .stat-row { display: flex; justify-content: space-between; gap: 30px; font-size: 17px; padding: 6px 0; border-bottom: 2px dashed rgba(255,244,224,.25); width: 280px; max-width: 80vw; }
+  .stat-row b { color: var(--yellow); }
+
+  /* shop */
+  #shop-cards { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; margin-top: 6px; }
+  .shop-card {
+    background: var(--cream); color: var(--ink);
+    border: 3px solid var(--ink); border-radius: 14px; box-shadow: 0 4px 0 var(--ink);
+    padding: 10px 14px; text-align: left; cursor: pointer;
+    display: flex; align-items: center; gap: 12px;
+    font-family: inherit;
+  }
+  .shop-card:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--ink); }
+  .shop-card .sc-emoji { font-size: 30px; }
+  .shop-card .sc-name { font-weight: 800; font-size: 15px; }
+  .shop-card .sc-desc { font-size: 12px; opacity: .75; line-height: 1.3; }
+  .shop-card .sc-cost { margin-left: auto; font-weight: 800; color: var(--teal); white-space: nowrap; }
+  .shop-card.disabled { opacity: .45; pointer-events: none; }
+
+  /* ---------- Chaos ---------- */
+  #chaos-banner {
+    position: absolute; top: 54px; left: 50%; transform: translateX(-50%) rotate(-2deg);
+    z-index: 60; display: none;
+    background: var(--red); color: #fff; border: 3px solid var(--ink);
+    border-radius: 14px; box-shadow: 0 5px 0 var(--ink);
+    padding: 10px 18px; font-weight: 800; font-size: 15px; text-align: center;
+    max-width: 86%;
+  }
+  #chaos-banner.visible { display: block; animation: bannerin .3s ease-out; }
+  @keyframes bannerin { from { transform: translateX(-50%) translateY(-70px) rotate(-2deg); } }
+  .splat {
+    position: absolute; z-index: 65; font-size: 42px; cursor: pointer;
+    border: none; background: none; font-family: inherit;
+    animation: pop .2s ease-out;
+    filter: drop-shadow(0 3px 3px rgba(0,0,0,.5));
+  }
+  #app.quake { animation: quake .5s; }
+  @keyframes quake { 0%,100%{transform:translate(0)} 20%{transform:translate(-6px,3px)} 40%{transform:translate(5px,-4px)} 60%{transform:translate(-4px,-3px)} 80%{transform:translate(4px,4px)} }
+
+  #toast {
+    position: absolute; bottom: 190px; left: 50%; transform: translateX(-50%);
+    z-index: 70; background: var(--ink); color: var(--yellow);
+    border-radius: 999px; padding: 7px 18px; font-weight: 800; font-size: 14px;
+    display: none; white-space: nowrap;
+  }
+  #toast.visible { display: block; animation: toastup 1.6s ease-out forwards; }
+  @keyframes toastup { 0% { opacity: 0; transform: translateX(-50%) translateY(14px);} 15%,75% { opacity: 1; transform: translateX(-50%) translateY(0);} 100% { opacity: 0; transform: translateX(-50%) translateY(-10px);} }
+
+  .float-cash {
+    position: absolute; z-index: 68; font-weight: 800; font-size: 19px; color: var(--yellow);
+    text-shadow: 2px 2px 0 var(--ink); pointer-events: none;
+    animation: floatup 1s ease-out forwards;
+  }
+  @keyframes floatup { to { transform: translateY(-55px); opacity: 0; } }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="hud">
+    <span class="pill">🌮 <span id="hud-shift">Shift 1</span></span>
+    <span class="pill" id="hud-timer">3:00</span>
+    <span class="pill">💵 <span id="hud-money">0</span></span>
+  </div>
+
+  <div id="kitchen"></div>
+
+  <div id="staffbar">
+    <div id="staff-chip">
+      <span>🧑‍🍳 Chuy</span>
+      <span class="status" id="staff-status">auto</span>
+    </div>
+  </div>
+
+  <div id="shelf-wrap">
+    <div id="shelf-label">PICKUP SHELF — DRAG FOOD ONTO ORDERS</div>
+    <div id="shelf"></div>
+  </div>
+
+  <div id="orders-wrap">
+    <div id="orders-label">ORDERS</div>
+    <div id="orders"></div>
+  </div>
+
+  <div id="chaos-banner"></div>
+  <div id="toast"></div>
+  <div id="drag-ghost"></div>
+
+  <!-- Title -->
+  <div class="overlay visible" id="ov-title">
+    <h1>TACO LOCO</h1>
+    <div class="sub">You. A taco stand. The lunch rush.<br>From line cook to taco empire — if you survive the shift.</div>
+    <div class="howto">
+      👆 <b>Tap a station</b> to cook — food pops onto the shelf<br>
+      🌮 <b>Drag food</b> from the shelf onto matching orders<br>
+      💰 <b>Tap the register</b> to ring up finished orders<br>
+      ⏱️ Faster service = bigger tips. Don't let patience run out!
+    </div>
+    <button class="btn" id="btn-start">Start Shift 🔥</button>
+    <button class="btn secondary" id="btn-reset" style="display:none">Reset progress</button>
+  </div>
+
+  <!-- Shift end -->
+  <div class="overlay" id="ov-end">
+    <h2 id="end-title">SHIFT COMPLETE!</h2>
+    <div class="stat-row"><span>Orders served</span><b id="end-served">0 / 0</b></div>
+    <div class="stat-row"><span>Sales</span><b id="end-sales">$0</b></div>
+    <div class="stat-row"><span>Tips</span><b id="end-tips">$0</b></div>
+    <div class="stat-row"><span>Chaos rating</span><b id="end-chaos">🌶️</b></div>
+    <button class="btn" id="btn-shop">Upgrade Shop 🛒</button>
+  </div>
+
+  <!-- Shop -->
+  <div class="overlay" id="ov-shop">
+    <h2>UPGRADE SHOP</h2>
+    <div class="sub" style="margin-bottom:4px">Pick <b>one</b> upgrade before the next rush. 💵 <span id="shop-money">0</span></div>
+    <div id="shop-cards"></div>
+    <button class="btn secondary" id="btn-skip">Skip — start next shift</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* =====================================================
+   TACO LOCO v0.1 — mobile-first taco restaurant sim
+   ===================================================== */
+
+const ITEMS = {
+  taco:    { emoji: '🌮', name: 'Taco',    price: 4 },
+  burrito: { emoji: '🌯', name: 'Burrito', price: 6 },
+  nachos:  { emoji: '🧀', name: 'Nachos',  price: 5 },
+};
+
+const STATIONS = {
+  grill:    { emoji: '🔥', name: 'Grill',    makes: 'taco',    time: 1800 },
+  assembly: { emoji: '🫔', name: 'Assembly', makes: 'burrito', time: 2500 },
+  toppings: { emoji: '🥑', name: 'Toppings', makes: 'nachos',  time: 2100 },
+  register: { emoji: '💰', name: 'Register', makes: null,      time: 1200 },
+};
+
+const CUSTOMERS = ['😀','🤠','👵','🧑‍🎤','👷','🕵️','🧛','👩‍🚀','🤡','🧙','👨‍🎨','🦸'];
+
+const UPGRADES = [
+  { id: 'hotterGrill',  emoji: '🔥', name: 'Hotter Grill',    desc: 'Grill works 35% faster.',                          cost: 25 },
+  { id: 'prepDrills',   emoji: '🔪', name: 'Prep Drills',     desc: 'All stations work 15% faster.',                    cost: 35 },
+  { id: 'comfySeats',   emoji: '🪑', name: 'Comfy Seating',   desc: 'Customers wait 30% longer.',                       cost: 30 },
+  { id: 'autoToppings', emoji: '🤖', name: 'Auto-Toppings',   desc: 'Toppings station slowly works itself.',            cost: 45 },
+  { id: 'hireChuy',     emoji: '🧑‍🍳', name: 'Hire Chuy',       desc: 'Grill wizard. Naps at random. Tap him to direct.', cost: 50 },
+  { id: 'bigShelf',     emoji: '🗄️', name: 'Bigger Shelf',    desc: '+2 pickup shelf slots.',                           cost: 20 },
+  { id: 'loyalty',      emoji: '💳', name: 'Loyalty Cards',   desc: '+25% tips on every order.',                        cost: 40 },
+  { id: 'salsaIns',     emoji: '🛡️', name: 'Salsa Insurance', desc: 'Chaos events can no longer hurt you.',             cost: 30 },
+];
+
+const SHIFT_LENGTH = 180000;   // 3 minutes
+const BASE_SHELF = 4;
+const BASE_PATIENCE = 34000;
+const SAVE_KEY = 'tacoLoco.save.v1';
+
+/* ---------- persistent state ---------- */
+let save = { money: 0, shift: 1, owned: [] };
+try {
+  const raw = localStorage.getItem(SAVE_KEY);
+  if (raw) save = Object.assign(save, JSON.parse(raw));
+} catch (e) {}
+const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} };
+const has = id => save.owned.includes(id);
+
+/* ---------- per-shift state ---------- */
+let running = false;
+let timeLeft = 0;
+let orders = [];          // {id, cust, needs:[{item,filled}], patience, maxPatience, value, state, el}
+let shelf = [];           // item keys
+let orderSeq = 0;
+let spawnTimer = 0;
+let stationState = {};    // id -> {worker:null|'you'|'chuy', progress:0}
+let chuy = null;          // {assign:'auto'|stationId, napUntil:0, selected:false}
+let chaosAt = 0, chaosDone = false, chaosActive = null;
+let influencerArmed = false;
+let stats = null;
+let lastTs = 0;
+
+const $ = id => document.getElementById(id);
+const fmtTime = ms => {
+  const s = Math.max(0, Math.ceil(ms / 1000));
+  return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+};
+const rand = arr => arr[Math.floor(Math.random() * arr.length)];
+
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.remove('visible');
+  void t.offsetWidth;
+  t.classList.add('visible');
+}
+
+function floatCash(text, x, y) {
+  const el = document.createElement('div');
+  el.className = 'float-cash';
+  el.textContent = text;
+  const app = $('app').getBoundingClientRect();
+  el.style.left = (x - app.left) + 'px';
+  el.style.top = (y - app.top) + 'px';
+  $('app').appendChild(el);
+  setTimeout(() => el.remove(), 1000);
+}
+
+/* ---------- multipliers ---------- */
+function stationTime(id) {
+  let t = STATIONS[id].time;
+  if (has('prepDrills')) t *= 0.85;
+  if (id === 'grill' && has('hotterGrill')) t *= 0.65;
+  return t;
+}
+const shelfCap = () => BASE_SHELF + (has('bigShelf') ? 2 : 0);
+const patienceMax = () => BASE_PATIENCE * (has('comfySeats') ? 1.3 : 1);
+
+/* ---------- build kitchen DOM ---------- */
+function buildKitchen() {
+  const k = $('kitchen');
+  k.innerHTML = '';
+  for (const id of Object.keys(STATIONS)) {
+    const s = STATIONS[id];
+    const el = document.createElement('div');
+    el.className = 'station';
+    el.id = 'st-' + id;
+    el.innerHTML = `
+      <div class="st-worker"></div>
+      <div class="st-emoji">${s.emoji}</div>
+      <div class="st-name">${s.name}</div>
+      <div class="st-makes">${s.makes ? 'makes ' + ITEMS[s.makes].emoji + ' $' + ITEMS[s.makes].price : 'ring up orders'}</div>
+      <div class="st-bar"><div class="st-fill"></div></div>`;
+    el.addEventListener('pointerdown', () => tapStation(id));
+    k.appendChild(el);
+  }
+}
+
+/* ---------- station logic ---------- */
+function tapStation(id) {
+  if (!running) return;
+  // directing Chuy?
+  if (chuy && chuy.selected && id !== 'register') {
+    chuy.assign = id;
+    chuy.selected = false;
+    toast('🧑‍🍳 Chuy → ' + STATIONS[id].name);
+    renderStaff();
+    highlightAssignTargets(false);
+    return;
+  }
+  const st = stationState[id];
+  if (st.worker) return; // busy
+  // player must be free
+  if (Object.values(stationState).some(s => s.worker === 'you')) {
+    toast("👐 You're busy!");
+    return;
+  }
+  if (id === 'register') {
+    if (!orders.some(o => o.state === 'ready')) { shakeStation(id); toast('No orders to ring up'); return; }
+  } else {
+    if (shelf.length >= shelfCap()) { shakeStation(id); toast('🗄️ Shelf full!'); return; }
+  }
+  st.worker = 'you';
+  st.progress = 0;
+}
+
+function shakeStation(id) {
+  const el = $('st-' + id);
+  el.classList.remove('shake');
+  void el.offsetWidth;
+  el.classList.add('shake');
+}
+
+function finishStation(id, worker) {
+  const st = stationState[id];
+  st.worker = null;
+  st.progress = 0;
+  if (id === 'register') {
+    ringUp();
+  } else {
+    const item = STATIONS[id].makes;
+    if (shelf.length < shelfCap()) {
+      shelf.push(item);
+      renderShelf();
+    }
+  }
+  if (worker === 'chuy' && Math.random() < 0.25) {
+    chuy.napUntil = performance.now() + 4000;
+    toast('🧑‍🍳 Chuy is napping 💤');
+  }
+}
+
+function ringUp() {
+  const o = orders.find(o => o.state === 'ready');
+  if (!o) return;
+  o.state = 'paid';
+  const patFrac = Math.max(0, o.patience / o.maxPatience);
+  let tip = Math.round(o.value * 0.6 * patFrac * (has('loyalty') ? 1.25 : 1));
+  let total = o.value + tip;
+  if (influencerArmed) {
+    total *= 3;
+    influencerArmed = false;
+    toast('📸 VIRAL! Triple pay!');
+    hideChaosBanner();
+  }
+  save.money += total;
+  stats.sales += o.value;
+  stats.tips += (total - o.value);
+  stats.served++;
+  const r = $('st-register').getBoundingClientRect();
+  floatCash('+$' + total, r.left + r.width / 2, r.top);
+  o.el.classList.add('paid-anim');
+  setTimeout(() => { o.el.remove(); }, 400);
+  orders = orders.filter(x => x !== o);
+  updateHud();
+}
+
+/* ---------- orders ---------- */
+function orderSize() {
+  const s = save.shift;
+  const roll = Math.random();
+  if (s <= 1) return roll < 0.6 ? 1 : 2;
+  if (s <= 3) return roll < 0.35 ? 1 : roll < 0.85 ? 2 : 3;
+  return roll < 0.2 ? 1 : roll < 0.6 ? 2 : 3;
+}
+
+function spawnOrder() {
+  const n = orderSize();
+  const needs = [];
+  for (let i = 0; i < n; i++) needs.push({ item: rand(Object.keys(ITEMS)), filled: false });
+  const value = needs.reduce((sum, x) => sum + ITEMS[x.item].price, 0);
+  const o = {
+    id: ++orderSeq,
+    cust: rand(CUSTOMERS),
+    needs, value,
+    maxPatience: patienceMax(),
+    patience: patienceMax(),
+    state: 'open',
+    el: null,
+  };
+  stats.total++;
+  const el = document.createElement('div');
+  el.className = 'order-card';
+  el.dataset.id = o.id;
+  el.innerHTML = `
+    <div class="oc-ready-badge">💵 RING UP!</div>
+    <div class="oc-top"><span class="oc-cust">${o.cust}</span><span class="oc-val">$${o.value}</span></div>
+    <div class="oc-needs">${needs.map(x => `<span class="need">${ITEMS[x.item].emoji}</span>`).join('')}</div>
+    <div class="oc-pat"><div class="oc-pat-fill" style="width:100%"></div></div>`;
+  o.el = el;
+  $('orders').appendChild(el);
+  orders.push(o);
+}
+
+function expireOrder(o) {
+  o.state = 'expired';
+  stats.expired++;
+  o.el.classList.add('leaving');
+  setTimeout(() => o.el.remove(), 400);
+  orders = orders.filter(x => x !== o);
+  toast(o.cust + ' stormed out!');
+}
+
+function tryFillOrder(o, itemKey) {
+  if (o.state !== 'open') return false;
+  const need = o.needs.find(x => !x.filled && x.item === itemKey);
+  if (!need) return false;
+  need.filled = true;
+  const spans = o.el.querySelectorAll('.oc-needs .need');
+  const idx = o.needs.indexOf(need);
+  spans[idx].classList.add('filled');
+  if (o.needs.every(x => x.filled)) {
+    o.state = 'ready';
+    o.el.classList.add('ready');
+  }
+  return true;
+}
+
+/* ---------- shelf + drag ---------- */
+function renderShelf() {
+  const wrap = $('shelf');
+  wrap.innerHTML = '';
+  for (let i = 0; i < shelfCap(); i++) {
+    if (i < shelf.length) {
+      const item = shelf[i];
+      const el = document.createElement('div');
+      el.className = 'shelf-item';
+      el.textContent = ITEMS[item].emoji;
+      el.addEventListener('pointerdown', e => startDrag(e, i));
+      wrap.appendChild(el);
+    } else {
+      const slot = document.createElement('div');
+      slot.className = 'shelf-slot';
+      wrap.appendChild(slot);
+    }
+  }
+}
+
+let drag = null; // {index, item}
+function startDrag(e, index) {
+  if (!running) return;
+  e.preventDefault();
+  drag = { index, item: shelf[index] };
+  const g = $('drag-ghost');
+  g.textContent = ITEMS[drag.item].emoji;
+  g.style.display = 'block';
+  moveGhost(e);
+  window.addEventListener('pointermove', moveGhost);
+  window.addEventListener('pointerup', endDrag);
+}
+
+function moveGhost(e) {
+  const g = $('drag-ghost');
+  g.style.left = e.clientX + 'px';
+  g.style.top = e.clientY + 'px';
+  // highlight card under pointer
+  document.querySelectorAll('.order-card.droppable').forEach(c => c.classList.remove('droppable'));
+  const card = cardUnder(e);
+  if (card) {
+    const o = orders.find(o => String(o.id) === card.dataset.id);
+    if (o && o.state === 'open' && o.needs.some(x => !x.filled && x.item === drag.item)) card.classList.add('droppable');
+  }
+}
+
+function cardUnder(e) {
+  return document.elementsFromPoint(e.clientX, e.clientY).find(el => el.classList && el.classList.contains('order-card'));
+}
+
+function endDrag(e) {
+  window.removeEventListener('pointermove', moveGhost);
+  window.removeEventListener('pointerup', endDrag);
+  $('drag-ghost').style.display = 'none';
+  document.querySelectorAll('.order-card.droppable').forEach(c => c.classList.remove('droppable'));
+  if (!drag) return;
+  const card = cardUnder(e);
+  if (card) {
+    const o = orders.find(o => String(o.id) === card.dataset.id);
+    if (o && tryFillOrder(o, drag.item)) {
+      shelf.splice(drag.index, 1);
+      renderShelf();
+      drag = null;
+      return;
+    }
+  }
+  drag = null; // bounce back — item stays on shelf
+}
+
+/* ---------- Chuy the line cook ---------- */
+function renderStaff() {
+  const chip = $('staff-chip');
+  if (!chuy) { chip.classList.remove('visible'); return; }
+  chip.classList.add('visible');
+  chip.classList.toggle('selected', chuy.selected);
+  const napping = performance.now() < chuy.napUntil;
+  let status;
+  if (napping) status = '💤 napping';
+  else {
+    const at = Object.keys(stationState).find(id => stationState[id].worker === 'chuy');
+    if (at) status = 'at ' + STATIONS[at].emoji;
+    else status = chuy.assign === 'auto' ? 'auto' : '→ ' + STATIONS[chuy.assign].emoji;
+  }
+  $('staff-status').textContent = chuy.selected ? 'tap a station!' : status;
+}
+
+function highlightAssignTargets(on) {
+  for (const id of ['grill', 'assembly', 'toppings']) $('st-' + id).classList.toggle('assign-target', on);
+}
+
+$('staff-chip').addEventListener('pointerdown', e => {
+  e.stopPropagation();
+  if (!chuy || !running) return;
+  if (chuy.selected) { chuy.selected = false; chuy.assign = 'auto'; toast('🧑‍🍳 Chuy → auto'); }
+  else { chuy.selected = true; }
+  highlightAssignTargets(chuy.selected);
+  renderStaff();
+});
+
+function demandFor(item) {
+  let need = 0;
+  for (const o of orders) if (o.state === 'open') for (const x of o.needs) if (!x.filled && x.item === item) need++;
+  need -= shelf.filter(s => s === item).length;
+  for (const id of Object.keys(stationState)) {
+    if (stationState[id].worker && STATIONS[id].makes === item) need--;
+  }
+  return need;
+}
+
+function chuyThink() {
+  if (!chuy) return;
+  const now = performance.now();
+  if (now < chuy.napUntil) return;
+  if (Object.values(stationState).some(s => s.worker === 'chuy')) return; // busy
+  // ring up if register free and something's ready
+  if (!stationState.register.worker && orders.some(o => o.state === 'ready') && chuy.assign === 'auto') {
+    stationState.register.worker = 'chuy';
+    stationState.register.progress = 0;
+    return;
+  }
+  let target = null;
+  if (chuy.assign !== 'auto') {
+    target = chuy.assign;
+  } else {
+    let best = 0;
+    for (const id of ['grill', 'assembly', 'toppings']) {
+      const d = demandFor(STATIONS[id].makes);
+      if (d > best) { best = d; target = id; }
+    }
+  }
+  if (!target) return;
+  if (stationState[target].worker) return;
+  if (shelf.length >= shelfCap()) return;
+  stationState[target].worker = 'chuy';
+  stationState[target].progress = 0;
+}
+
+/* ---------- chaos events ---------- */
+function scheduleChaos() {
+  chaosAt = 40000 + Math.random() * 90000; // elapsed ms when chaos hits
+  chaosDone = false;
+}
+
+function showChaosBanner(html) {
+  const b = $('chaos-banner');
+  b.innerHTML = html;
+  b.classList.remove('visible');
+  void b.offsetWidth;
+  b.classList.add('visible');
+}
+function hideChaosBanner() { $('chaos-banner').classList.remove('visible'); }
+
+function fireChaos() {
+  chaosDone = true;
+  $('app').classList.add('quake');
+  setTimeout(() => $('app').classList.remove('quake'), 500);
+  const which = rand(['salsa', 'influencer', 'rush']);
+  if (which === 'salsa') startSalsa();
+  else if (which === 'influencer') startInfluencer();
+  else startRush();
+}
+
+function startSalsa() {
+  showChaosBanner('🫙 SALSA EXPLOSION!<br><span style="font-size:12px">Tap all the splats before customers see!</span>');
+  const app = $('app');
+  const n = 6;
+  let left = n;
+  const splats = [];
+  const W = app.clientWidth, H = app.clientHeight;
+  for (let i = 0; i < n; i++) {
+    const s = document.createElement('button');
+    s.className = 'splat';
+    s.textContent = '🍅';
+    s.style.left = (20 + Math.random() * (W - 80)) + 'px';
+    s.style.top = (110 + Math.random() * (H - 320)) + 'px';
+    s.addEventListener('pointerdown', () => {
+      s.remove();
+      left--;
+      if (left === 0) resolveSalsa(true);
+    });
+    app.appendChild(s);
+    splats.push(s);
+  }
+  chaosActive = { timeout: setTimeout(() => resolveSalsa(false), 7000), splats };
+  function resolveSalsa(ok) {
+    clearTimeout(chaosActive.timeout);
+    chaosActive.splats.forEach(s => s.remove());
+    chaosActive = null;
+    hideChaosBanner();
+    if (ok) {
+      save.money += 12;
+      stats.tips += 12;
+      toast('✨ Spotless! +$12');
+      updateHud();
+    } else if (has('salsaIns')) {
+      toast('🛡️ Salsa Insurance covered it!');
+    } else {
+      stats.chaosFail = true;
+      for (const o of orders) if (o.state === 'open') o.patience *= 0.65;
+      toast('😱 Customers saw everything!');
+    }
+  }
+}
+
+function startInfluencer() {
+  influencerArmed = true;
+  stats.chaosFail = false;
+  showChaosBanner('📸 A FOOD INFLUENCER IS FILMING!<br><span style="font-size:12px">Next order rung up pays TRIPLE!</span>');
+  setTimeout(() => { if (influencerArmed) { influencerArmed = false; hideChaosBanner(); } }, 25000);
+}
+
+function startRush() {
+  showChaosBanner('🚌 A TOUR BUS JUST PULLED UP!');
+  spawnOrder(); spawnOrder(); spawnOrder();
+  setTimeout(hideChaosBanner, 3500);
+}
+
+/* ---------- HUD / render ---------- */
+function updateHud() {
+  $('hud-money').textContent = save.money;
+  $('hud-shift').textContent = 'Shift ' + save.shift;
+  const t = $('hud-timer');
+  t.textContent = fmtTime(timeLeft);
+  t.classList.toggle('low', timeLeft < 20000 && running);
+}
+
+function renderStations(dt) {
+  for (const id of Object.keys(STATIONS)) {
+    const st = stationState[id];
+    const el = $('st-' + id);
+    if (st.worker) {
+      let speed = 1;
+      if (st.worker === 'chuy') speed = (id === 'grill') ? 1.4 : 0.75;
+      st.progress += dt * speed / stationTime(id);
+      if (st.progress >= 1) finishStation(id, st.worker);
+    }
+    // auto-toppings
+    if (id === 'toppings' && has('autoToppings') && !st.worker && shelf.length < shelfCap() && demandFor('nachos') > 0) {
+      st.worker = 'auto';
+      st.progress = 0;
+    }
+    if (st.worker === 'auto') {
+      st.progress += dt * 0.5 / stationTime(id);
+      if (st.progress >= 1) finishStation(id, 'auto');
+    }
+    el.classList.toggle('working', !!st.worker);
+    el.querySelector('.st-fill').style.width = (st.progress * 100) + '%';
+    const w = el.querySelector('.st-worker');
+    w.textContent = st.worker === 'you' ? '👤 you' : st.worker === 'chuy' ? '🧑‍🍳 Chuy' : st.worker === 'auto' ? '🤖' : '';
+  }
+  $('st-register').classList.toggle('has-ready', orders.some(o => o.state === 'ready'));
+}
+
+function renderOrders(dt) {
+  for (const o of [...orders]) {
+    if (o.state === 'open') {
+      o.patience -= dt;
+      if (o.patience <= 0) { expireOrder(o); continue; }
+    } else if (o.state === 'ready') {
+      o.patience = Math.max(0, o.patience - dt * 0.4); // tip decays but they won't leave
+    }
+    const frac = Math.max(0, o.patience / o.maxPatience);
+    const fill = o.el.querySelector('.oc-pat-fill');
+    fill.style.width = (frac * 100) + '%';
+    fill.style.background = frac > 0.5 ? 'var(--green)' : frac > 0.25 ? 'var(--yellow)' : 'var(--red)';
+  }
+}
+
+/* ---------- shift lifecycle ---------- */
+function startShift() {
+  running = true;
+  timeLeft = SHIFT_LENGTH;
+  orders = [];
+  shelf = [];
+  spawnTimer = 800;
+  influencerArmed = false;
+  stats = { total: 0, served: 0, expired: 0, sales: 0, tips: 0, chaosFail: false };
+  stationState = {};
+  for (const id of Object.keys(STATIONS)) stationState[id] = { worker: null, progress: 0 };
+  chuy = has('hireChuy') ? { assign: 'auto', napUntil: 0, selected: false } : null;
+  $('orders').innerHTML = '';
+  renderShelf();
+  renderStaff();
+  scheduleChaos();
+  hideChaosBanner();
+  $('ov-title').classList.remove('visible');
+  $('ov-end').classList.remove('visible');
+  $('ov-shop').classList.remove('visible');
+  updateHud();
+  lastTs = performance.now();
+}
+
+function spawnInterval() {
+  const elapsed = SHIFT_LENGTH - timeLeft;
+  const ramp = elapsed / SHIFT_LENGTH; // 0→1 across the shift
+  const base = Math.max(4000, 9500 - save.shift * 500);
+  return Math.max(3200, base - ramp * 3000);
+}
+
+function endShift() {
+  running = false;
+  if (chaosActive) { clearTimeout(chaosActive.timeout); chaosActive.splats.forEach(s => s.remove()); chaosActive = null; }
+  hideChaosBanner();
+  const pct = stats.total ? Math.round(100 * stats.served / stats.total) : 100;
+  let chiles = 1;
+  if (stats.expired >= 1) chiles = 2;
+  if (stats.expired >= 3) chiles = 3;
+  if (stats.expired >= 5) chiles = 4;
+  if (stats.chaosFail) chiles++;
+  chiles = Math.min(5, chiles);
+  $('end-title').textContent = pct >= 80 ? '¡SHIFT COMPLETE! 🎉' : pct >= 50 ? 'SHIFT SURVIVED 😅' : 'THAT WAS ROUGH 🔥';
+  $('end-served').textContent = `${stats.served} / ${stats.total} (${pct}%)`;
+  $('end-sales').textContent = '$' + stats.sales;
+  $('end-tips').textContent = '$' + Math.round(stats.tips);
+  $('end-chaos').textContent = '🌶️'.repeat(chiles);
+  save.shift++;
+  persist();
+  updateHud();
+  $('ov-end').classList.add('visible');
+}
+
+/* ---------- shop ---------- */
+function openShop() {
+  $('ov-end').classList.remove('visible');
+  $('shop-money').textContent = save.money;
+  const pool = UPGRADES.filter(u => !has(u.id));
+  const picks = [];
+  const copy = [...pool];
+  while (picks.length < 3 && copy.length) picks.push(copy.splice(Math.floor(Math.random() * copy.length), 1)[0]);
+  const wrap = $('shop-cards');
+  wrap.innerHTML = '';
+  for (const u of picks) {
+    const btn = document.createElement('button');
+    btn.className = 'shop-card' + (save.money < u.cost ? ' disabled' : '');
+    btn.innerHTML = `
+      <span class="sc-emoji">${u.emoji}</span>
+      <span><div class="sc-name">${u.name}</div><div class="sc-desc">${u.desc}</div></span>
+      <span class="sc-cost">$${u.cost}</span>`;
+    btn.addEventListener('click', () => {
+      if (save.money < u.cost) return;
+      save.money -= u.cost;
+      save.owned.push(u.id);
+      persist();
+      toast(u.emoji + ' ' + u.name + ' purchased!');
+      startShift();
+    });
+    wrap.appendChild(btn);
+  }
+  if (!picks.length) wrap.innerHTML = '<div class="sub">You own everything. Taco mogul. 🏆</div>';
+  $('ov-shop').classList.add('visible');
+}
+
+/* ---------- main loop ---------- */
+function loop(ts) {
+  requestAnimationFrame(loop);
+  const dt = Math.min(100, ts - lastTs); // clamp so tab-switch doesn't nuke the shift
+  lastTs = ts;
+  if (!running) return;
+
+  timeLeft -= dt;
+  if (timeLeft <= 0) { endShift(); return; }
+
+  spawnTimer -= dt;
+  if (spawnTimer <= 0) {
+    spawnOrder();
+    spawnTimer = spawnInterval();
+  }
+
+  const elapsed = SHIFT_LENGTH - timeLeft;
+  if (!chaosDone && elapsed >= chaosAt) fireChaos();
+
+  chuyThink();
+  renderStations(dt);
+  renderOrders(dt);
+  renderStaff();
+  updateHud();
+}
+
+/* ---------- boot ---------- */
+buildKitchen();
+renderShelf();
+updateHud();
+if (save.shift > 1) {
+  $('btn-start').textContent = `Start Shift ${save.shift} 🔥`;
+  $('btn-reset').style.display = 'inline-block';
+}
+$('btn-start').addEventListener('click', startShift);
+$('btn-reset').addEventListener('click', () => {
+  localStorage.removeItem(SAVE_KEY);
+  location.reload();
+});
+$('btn-shop').addEventListener('click', openShop);
+$('btn-skip').addEventListener('click', startShift);
+requestAnimationFrame(ts => { lastTs = ts; requestAnimationFrame(loop); });
+</script>
+</body>
+</html>
