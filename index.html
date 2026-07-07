@@ -6,969 +6,846 @@
 <title>Taco Loco 🌮</title>
 <style>
   :root {
-    --ink: #3a1f14;
-    --cream: #fff4e0;
-    --paper: #ffe8c2;
-    --red: #e63946;
-    --orange: #f77f00;
-    --teal: #2a9d8f;
-    --yellow: #ffc94d;
-    --green: #57cc57;
-    --bg1: #7a2a1e;
-    --bg2: #4a1510;
+    --ink: #4a3526;
+    --cream: #fff6e6;
+    --peach: #ffe6c9;
+    --wood: #d9b389;
+    --wood-lt: #e7cba6;
+    --red: #ef6f5b;
+    --orange: #f8a24b;
+    --teal: #4bb3a3;
+    --yellow: #ffcf5c;
+    --green: #7ac77a;
+    --pink: #f6a6b2;
+    --sky: #bfe3e0;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; overflow: hidden; }
   body {
-    font-family: ui-rounded, "Arial Rounded MT Bold", "Baloo 2", "Comic Sans MS", system-ui, sans-serif;
-    background: linear-gradient(160deg, var(--bg1), var(--bg2));
+    font-family: ui-rounded, "Arial Rounded MT Bold", "Baloo 2", "Nunito", system-ui, sans-serif;
+    background: linear-gradient(170deg, #ffd9a8, #ffb98f 60%, #f79c8e);
     color: var(--ink);
-    user-select: none;
-    -webkit-user-select: none;
+    user-select: none; -webkit-user-select: none;
     touch-action: manipulation;
+    overscroll-behavior: none;
   }
   #app {
-    max-width: 480px;
-    height: 100%;
-    height: 100dvh;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    overflow: hidden;
+    max-width: 480px; height: 100%; height: 100dvh; margin: 0 auto;
+    display: flex; flex-direction: column; position: relative; overflow: hidden;
   }
 
   /* ---------- HUD ---------- */
   #hud {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 8px 12px; gap: 8px;
-    background: var(--ink); color: var(--cream);
-    font-weight: 800; font-size: 17px;
-    flex: 0 0 auto;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 7px 12px; flex: 0 0 auto;
+    background: var(--ink); color: var(--cream); font-weight: 800; font-size: 15px;
   }
-  #hud .pill {
-    background: rgba(255,255,255,.12); border-radius: 999px; padding: 3px 12px;
-    white-space: nowrap;
-  }
-  #hud #hud-timer.low { color: #ff8b8b; animation: blink .6s steps(2) infinite; }
-  @keyframes blink { 50% { opacity: .4; } }
-
-  /* ---------- Kitchen ---------- */
-  #kitchen {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-    padding: 10px 12px 4px;
-    flex: 0 0 auto;
-  }
-  .station {
-    background: var(--cream);
-    border: 3px solid var(--ink);
-    border-radius: 16px;
-    box-shadow: 0 4px 0 var(--ink);
-    padding: 8px 10px 10px;
-    text-align: center;
-    position: relative;
-    cursor: pointer;
-    transition: transform .08s;
-  }
-  .station:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--ink); }
-  .station .st-emoji { font-size: 34px; line-height: 1.1; }
-  .station .st-name { font-weight: 800; font-size: 13px; letter-spacing: .5px; text-transform: uppercase; }
-  .station .st-makes { font-size: 11px; opacity: .65; min-height: 14px; }
-  .station .st-bar {
-    height: 9px; border: 2px solid var(--ink); border-radius: 999px;
-    background: #fff; overflow: hidden; margin-top: 6px;
-  }
-  .station .st-fill { height: 100%; width: 0%; background: var(--orange); transition: width .1s linear; }
-  .station .st-worker {
-    position: absolute; top: -12px; right: -6px;
-    background: var(--yellow); border: 2.5px solid var(--ink); border-radius: 999px;
-    font-size: 12px; font-weight: 800; padding: 2px 8px;
-    display: none;
-  }
-  .station.working .st-worker { display: block; }
-  .station.assign-target { outline: 4px dashed var(--teal); outline-offset: 3px; }
-  .station.shake { animation: shake .3s; }
-  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
-  #st-register.has-ready { border-color: var(--green); box-shadow: 0 4px 0 var(--green), 0 0 14px rgba(87,204,87,.7); }
-
-  /* ---------- Staff bar ---------- */
-  #staffbar { padding: 4px 12px; flex: 0 0 auto; min-height: 0; }
-  #staff-chip {
-    display: none; align-items: center; gap: 8px;
-    background: var(--paper); border: 3px solid var(--ink); border-radius: 999px;
-    box-shadow: 0 3px 0 var(--ink);
-    padding: 4px 14px; font-weight: 800; font-size: 13px;
-    cursor: pointer; width: fit-content;
-  }
-  #staff-chip.visible { display: inline-flex; }
-  #staff-chip.selected { background: var(--teal); color: #fff; }
-  #staff-chip .status { font-weight: 600; opacity: .75; font-size: 12px; }
-  #staff-chip.selected .status { opacity: .95; }
-
-  /* ---------- Shelf ---------- */
-  #shelf-wrap { padding: 6px 12px; flex: 0 0 auto; }
-  #shelf-label { color: var(--cream); font-size: 11px; font-weight: 800; letter-spacing: 1px; opacity: .7; margin-bottom: 4px; }
-  #shelf {
-    display: flex; gap: 8px; min-height: 62px;
-    background: rgba(0,0,0,.25); border-radius: 14px; padding: 7px;
-    border: 2px dashed rgba(255,244,224,.35);
-  }
-  .shelf-slot {
-    width: 52px; height: 48px; border-radius: 10px;
-    background: rgba(255,255,255,.07);
-    display: flex; align-items: center; justify-content: center;
-  }
-  .shelf-item {
-    width: 52px; height: 48px; border-radius: 10px;
-    background: var(--cream); border: 3px solid var(--ink);
-    box-shadow: 0 3px 0 var(--ink);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 28px; cursor: grab; touch-action: none;
-    animation: pop .18s ease-out;
-  }
-  @keyframes pop { from { transform: scale(.3); } to { transform: scale(1); } }
-  #drag-ghost {
-    position: fixed; z-index: 90; pointer-events: none;
-    font-size: 38px; transform: translate(-50%, -60%);
-    filter: drop-shadow(0 4px 4px rgba(0,0,0,.4));
-    display: none;
-  }
+  #hud .pill { background: rgba(255,255,255,.14); border-radius: 999px; padding: 3px 12px; white-space: nowrap; display: flex; align-items: center; gap: 5px; }
+  #hud-timer.low { color: #ffb1a1; animation: blink .6s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: .35; } }
 
   /* ---------- Orders ---------- */
-  #orders-wrap { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; padding: 4px 0 10px; }
-  #orders-label { color: var(--cream); font-size: 11px; font-weight: 800; letter-spacing: 1px; opacity: .7; margin: 0 12px 4px; }
   #orders {
-    flex: 1; display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden;
-    padding: 6px 12px; align-items: stretch;
-    scrollbar-width: none;
+    flex: 0 0 auto; display: flex; gap: 7px; padding: 8px 10px; overflow-x: auto; overflow-y: hidden;
+    background: rgba(74,53,38,.14); min-height: 74px; scrollbar-width: none;
   }
   #orders::-webkit-scrollbar { display: none; }
-  .order-card {
-    flex: 0 0 108px; border-radius: 14px;
-    background: var(--cream); border: 3px solid var(--ink);
-    box-shadow: 0 4px 0 var(--ink);
-    padding: 7px 8px; display: flex; flex-direction: column; gap: 4px;
-    position: relative;
-    animation: slidein .3s ease-out;
+  #orders:empty::after { content: "Waiting for hungry customers…"; font-size: 12px; opacity: .55; align-self: center; padding-left: 6px; font-weight: 700; }
+  .ticket {
+    flex: 0 0 auto; width: 74px; background: var(--cream); border-radius: 12px;
+    border: 2px solid rgba(74,53,38,.15); box-shadow: 0 3px 0 rgba(74,53,38,.14);
+    padding: 5px 4px 4px; text-align: center; position: relative; animation: pop .25s ease-out;
   }
-  @keyframes slidein { from { transform: translateX(-60px); opacity: 0; } }
-  .order-card.ready { border-color: var(--green); box-shadow: 0 4px 0 var(--green); }
-  .order-card.droppable { outline: 4px solid var(--yellow); outline-offset: 2px; }
-  .order-card.leaving { animation: slideout .4s ease-in forwards; }
-  @keyframes slideout { to { transform: translateY(90px) rotate(6deg); opacity: 0; } }
-  .order-card.paid-anim { animation: paidpop .4s ease-in forwards; }
-  @keyframes paidpop { 40% { transform: scale(1.12); } to { transform: scale(0); opacity: 0; } }
-  .order-card .oc-top { display: flex; align-items: center; justify-content: space-between; }
-  .order-card .oc-cust { font-size: 24px; }
-  .order-card .oc-val { font-size: 12px; font-weight: 800; color: var(--teal); }
-  .order-card .oc-needs { display: flex; flex-wrap: wrap; gap: 3px; font-size: 20px; flex: 1; align-content: flex-start; }
-  .order-card .oc-needs .need { opacity: .3; filter: grayscale(1); }
-  .order-card .oc-needs .need.filled { opacity: 1; filter: none; }
-  .order-card .oc-pat {
-    height: 8px; border: 2px solid var(--ink); border-radius: 999px; background: #fff; overflow: hidden;
+  .ticket .t-emoji { font-size: 25px; line-height: 1; }
+  .ticket .t-name { font-size: 9px; font-weight: 800; opacity: .8; margin-top: 1px; white-space: nowrap; }
+  .ticket .t-comp { font-size: 11px; letter-spacing: -1px; margin-top: 1px; height: 13px; }
+  .ticket .t-pat { height: 6px; border-radius: 999px; background: #e7d8c2; overflow: hidden; margin-top: 4px; }
+  .ticket .t-pat > i { display: block; height: 100%; background: var(--green); }
+  @keyframes pop { from { transform: scale(.4); opacity: 0; } }
+
+  /* ---------- Stage ---------- */
+  #stage { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; padding: 8px; min-height: 0; position: relative; }
+  #game { image-rendering: auto; max-width: 100%; max-height: 100%; border-radius: 16px; box-shadow: 0 8px 24px rgba(74,53,38,.32); }
+
+  /* ---------- Controls ---------- */
+  #controls { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 6px 22px 16px; gap: 10px; }
+  #stick {
+    width: 116px; height: 116px; border-radius: 50%; position: relative; flex: 0 0 auto;
+    background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.35), rgba(255,255,255,.12));
+    border: 3px solid rgba(255,255,255,.5); touch-action: none;
   }
-  .order-card .oc-pat-fill { height: 100%; background: var(--green); }
-  .order-card .oc-ready-badge {
-    position: absolute; top: -10px; left: 50%; transform: translateX(-50%) rotate(-4deg);
-    background: var(--green); color: #fff; border: 2.5px solid var(--ink);
-    border-radius: 8px; font-size: 10px; font-weight: 800; padding: 2px 7px;
-    display: none; white-space: nowrap;
+  #stick-nub {
+    position: absolute; width: 52px; height: 52px; border-radius: 50%; left: 50%; top: 50%;
+    transform: translate(-50%,-50%); background: var(--cream); border: 3px solid var(--ink);
+    box-shadow: 0 3px 0 rgba(74,53,38,.4);
   }
-  .order-card.ready .oc-ready-badge { display: block; }
+  #use-btn {
+    width: 104px; height: 104px; border-radius: 50%; flex: 0 0 auto; font-family: inherit;
+    background: var(--red); color: #fff; border: 4px solid var(--ink);
+    box-shadow: 0 6px 0 var(--ink); font-weight: 800; font-size: 17px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; line-height: 1.05; touch-action: none;
+  }
+  #use-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--ink); }
+  .kbd-hint { display: none; font-size: 11px; opacity: .7; font-weight: 700; text-align: center; }
+  body.has-kb .kbd-hint { display: block; }
 
   /* ---------- Overlays ---------- */
-  .overlay {
-    position: absolute; inset: 0; z-index: 50;
-    background: rgba(35,12,8,.88);
-    display: none; flex-direction: column; align-items: center; justify-content: center;
-    padding: 24px; text-align: center; color: var(--cream);
-    overflow-y: auto;
+  .overlay { position: absolute; inset: 0; z-index: 30; display: none; flex-direction: column; align-items: center; justify-content: center;
+    padding: 22px; text-align: center; overflow-y: auto; }
+  .overlay.show { display: flex; }
+  .overlay::before { content: ""; position: absolute; inset: 0; background: rgba(74,53,38,.55); backdrop-filter: blur(3px); z-index: -1; }
+  .card {
+    background: var(--cream); border-radius: 22px; border: 3px solid var(--ink);
+    box-shadow: 0 10px 0 rgba(74,53,38,.35); padding: 22px 22px 24px; max-width: 380px; width: 100%;
   }
-  .overlay.visible { display: flex; }
-  .overlay h1 { font-size: 52px; color: var(--yellow); text-shadow: 3px 3px 0 var(--red), 6px 6px 0 var(--ink); letter-spacing: 1px; }
-  .overlay h2 { font-size: 30px; color: var(--yellow); text-shadow: 2px 2px 0 var(--ink); margin-bottom: 8px; }
-  .overlay .sub { font-size: 15px; opacity: .85; margin: 8px 0 18px; max-width: 320px; line-height: 1.45; }
-  .btn {
-    font-family: inherit; font-size: 19px; font-weight: 800;
-    background: var(--red); color: #fff;
-    border: 3px solid var(--ink); border-radius: 14px;
-    box-shadow: 0 5px 0 var(--ink);
-    padding: 12px 34px; cursor: pointer; margin-top: 10px;
-  }
+  h1.logo { font-size: 46px; color: var(--yellow); -webkit-text-stroke: 2px var(--ink); text-stroke: 2px var(--ink); letter-spacing: 1px; line-height: 1; }
+  h1.logo .sub2 { display: block; font-size: 15px; color: var(--red); -webkit-text-stroke: 0; margin-top: 8px; font-weight: 800; }
+  .card h2 { font-size: 26px; color: var(--red); }
+  .card p { font-size: 14px; line-height: 1.5; margin: 8px 0; color: var(--ink); }
+  .btn { font-family: inherit; font-weight: 800; font-size: 18px; background: var(--red); color: #fff;
+    border: 3px solid var(--ink); border-radius: 14px; box-shadow: 0 5px 0 var(--ink); padding: 12px 26px; cursor: pointer; margin: 6px 4px 0; }
   .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
-  .btn.secondary { background: transparent; color: var(--cream); box-shadow: 0 5px 0 rgba(0,0,0,.5); font-size: 15px; padding: 9px 22px; }
-  .howto { font-size: 13.5px; text-align: left; background: rgba(255,255,255,.08); border-radius: 14px; padding: 14px 18px; line-height: 1.9; margin-top: 6px; }
+  .btn.alt { background: var(--teal); }
+  .btn.ghost { background: #fff; color: var(--ink); }
+  .btn.sm { font-size: 14px; padding: 9px 18px; }
 
-  .stat-row { display: flex; justify-content: space-between; gap: 30px; font-size: 17px; padding: 6px 0; border-bottom: 2px dashed rgba(255,244,224,.25); width: 280px; max-width: 80vw; }
-  .stat-row b { color: var(--yellow); }
+  .how { text-align: left; background: var(--peach); border-radius: 14px; padding: 12px 14px; font-size: 13px; line-height: 1.8; margin-top: 6px; }
 
-  /* shop */
-  #shop-cards { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; margin-top: 6px; }
-  .shop-card {
-    background: var(--cream); color: var(--ink);
-    border: 3px solid var(--ink); border-radius: 14px; box-shadow: 0 4px 0 var(--ink);
-    padding: 10px 14px; text-align: left; cursor: pointer;
-    display: flex; align-items: center; gap: 12px;
-    font-family: inherit;
+  /* map */
+  .loc { margin-top: 14px; background: var(--peach); border-radius: 16px; padding: 12px 12px 14px; border: 2px solid rgba(74,53,38,.15); }
+  .loc.locked { opacity: .55; }
+  .loc h3 { font-size: 17px; display: flex; align-items: center; gap: 7px; }
+  .loc .blurb { font-size: 11.5px; opacity: .8; margin: 3px 0 9px; line-height: 1.35; }
+  .lvls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .lvl {
+    width: 54px; height: 60px; border-radius: 13px; background: var(--cream); border: 2.5px solid var(--ink);
+    box-shadow: 0 3px 0 var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; font-weight: 800; position: relative; padding-top: 3px;
   }
-  .shop-card:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--ink); }
-  .shop-card .sc-emoji { font-size: 30px; }
-  .shop-card .sc-name { font-weight: 800; font-size: 15px; }
-  .shop-card .sc-desc { font-size: 12px; opacity: .75; line-height: 1.3; }
-  .shop-card .sc-cost { margin-left: auto; font-weight: 800; color: var(--teal); white-space: nowrap; }
-  .shop-card.disabled { opacity: .45; pointer-events: none; }
+  .lvl.locked { background: #e3d3bd; color: #a08c74; box-shadow: 0 3px 0 #a08c74; border-color: #a08c74; cursor: default; }
+  .lvl .n { font-size: 19px; }
+  .lvl .st { font-size: 10px; letter-spacing: -1px; height: 12px; }
+  .lvl .lock { font-size: 17px; }
 
-  /* ---------- Chaos ---------- */
-  #chaos-banner {
-    position: absolute; top: 54px; left: 50%; transform: translateX(-50%) rotate(-2deg);
-    z-index: 60; display: none;
-    background: var(--red); color: #fff; border: 3px solid var(--ink);
-    border-radius: 14px; box-shadow: 0 5px 0 var(--ink);
-    padding: 10px 18px; font-weight: 800; font-size: 15px; text-align: center;
-    max-width: 86%;
-  }
-  #chaos-banner.visible { display: block; animation: bannerin .3s ease-out; }
-  @keyframes bannerin { from { transform: translateX(-50%) translateY(-70px) rotate(-2deg); } }
-  .splat {
-    position: absolute; z-index: 65; font-size: 42px; cursor: pointer;
-    border: none; background: none; font-family: inherit;
-    animation: pop .2s ease-out;
-    filter: drop-shadow(0 3px 3px rgba(0,0,0,.5));
-  }
-  #app.quake { animation: quake .5s; }
-  @keyframes quake { 0%,100%{transform:translate(0)} 20%{transform:translate(-6px,3px)} 40%{transform:translate(5px,-4px)} 60%{transform:translate(-4px,-3px)} 80%{transform:translate(4px,4px)} }
-
-  #toast {
-    position: absolute; bottom: 190px; left: 50%; transform: translateX(-50%);
-    z-index: 70; background: var(--ink); color: var(--yellow);
-    border-radius: 999px; padding: 7px 18px; font-weight: 800; font-size: 14px;
-    display: none; white-space: nowrap;
-  }
-  #toast.visible { display: block; animation: toastup 1.6s ease-out forwards; }
-  @keyframes toastup { 0% { opacity: 0; transform: translateX(-50%) translateY(14px);} 15%,75% { opacity: 1; transform: translateX(-50%) translateY(0);} 100% { opacity: 0; transform: translateX(-50%) translateY(-10px);} }
-
-  .float-cash {
-    position: absolute; z-index: 68; font-weight: 800; font-size: 19px; color: var(--yellow);
-    text-shadow: 2px 2px 0 var(--ink); pointer-events: none;
-    animation: floatup 1s ease-out forwards;
-  }
-  @keyframes floatup { to { transform: translateY(-55px); opacity: 0; } }
+  .stars-big { font-size: 34px; letter-spacing: 3px; margin: 6px 0; }
+  .res-row { display: flex; justify-content: space-between; font-size: 15px; padding: 4px 2px; border-bottom: 2px dashed rgba(74,53,38,.2); }
+  .res-row b { color: var(--teal); }
+  .toast { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 40;
+    background: var(--ink); color: var(--yellow); font-weight: 800; font-size: 14px; padding: 8px 18px; border-radius: 999px; display: none; }
+  .toast.show { display: block; animation: tst 1.5s ease-out forwards; }
+  @keyframes tst { 0%{opacity:0;transform:translateX(-50%) translateY(-8px);} 12%,72%{opacity:1;transform:translateX(-50%) translateY(0);} 100%{opacity:0;} }
 </style>
 </head>
 <body>
 <div id="app">
   <div id="hud">
-    <span class="pill">🌮 <span id="hud-shift">Shift 1</span></span>
-    <span class="pill" id="hud-timer">3:00</span>
-    <span class="pill">💵 <span id="hud-money">0</span></span>
+    <span class="pill" id="hud-level">🚚 Taco Truck · 1</span>
+    <span class="pill" id="hud-timer">1:20</span>
+    <span class="pill">⭐ <span id="hud-score">0</span></span>
   </div>
-
-  <div id="kitchen"></div>
-
-  <div id="staffbar">
-    <div id="staff-chip">
-      <span>🧑‍🍳 Chuy</span>
-      <span class="status" id="staff-status">auto</span>
-    </div>
+  <div id="orders"></div>
+  <div id="stage"><canvas id="game" width="432" height="432"></canvas></div>
+  <div class="kbd-hint">move: WASD / arrows &nbsp;·&nbsp; use: Space or E</div>
+  <div id="controls">
+    <div id="stick"><div id="stick-nub"></div></div>
+    <button id="use-btn">USE</button>
   </div>
-
-  <div id="shelf-wrap">
-    <div id="shelf-label">PICKUP SHELF — DRAG FOOD ONTO ORDERS</div>
-    <div id="shelf"></div>
-  </div>
-
-  <div id="orders-wrap">
-    <div id="orders-label">ORDERS</div>
-    <div id="orders"></div>
-  </div>
-
-  <div id="chaos-banner"></div>
-  <div id="toast"></div>
-  <div id="drag-ghost"></div>
+  <div class="toast" id="toast"></div>
 
   <!-- Title -->
-  <div class="overlay visible" id="ov-title">
-    <h1>TACO LOCO</h1>
-    <div class="sub">You. A taco stand. The lunch rush.<br>From line cook to taco empire — if you survive the shift.</div>
-    <div class="howto">
-      👆 <b>Tap a station</b> to cook — food pops onto the shelf<br>
-      🌮 <b>Drag food</b> from the shelf onto matching orders<br>
-      💰 <b>Tap the register</b> to ring up finished orders<br>
-      ⏱️ Faster service = bigger tips. Don't let patience run out!
+  <div class="overlay show" id="ov-title">
+    <div class="card">
+      <h1 class="logo">TACO LOCO<span class="sub2">a cozy taco kitchen</span></h1>
+      <div class="how">
+        🕹️ <b>Move</b> your chef with the stick (or WASD)<br>
+        🤚 <b>USE</b> to grab, chop, cook, plate &amp; serve<br>
+        🔥 Grill raw meat &nbsp;·&nbsp; 🔪 chop veg on the board<br>
+        🍽️ Add prepped items to a plate, then run it to the <b>window</b><br>
+        ⏱️ Serve before patience runs out — earn stars!
+      </div>
+      <button class="btn" id="btn-play">Let's cook! 🌮</button>
+      <div><button class="btn ghost sm" id="btn-reset">reset progress</button></div>
     </div>
-    <button class="btn" id="btn-start">Start Shift 🔥</button>
-    <button class="btn secondary" id="btn-reset" style="display:none">Reset progress</button>
   </div>
 
-  <!-- Shift end -->
-  <div class="overlay" id="ov-end">
-    <h2 id="end-title">SHIFT COMPLETE!</h2>
-    <div class="stat-row"><span>Orders served</span><b id="end-served">0 / 0</b></div>
-    <div class="stat-row"><span>Sales</span><b id="end-sales">$0</b></div>
-    <div class="stat-row"><span>Tips</span><b id="end-tips">$0</b></div>
-    <div class="stat-row"><span>Chaos rating</span><b id="end-chaos">🌶️</b></div>
-    <button class="btn" id="btn-shop">Upgrade Shop 🛒</button>
+  <!-- Map / level select -->
+  <div class="overlay" id="ov-map">
+    <div class="card">
+      <h2>Choose a Kitchen</h2>
+      <div id="map-body"></div>
+      <button class="btn ghost sm" id="btn-map-back">back</button>
+    </div>
   </div>
 
-  <!-- Shop -->
-  <div class="overlay" id="ov-shop">
-    <h2>UPGRADE SHOP</h2>
-    <div class="sub" style="margin-bottom:4px">Pick <b>one</b> upgrade before the next rush. 💵 <span id="shop-money">0</span></div>
-    <div id="shop-cards"></div>
-    <button class="btn secondary" id="btn-skip">Skip — start next shift</button>
+  <!-- Level intro -->
+  <div class="overlay" id="ov-intro">
+    <div class="card">
+      <h2 id="intro-title">Taco Truck · 1</h2>
+      <p id="intro-goal"></p>
+      <div id="intro-recipes" class="how"></div>
+      <button class="btn" id="btn-go">Start! 🔔</button>
+      <button class="btn ghost sm" id="btn-intro-back">back</button>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="overlay" id="ov-res">
+    <div class="card">
+      <h2 id="res-title">Service done!</h2>
+      <div class="stars-big" id="res-stars">⭐⭐⭐</div>
+      <div class="res-row"><span>Served</span><b id="res-served">0</b></div>
+      <div class="res-row"><span>Missed</span><b id="res-missed">0</b></div>
+      <div class="res-row"><span>Score</span><b id="res-score">0</b></div>
+      <div id="res-btns" style="margin-top:12px"></div>
+    </div>
   </div>
 </div>
 
 <script>
 'use strict';
-/* =====================================================
-   TACO LOCO v0.1 — mobile-first taco restaurant sim
-   ===================================================== */
+/* ============================================================
+   TACO LOCO — top-down Overcooked-style co(z)y taco kitchen
+   Single file, no deps. Canvas render + DOM UI overlays.
+   ============================================================ */
 
-const ITEMS = {
-  taco:    { emoji: '🌮', name: 'Taco',    price: 4 },
-  burrito: { emoji: '🌯', name: 'Burrito', price: 6 },
-  nachos:  { emoji: '🧀', name: 'Nachos',  price: 5 },
+/* ---------------- data ---------------- */
+const ING = {
+  tortilla: { emoji: '🫓', prep: null },
+  meat:     { emoji: '🥩', cooked: '🍖', prep: 'cook' },
+  fish:     { emoji: '🐟', cooked: '🍤', prep: 'cook' },
+  lettuce:  { emoji: '🥬', prep: 'chop' },
+  jalapeno: { emoji: '🌶️', prep: 'chop' },
+  cheese:   { emoji: '🧀', prep: null },
+  chips:    { emoji: '🌽', prep: null },
+  salsa:    { emoji: '🥫', prep: null },
+};
+const CRATE = { t:'tortilla', m:'meat', f:'fish', l:'lettuce', j:'jalapeno', c:'cheese', h:'chips', s:'salsa' };
+
+const RECIPES = {
+  tacoSimple: { name: 'Taco',      emoji: '🌮', comp: ['tortilla','meat'] },
+  taco:       { name: 'Taco',      emoji: '🌮', comp: ['tortilla','meat','lettuce'] },
+  nachos:     { name: 'Nachos',    emoji: '🧀', comp: ['chips','cheese','jalapeno'] },
+  burrito:    { name: 'Burrito',   emoji: '🌯', comp: ['tortilla','meat','lettuce','cheese'] },
+  quesadilla: { name: 'Quesadilla',emoji: '🫓', comp: ['tortilla','cheese','jalapeno'] },
+  fishtaco:   { name: 'Fish Taco', emoji: '🐟', comp: ['tortilla','fish','lettuce','salsa'] },
+  loaded:     { name: 'Loaded Nachos', emoji: '🌶️', comp: ['chips','cheese','jalapeno','salsa'] },
 };
 
-const STATIONS = {
-  grill:    { emoji: '🔥', name: 'Grill',    makes: 'taco',    time: 1800 },
-  assembly: { emoji: '🫔', name: 'Assembly', makes: 'burrito', time: 2500 },
-  toppings: { emoji: '🥑', name: 'Toppings', makes: 'nachos',  time: 2100 },
-  register: { emoji: '💰', name: 'Register', makes: null,      time: 1200 },
-};
-
-const CUSTOMERS = ['😀','🤠','👵','🧑‍🎤','👷','🕵️','🧛','👩‍🚀','🤡','🧙','👨‍🎨','🦸'];
-
-const UPGRADES = [
-  { id: 'hotterGrill',  emoji: '🔥', name: 'Hotter Grill',    desc: 'Grill works 35% faster.',                          cost: 25 },
-  { id: 'prepDrills',   emoji: '🔪', name: 'Prep Drills',     desc: 'All stations work 15% faster.',                    cost: 35 },
-  { id: 'comfySeats',   emoji: '🪑', name: 'Comfy Seating',   desc: 'Customers wait 30% longer.',                       cost: 30 },
-  { id: 'autoToppings', emoji: '🤖', name: 'Auto-Toppings',   desc: 'Toppings station slowly works itself.',            cost: 45 },
-  { id: 'hireChuy',     emoji: '🧑‍🍳', name: 'Hire Chuy',       desc: 'Grill wizard. Naps at random. Tap him to direct.', cost: 50 },
-  { id: 'bigShelf',     emoji: '🗄️', name: 'Bigger Shelf',    desc: '+2 pickup shelf slots.',                           cost: 20 },
-  { id: 'loyalty',      emoji: '💳', name: 'Loyalty Cards',   desc: '+25% tips on every order.',                        cost: 40 },
-  { id: 'salsaIns',     emoji: '🛡️', name: 'Salsa Insurance', desc: 'Chaos events can no longer hurt you.',             cost: 30 },
+const LAYOUT_A = [
+  "#t..G..m#",
+  "#.......#",
+  "B.......A",
+  "#.......#",
+  "l.......D",
+  "#.......#",
+  "#...W...#",
+  "#########",
+];
+const LAYOUT_B = [
+  "#t.m.l.h#",
+  "#.......#",
+  "c.......G",
+  "#.......#",
+  "j.......G",
+  "#.......#",
+  "B.......D",
+  "#.A.A.W.#",
+  "#########",
+];
+const LAYOUT_C = [
+  "#t.f.l.s#",
+  "#.......#",
+  "c.......G",
+  "#..###..#",
+  "j.......G",
+  "#.......#",
+  "B.......D",
+  "#.A.A.W.#",
+  "#########",
 ];
 
-const SHIFT_LENGTH = 180000;   // 3 minutes
-const BASE_SHELF = 4;
-const BASE_PATIENCE = 34000;
-const SAVE_KEY = 'tacoLoco.save.v1';
+const LOCATIONS = [
+  {
+    id: 'truck', name: 'Taco Truck', emoji: '🚚',
+    blurb: 'Where every taco legend begins. Learn the ropes: grill, chop, plate, serve.',
+    mod: {},
+    levels: [
+      { name: 'First Shift',   layout: LAYOUT_A, start: [4,3], recipes: ['tacoSimple'],           time: 75,  every: 8.5, delay: 1.2, queue: 3, patience: 46, stars: [25,50,75] },
+      { name: 'Add the Greens',layout: LAYOUT_A, start: [4,3], recipes: ['taco'],                 time: 82,  every: 8.5, delay: 1.2, queue: 3, patience: 47, stars: [30,60,90] },
+      { name: 'Nacho Night',   layout: LAYOUT_B, start: [4,4], recipes: ['taco','nachos'],        time: 92,  every: 7.5, delay: 1.0, queue: 4, patience: 45, stars: [50,90,130] },
+      { name: 'Burrito Rush',  layout: LAYOUT_B, start: [4,4], recipes: ['taco','burrito'],       time: 96,  every: 7.2, delay: 1.0, queue: 4, patience: 45, stars: [55,100,140] },
+      { name: 'The Big Lunch', layout: LAYOUT_B, start: [4,4], recipes: ['taco','nachos','burrito'], time: 104, every: 6.2, delay: 0.8, queue: 5, patience: 43, stars: [70,120,170] },
+    ],
+  },
+  {
+    id: 'beach', name: 'Beach Cantina', emoji: '🏖️',
+    blurb: 'Sandy floors make you slide, a prep island blocks the middle, and beach-goers are impatient. New: fish 🐟 & salsa 🥫.',
+    mod: { slippery: true, patienceScale: 0.82 },
+    levels: [
+      { name: 'Sandy Feet',    layout: LAYOUT_C, start: [4,5], recipes: ['quesadilla'],               time: 82,  every: 8.5, delay: 1.2, queue: 3, patience: 48, stars: [28,55,82] },
+      { name: 'Catch of Day',  layout: LAYOUT_C, start: [4,5], recipes: ['fishtaco'],                 time: 90,  every: 8.0, delay: 1.0, queue: 3, patience: 47, stars: [35,70,105] },
+      { name: 'Surf & Spice',  layout: LAYOUT_C, start: [4,5], recipes: ['fishtaco','quesadilla'],    time: 96,  every: 7.2, delay: 1.0, queue: 4, patience: 45, stars: [55,100,145] },
+      { name: 'Loaded Up',     layout: LAYOUT_C, start: [4,5], recipes: ['fishtaco','loaded'],        time: 100, every: 7.0, delay: 0.9, queue: 4, patience: 45, stars: [60,110,155] },
+      { name: 'High Tide',     layout: LAYOUT_C, start: [4,5], recipes: ['fishtaco','quesadilla','loaded'], time: 108, every: 6.0, delay: 0.8, queue: 5, patience: 43, stars: [75,130,185] },
+    ],
+  },
+];
 
-/* ---------- persistent state ---------- */
-let save = { money: 0, shift: 1, owned: [] };
-try {
-  const raw = localStorage.getItem(SAVE_KEY);
-  if (raw) save = Object.assign(save, JSON.parse(raw));
-} catch (e) {}
+/* ---------------- save ---------------- */
+const SAVE_KEY = 'tacoLoco.save.v2';
+let save = { stars: {} };
+try { const r = localStorage.getItem(SAVE_KEY); if (r) save = Object.assign(save, JSON.parse(r)); } catch (e) {}
 const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} };
-const has = id => save.owned.includes(id);
+const starKey = (li, lv) => LOCATIONS[li].id + ':' + lv;
+const starsOf = (li, lv) => save.stars[starKey(li, lv)] || 0;
+function levelUnlocked(li, lv) {
+  if (li > 0) { // previous location must be fully cleared (all levels >=1 star)
+    const prev = LOCATIONS[li - 1];
+    for (let k = 0; k < prev.levels.length; k++) if (!(save.stars[prev.id + ':' + k] > 0)) return false;
+  }
+  if (lv === 0) return true;
+  return starsOf(li, lv - 1) > 0;
+}
 
-/* ---------- per-shift state ---------- */
-let running = false;
-let timeLeft = 0;
-let orders = [];          // {id, cust, needs:[{item,filled}], patience, maxPatience, value, state, el}
-let shelf = [];           // item keys
-let orderSeq = 0;
-let spawnTimer = 0;
-let stationState = {};    // id -> {worker:null|'you'|'chuy', progress:0}
-let chuy = null;          // {assign:'auto'|stationId, napUntil:0, selected:false}
-let chaosAt = 0, chaosDone = false, chaosActive = null;
-let influencerArmed = false;
-let stats = null;
+/* ---------------- constants ---------------- */
+const TILE = 48, R = 15;
+const DIRS = { up:[0,-1], down:[0,1], left:[-1,0], right:[1,0] };
+const $ = id => document.getElementById(id);
+const canvas = $('game'), ctx = canvas.getContext('2d');
+
+/* ---------------- audio (tiny, optional) ---------------- */
+let actx = null;
+function beep(freq, dur, type, vol) {
+  try {
+    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type || 'sine'; o.frequency.value = freq;
+    g.gain.value = vol || 0.05; o.connect(g); g.connect(actx.destination);
+    o.start(); g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (dur || 0.08));
+    o.stop(actx.currentTime + (dur || 0.08));
+  } catch (e) {}
+}
+
+/* ---------------- game state ---------------- */
+let G = null;      // active level runtime
+let screen = 'title';
+let sel = { li: 0, lv: 0 };
 let lastTs = 0;
 
-const $ = id => document.getElementById(id);
-const fmtTime = ms => {
-  const s = Math.max(0, Math.ceil(ms / 1000));
-  return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
-};
-const rand = arr => arr[Math.floor(Math.random() * arr.length)];
-
-function toast(msg) {
-  const t = $('toast');
-  t.textContent = msg;
-  t.classList.remove('visible');
-  void t.offsetWidth;
-  t.classList.add('visible');
+function mkItem(base, state) {
+  const p = ING[base].prep;
+  if (state === undefined) state = p === 'cook' ? 'raw' : 'whole';
+  return { base, state };
 }
-
-function floatCash(text, x, y) {
-  const el = document.createElement('div');
-  el.className = 'float-cash';
-  el.textContent = text;
-  const app = $('app').getBoundingClientRect();
-  el.style.left = (x - app.left) + 'px';
-  el.style.top = (y - app.top) + 'px';
-  $('app').appendChild(el);
-  setTimeout(() => el.remove(), 1000);
+function isReady(it) {
+  if (!it || it.base === 'dish') return false;
+  const p = ING[it.base].prep;
+  if (p === null) return it.state === 'whole';
+  if (p === 'cook') return it.state === 'cooked';
+  if (p === 'chop') return it.state === 'chopped';
+  return false;
 }
+const canGrill = it => it && ING[it.base] && ING[it.base].prep === 'cook' && it.state === 'raw';
+const canChop  = it => it && ING[it.base] && ING[it.base].prep === 'chop' && it.state === 'whole';
+const mkDish = rid => ({ base: 'dish', recipe: rid });
 
-/* ---------- multipliers ---------- */
-function stationTime(id) {
-  let t = STATIONS[id].time;
-  if (has('prepDrills')) t *= 0.85;
-  if (id === 'grill' && has('hotterGrill')) t *= 0.65;
-  return t;
-}
-const shelfCap = () => BASE_SHELF + (has('bigShelf') ? 2 : 0);
-const patienceMax = () => BASE_PATIENCE * (has('comfySeats') ? 1.3 : 1);
-
-/* ---------- build kitchen DOM ---------- */
-function buildKitchen() {
-  const k = $('kitchen');
-  k.innerHTML = '';
-  for (const id of Object.keys(STATIONS)) {
-    const s = STATIONS[id];
-    const el = document.createElement('div');
-    el.className = 'station';
-    el.id = 'st-' + id;
-    el.innerHTML = `
-      <div class="st-worker"></div>
-      <div class="st-emoji">${s.emoji}</div>
-      <div class="st-name">${s.name}</div>
-      <div class="st-makes">${s.makes ? 'makes ' + ITEMS[s.makes].emoji + ' $' + ITEMS[s.makes].price : 'ring up orders'}</div>
-      <div class="st-bar"><div class="st-fill"></div></div>`;
-    el.addEventListener('pointerdown', () => tapStation(id));
-    k.appendChild(el);
+/* ---------------- level loader ---------------- */
+function loadLevel(li, lv) {
+  const loc = LOCATIONS[li], L = loc.levels[lv];
+  const grid = L.layout;
+  const rows = grid.length, cols = grid[0].length;
+  canvas.width = cols * TILE; canvas.height = rows * TILE;
+  const stationMap = new Map(), stations = [];
+  for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+    const ch = grid[y][x];
+    if (ch === '.') continue;
+    let st = null;
+    if (ch === '#') st = { type: 'counter', hold: null };
+    else if (CRATE[ch]) st = { type: 'crate', base: CRATE[ch] };
+    else if (ch === 'G') st = { type: 'grill', hold: null, t: 0, state: null };
+    else if (ch === 'B') st = { type: 'board', hold: null, prog: 0, on: false };
+    else if (ch === 'A') st = { type: 'assembly', contents: [], dish: null };
+    else if (ch === 'D') st = { type: 'deliver' };
+    else if (ch === 'W') st = { type: 'bin' };
+    if (st) { st.gx = x; st.gy = y; stationMap.set(x + ',' + y, st); stations.push(st); }
   }
-}
-
-/* ---------- station logic ---------- */
-function tapStation(id) {
-  if (!running) return;
-  // directing Chuy?
-  if (chuy && chuy.selected && id !== 'register') {
-    chuy.assign = id;
-    chuy.selected = false;
-    toast('🧑‍🍳 Chuy → ' + STATIONS[id].name);
-    renderStaff();
-    highlightAssignTargets(false);
-    return;
-  }
-  const st = stationState[id];
-  if (st.worker) return; // busy
-  // player must be free
-  if (Object.values(stationState).some(s => s.worker === 'you')) {
-    toast("👐 You're busy!");
-    return;
-  }
-  if (id === 'register') {
-    if (!orders.some(o => o.state === 'ready')) { shakeStation(id); toast('No orders to ring up'); return; }
-  } else {
-    if (shelf.length >= shelfCap()) { shakeStation(id); toast('🗄️ Shelf full!'); return; }
-  }
-  st.worker = 'you';
-  st.progress = 0;
-}
-
-function shakeStation(id) {
-  const el = $('st-' + id);
-  el.classList.remove('shake');
-  void el.offsetWidth;
-  el.classList.add('shake');
-}
-
-function finishStation(id, worker) {
-  const st = stationState[id];
-  st.worker = null;
-  st.progress = 0;
-  if (id === 'register') {
-    ringUp();
-  } else {
-    const item = STATIONS[id].makes;
-    if (shelf.length < shelfCap()) {
-      shelf.push(item);
-      renderShelf();
-    }
-  }
-  if (worker === 'chuy' && Math.random() < 0.25) {
-    chuy.napUntil = performance.now() + 4000;
-    toast('🧑‍🍳 Chuy is napping 💤');
-  }
-}
-
-function ringUp() {
-  const o = orders.find(o => o.state === 'ready');
-  if (!o) return;
-  o.state = 'paid';
-  const patFrac = Math.max(0, o.patience / o.maxPatience);
-  let tip = Math.round(o.value * 0.6 * patFrac * (has('loyalty') ? 1.25 : 1));
-  let total = o.value + tip;
-  if (influencerArmed) {
-    total *= 3;
-    influencerArmed = false;
-    toast('📸 VIRAL! Triple pay!');
-    hideChaosBanner();
-  }
-  save.money += total;
-  stats.sales += o.value;
-  stats.tips += (total - o.value);
-  stats.served++;
-  const r = $('st-register').getBoundingClientRect();
-  floatCash('+$' + total, r.left + r.width / 2, r.top);
-  o.el.classList.add('paid-anim');
-  setTimeout(() => { o.el.remove(); }, 400);
-  orders = orders.filter(x => x !== o);
-  updateHud();
-}
-
-/* ---------- orders ---------- */
-function orderSize() {
-  const s = save.shift;
-  const roll = Math.random();
-  if (s <= 1) return roll < 0.6 ? 1 : 2;
-  if (s <= 3) return roll < 0.35 ? 1 : roll < 0.85 ? 2 : 3;
-  return roll < 0.2 ? 1 : roll < 0.6 ? 2 : 3;
-}
-
-function spawnOrder() {
-  const n = orderSize();
-  const needs = [];
-  for (let i = 0; i < n; i++) needs.push({ item: rand(Object.keys(ITEMS)), filled: false });
-  const value = needs.reduce((sum, x) => sum + ITEMS[x.item].price, 0);
-  const o = {
-    id: ++orderSeq,
-    cust: rand(CUSTOMERS),
-    needs, value,
-    maxPatience: patienceMax(),
-    patience: patienceMax(),
-    state: 'open',
-    el: null,
+  G = {
+    li, lv, loc, L, grid, rows, cols, stationMap, stations,
+    mod: loc.mod || {},
+    player: { px: (L.start[0] + 0.5) * TILE, py: (L.start[1] + 0.5) * TILE, vx: 0, vy: 0, face: 'down', carry: null, step: 0 },
+    orders: [], oseq: 0, spawnT: L.delay, timeLeft: L.time,
+    score: 0, served: 0, missed: 0, running: true, parts: [],
   };
-  stats.total++;
-  const el = document.createElement('div');
-  el.className = 'order-card';
-  el.dataset.id = o.id;
-  el.innerHTML = `
-    <div class="oc-ready-badge">💵 RING UP!</div>
-    <div class="oc-top"><span class="oc-cust">${o.cust}</span><span class="oc-val">$${o.value}</span></div>
-    <div class="oc-needs">${needs.map(x => `<span class="need">${ITEMS[x.item].emoji}</span>`).join('')}</div>
-    <div class="oc-pat"><div class="oc-pat-fill" style="width:100%"></div></div>`;
-  o.el = el;
-  $('orders').appendChild(el);
-  orders.push(o);
 }
 
-function expireOrder(o) {
-  o.state = 'expired';
-  stats.expired++;
-  o.el.classList.add('leaving');
-  setTimeout(() => o.el.remove(), 400);
-  orders = orders.filter(x => x !== o);
-  toast(o.cust + ' stormed out!');
+/* ---------------- interaction ---------------- */
+function frontStation() {
+  const p = G.player, d = DIRS[p.face];
+  const gx = Math.floor(p.px / TILE) + d[0], gy = Math.floor(p.py / TILE) + d[1];
+  return G.stationMap.get(gx + ',' + gy);
 }
+function poof(text, gx, gy) { G.parts.push({ text, x: (gx + 0.5) * TILE, y: (gy + 0.5) * TILE, life: 1 }); }
 
-function tryFillOrder(o, itemKey) {
-  if (o.state !== 'open') return false;
-  const need = o.needs.find(x => !x.filled && x.item === itemKey);
-  if (!need) return false;
-  need.filled = true;
-  const spans = o.el.querySelectorAll('.oc-needs .need');
-  const idx = o.needs.indexOf(need);
-  spans[idx].classList.add('filled');
-  if (o.needs.every(x => x.filled)) {
-    o.state = 'ready';
-    o.el.classList.add('ready');
+function interact() {
+  if (!G || !G.running) return;
+  const p = G.player, st = frontStation();
+  if (!st) return;
+  const P = p.carry;
+  switch (st.type) {
+    case 'crate':
+      if (!P) { p.carry = mkItem(st.base); beep(660, .05, 'triangle'); }
+      break;
+    case 'counter':
+      if (P && !st.hold) { st.hold = P; p.carry = null; beep(400,.05,'sine'); }
+      else if (!P && st.hold) { p.carry = st.hold; st.hold = null; beep(520,.05,'sine'); }
+      else if (P && st.hold) { const tmp = st.hold; st.hold = P; p.carry = tmp; beep(460,.05,'sine'); }
+      break;
+    case 'board':
+      if (P && !st.hold && canChop(P)) { st.hold = P; st.on = true; st.prog = 0; beep(300,.05,'square'); }
+      else if (!P && st.hold && !st.on) { p.carry = st.hold; st.hold = null; beep(560,.05,'triangle'); }
+      break;
+    case 'grill':
+      if (P && !st.hold && canGrill(P)) { st.hold = P; st.state = 'cooking'; st.t = 0; beep(240,.06,'sawtooth'); }
+      else if (!P && st.hold) { p.carry = st.hold; st.hold = null; st.state = null; st.t = 0; beep(560,.05,'triangle'); }
+      break;
+    case 'assembly': {
+      if (st.dish) { if (!P) { p.carry = st.dish; st.dish = null; st.contents = []; beep(720,.06,'triangle'); } }
+      else if (P && isReady(P)) {
+        st.contents.push(P.base); p.carry = null; beep(500 + st.contents.length*60, .05, 'sine');
+        checkAssembly(st);
+      } else if (!P && st.contents.length) { st.contents = []; poof('🧽', st.gx, st.gy); beep(200,.05,'square'); }
+      break;
+    }
+    case 'deliver':
+      if (P && P.base === 'dish') { deliver(P); p.carry = null; }
+      break;
+    case 'bin':
+      if (P) { p.carry = null; poof('🗑️', st.gx, st.gy); beep(160,.08,'square'); }
+      break;
   }
-  return true;
+}
+function checkAssembly(st) {
+  const key = [...st.contents].sort().join(',');
+  for (const rid of G.L.recipes) {
+    if ([...RECIPES[rid].comp].sort().join(',') === key) { st.dish = mkDish(rid); beep(880,.12,'triangle'); poof('✨', st.gx, st.gy); return; }
+  }
+  if (st.contents.length >= 5) { st.contents = []; poof('🧽', st.gx, st.gy); }
+}
+function deliver(dish) {
+  const cands = G.orders.filter(o => o.recipe === dish.recipe && !o.done);
+  if (!cands.length) { G.score = Math.max(0, G.score - 4); poof('❌', G.stationMap ? frontFace()[0] : 0, frontFace()[1]); beep(140,.15,'square'); return; }
+  cands.sort((a, b) => a.pat - b.pat);
+  const o = cands[0]; o.done = true;
+  const frac = Math.max(0, o.pat / o.maxPat);
+  const val = RECIPES[o.recipe].comp.length * 5 + 5 + Math.round(frac * 10);
+  G.score += val; G.served++;
+  const f = frontFace(); poof('+' + val, f[0], f[1]);
+  beep(720,.08,'triangle'); setTimeout(() => beep(960,.1,'triangle'), 70);
+  G.orders = G.orders.filter(x => x !== o);
+}
+function frontFace() { const p = G.player, d = DIRS[p.face]; return [Math.floor(p.px/TILE)+d[0], Math.floor(p.py/TILE)+d[1]]; }
+
+/* ---------------- orders ---------------- */
+function spawnOrder() {
+  const L = G.L, pat = L.patience * (G.mod.patienceScale || 1);
+  const rid = L.recipes[Math.floor(Math.random() * L.recipes.length)];
+  G.orders.push({ id: ++G.oseq, recipe: rid, pat, maxPat: pat, done: false });
 }
 
-/* ---------- shelf + drag ---------- */
-function renderShelf() {
-  const wrap = $('shelf');
-  wrap.innerHTML = '';
-  for (let i = 0; i < shelfCap(); i++) {
-    if (i < shelf.length) {
-      const item = shelf[i];
-      const el = document.createElement('div');
-      el.className = 'shelf-item';
-      el.textContent = ITEMS[item].emoji;
-      el.addEventListener('pointerdown', e => startDrag(e, i));
-      wrap.appendChild(el);
-    } else {
-      const slot = document.createElement('div');
-      slot.className = 'shelf-slot';
-      wrap.appendChild(slot);
+/* ---------------- update ---------------- */
+let input = { x: 0, y: 0 };
+function updateMove(dt) {
+  const p = G.player;
+  let ix = input.x, iy = input.y;
+  const mag = Math.hypot(ix, iy);
+  if (mag > 1) { ix /= mag; iy /= mag; }
+  if (mag > 0.15) {
+    p.face = Math.abs(ix) > Math.abs(iy) ? (ix > 0 ? 'right' : 'left') : (iy > 0 ? 'down' : 'up');
+  }
+  const speed = 168; // px/sec
+  if (G.mod.slippery) {
+    p.vx += (ix * speed - p.vx) * Math.min(1, dt * 3.2);
+    p.vy += (iy * speed - p.vy) * Math.min(1, dt * 3.2);
+  } else {
+    p.vx = ix * speed; p.vy = iy * speed;
+  }
+  const nx = p.px + p.vx * dt;
+  if (!blocked(nx, p.py)) p.px = nx; else p.vx = 0;
+  const ny = p.py + p.vy * dt;
+  if (!blocked(p.px, ny)) p.py = ny; else p.vy = 0;
+  if (mag > 0.15) p.step += dt * 10; else p.step = 0;
+}
+function solid(gx, gy) {
+  if (gx < 0 || gy < 0 || gx >= G.cols || gy >= G.rows) return true;
+  return G.grid[gy][gx] !== '.';
+}
+function blocked(x, y) {
+  const minx = Math.floor((x - R) / TILE), maxx = Math.floor((x + R) / TILE);
+  const miny = Math.floor((y - R) / TILE), maxy = Math.floor((y + R) / TILE);
+  for (let gy = miny; gy <= maxy; gy++) for (let gx = minx; gx <= maxx; gx++) if (solid(gx, gy)) return true;
+  return false;
+}
+function updateStations(dt) {
+  for (const st of G.stations) {
+    if (st.type === 'board' && st.on) {
+      st.prog += dt / 2.5;
+      if (st.prog >= 1) { st.on = false; st.prog = 1; if (st.hold) st.hold.state = 'chopped'; }
+    } else if (st.type === 'grill' && st.state === 'cooking' && st.hold) {
+      st.t += dt;
+      if (st.hold.state === 'raw' && st.t >= 4) st.hold.state = 'cooked';
+      if (st.hold.state === 'cooked' && st.t >= 9) { st.hold.state = 'burnt'; }
     }
   }
 }
-
-let drag = null; // {index, item}
-function startDrag(e, index) {
-  if (!running) return;
-  e.preventDefault();
-  drag = { index, item: shelf[index] };
-  const g = $('drag-ghost');
-  g.textContent = ITEMS[drag.item].emoji;
-  g.style.display = 'block';
-  moveGhost(e);
-  window.addEventListener('pointermove', moveGhost);
-  window.addEventListener('pointerup', endDrag);
-}
-
-function moveGhost(e) {
-  const g = $('drag-ghost');
-  g.style.left = e.clientX + 'px';
-  g.style.top = e.clientY + 'px';
-  // highlight card under pointer
-  document.querySelectorAll('.order-card.droppable').forEach(c => c.classList.remove('droppable'));
-  const card = cardUnder(e);
-  if (card) {
-    const o = orders.find(o => String(o.id) === card.dataset.id);
-    if (o && o.state === 'open' && o.needs.some(x => !x.filled && x.item === drag.item)) card.classList.add('droppable');
+function update(dt) {
+  if (!G || !G.running) return;
+  updateMove(dt);
+  updateStations(dt);
+  // orders
+  G.spawnT -= dt;
+  const active = G.orders.filter(o => !o.done).length;
+  if (G.spawnT <= 0 && active < G.L.queue) { spawnOrder(); G.spawnT = G.L.every; }
+  for (const o of G.orders) {
+    o.pat -= dt;
+    if (o.pat <= 0 && !o.done) { o.done = true; o.expired = true; G.missed++; G.score = Math.max(0, G.score - 6); beep(150,.2,'square'); }
   }
+  G.orders = G.orders.filter(o => !(o.expired));
+  // particles
+  for (const pt of G.parts) pt.life -= dt * 1.4;
+  G.parts = G.parts.filter(pt => pt.life > 0);
+  // time
+  G.timeLeft -= dt;
+  if (G.timeLeft <= 0) { G.timeLeft = 0; endLevel(); }
 }
 
-function cardUnder(e) {
-  return document.elementsFromPoint(e.clientX, e.clientY).find(el => el.classList && el.classList.contains('order-card'));
+/* ---------------- render ---------------- */
+function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+    if (typeof r === 'number') r = { tl:r, tr:r, br:r, bl:r }; else r = { tl:r[0], tr:r[1], br:r[2], bl:r[3] };
+    this.moveTo(x + r.tl, y); this.lineTo(x + w - r.tr, y); this.arcTo(x + w, y, x + w, y + r.tr, r.tr);
+    this.lineTo(x + w, y + h - r.br); this.arcTo(x + w, y + h, x + w - r.br, y + h, r.br);
+    this.lineTo(x + r.bl, y + h); this.arcTo(x, y + h, x, y + h - r.bl, r.bl);
+    this.lineTo(x, y + r.tl); this.arcTo(x, y, x + r.tl, y, r.tl); this.closePath(); return this;
+  };
 }
-
-function endDrag(e) {
-  window.removeEventListener('pointermove', moveGhost);
-  window.removeEventListener('pointerup', endDrag);
-  $('drag-ghost').style.display = 'none';
-  document.querySelectorAll('.order-card.droppable').forEach(c => c.classList.remove('droppable'));
-  if (!drag) return;
-  const card = cardUnder(e);
-  if (card) {
-    const o = orders.find(o => String(o.id) === card.dataset.id);
-    if (o && tryFillOrder(o, drag.item)) {
-      shelf.splice(drag.index, 1);
-      renderShelf();
-      drag = null;
-      return;
-    }
-  }
-  drag = null; // bounce back — item stays on shelf
+function glyph(txt, cx, cy, size) {
+  ctx.font = size + 'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(txt, cx, cy);
 }
-
-/* ---------- Chuy the line cook ---------- */
-function renderStaff() {
-  const chip = $('staff-chip');
-  if (!chuy) { chip.classList.remove('visible'); return; }
-  chip.classList.add('visible');
-  chip.classList.toggle('selected', chuy.selected);
-  const napping = performance.now() < chuy.napUntil;
-  let status;
-  if (napping) status = '💤 napping';
-  else {
-    const at = Object.keys(stationState).find(id => stationState[id].worker === 'chuy');
-    if (at) status = 'at ' + STATIONS[at].emoji;
-    else status = chuy.assign === 'auto' ? 'auto' : '→ ' + STATIONS[chuy.assign].emoji;
-  }
-  $('staff-status').textContent = chuy.selected ? 'tap a station!' : status;
-}
-
-function highlightAssignTargets(on) {
-  for (const id of ['grill', 'assembly', 'toppings']) $('st-' + id).classList.toggle('assign-target', on);
-}
-
-$('staff-chip').addEventListener('pointerdown', e => {
-  e.stopPropagation();
-  if (!chuy || !running) return;
-  if (chuy.selected) { chuy.selected = false; chuy.assign = 'auto'; toast('🧑‍🍳 Chuy → auto'); }
-  else { chuy.selected = true; }
-  highlightAssignTargets(chuy.selected);
-  renderStaff();
-});
-
-function demandFor(item) {
-  let need = 0;
-  for (const o of orders) if (o.state === 'open') for (const x of o.needs) if (!x.filled && x.item === item) need++;
-  need -= shelf.filter(s => s === item).length;
-  for (const id of Object.keys(stationState)) {
-    if (stationState[id].worker && STATIONS[id].makes === item) need--;
-  }
-  return need;
-}
-
-function chuyThink() {
-  if (!chuy) return;
-  const now = performance.now();
-  if (now < chuy.napUntil) return;
-  if (Object.values(stationState).some(s => s.worker === 'chuy')) return; // busy
-  // ring up if register free and something's ready
-  if (!stationState.register.worker && orders.some(o => o.state === 'ready') && chuy.assign === 'auto') {
-    stationState.register.worker = 'chuy';
-    stationState.register.progress = 0;
+function drawItem(it, cx, cy, size) {
+  if (!it) return;
+  if (it.base === 'dish') {
+    // plate
+    ctx.save();
+    ctx.fillStyle = 'rgba(74,53,38,.16)'; ctx.beginPath(); ctx.ellipse(cx, cy + size*0.24, size*0.5, size*0.2, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(cx, cy, size*0.5, size*0.42, 0, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#e3d6c4'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.restore();
+    glyph(RECIPES[it.recipe].emoji, cx, cy - 1, size * 0.72);
     return;
   }
-  let target = null;
-  if (chuy.assign !== 'auto') {
-    target = chuy.assign;
+  const m = ING[it.base];
+  if (m.prep === 'chop' && it.state === 'chopped') {
+    glyph(m.emoji, cx - size*0.16, cy, size * 0.62);
+    glyph(m.emoji, cx + size*0.16, cy + size*0.04, size * 0.62);
+  } else if (m.prep === 'cook' && (it.state === 'cooked' || it.state === 'burnt')) {
+    glyph(m.cooked, cx, cy, size);
+    if (it.state === 'burnt') { ctx.save(); ctx.fillStyle = 'rgba(30,15,10,.55)'; ctx.beginPath(); ctx.arc(cx, cy, size*0.42, 0, 7); ctx.fill(); ctx.restore(); }
   } else {
-    let best = 0;
-    for (const id of ['grill', 'assembly', 'toppings']) {
-      const d = demandFor(STATIONS[id].makes);
-      if (d > best) { best = d; target = id; }
-    }
+    glyph(m.emoji, cx, cy, size);
   }
-  if (!target) return;
-  if (stationState[target].worker) return;
-  if (shelf.length >= shelfCap()) return;
-  stationState[target].worker = 'chuy';
-  stationState[target].progress = 0;
 }
-
-/* ---------- chaos events ---------- */
-function scheduleChaos() {
-  chaosAt = 40000 + Math.random() * 90000; // elapsed ms when chaos hits
-  chaosDone = false;
+function bar(x, y, w, frac, col) {
+  ctx.fillStyle = 'rgba(74,53,38,.25)'; rr(x, y, w, 6, 3); ctx.fill();
+  ctx.fillStyle = col; rr(x, y, Math.max(0, w * frac), 6, 3); ctx.fill();
 }
+const STCOL = {
+  crate: ['#c69a68', '#a97f4f'], grill: ['#5c626b', '#3f444c'], board: ['#e7c9a0', '#caa877'],
+  assembly: ['#f3ede2', '#d8cdb9'], deliver: ['#ffd873', '#f2b53c'], bin: ['#93a2ae', '#75828d'], counter: ['#d9b389','#c39c6f'],
+};
+function drawStation(st) {
+  const x = st.gx * TILE, y = st.gy * TILE, cx = x + TILE/2, cy = y + TILE/2;
+  const col = STCOL[st.type] || STCOL.counter;
+  // base tile
+  ctx.fillStyle = col[1]; rr(x+2, y+4, TILE-4, TILE-6, 9); ctx.fill();
+  ctx.fillStyle = col[0]; rr(x+2, y+2, TILE-4, TILE-8, 9); ctx.fill();
+  ctx.strokeStyle = 'rgba(74,53,38,.18)'; ctx.lineWidth = 2; ctx.stroke();
 
-function showChaosBanner(html) {
-  const b = $('chaos-banner');
-  b.innerHTML = html;
-  b.classList.remove('visible');
-  void b.offsetWidth;
-  b.classList.add('visible');
-}
-function hideChaosBanner() { $('chaos-banner').classList.remove('visible'); }
-
-function fireChaos() {
-  chaosDone = true;
-  $('app').classList.add('quake');
-  setTimeout(() => $('app').classList.remove('quake'), 500);
-  const which = rand(['salsa', 'influencer', 'rush']);
-  if (which === 'salsa') startSalsa();
-  else if (which === 'influencer') startInfluencer();
-  else startRush();
-}
-
-function startSalsa() {
-  showChaosBanner('🫙 SALSA EXPLOSION!<br><span style="font-size:12px">Tap all the splats before customers see!</span>');
-  const app = $('app');
-  const n = 6;
-  let left = n;
-  const splats = [];
-  const W = app.clientWidth, H = app.clientHeight;
-  for (let i = 0; i < n; i++) {
-    const s = document.createElement('button');
-    s.className = 'splat';
-    s.textContent = '🍅';
-    s.style.left = (20 + Math.random() * (W - 80)) + 'px';
-    s.style.top = (110 + Math.random() * (H - 320)) + 'px';
-    s.addEventListener('pointerdown', () => {
-      s.remove();
-      left--;
-      if (left === 0) resolveSalsa(true);
-    });
-    app.appendChild(s);
-    splats.push(s);
+  if (st.type === 'crate') {
+    ctx.strokeStyle = 'rgba(74,53,38,.28)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(x+6, y+TILE/2); ctx.lineTo(x+TILE-6, y+TILE/2); ctx.stroke();
+    glyph(ING[st.base].emoji, cx, cy - 2, 26);
+  } else if (st.type === 'grill') {
+    ctx.fillStyle = '#2c2f35'; rr(x+8, y+9, TILE-16, TILE-20, 6); ctx.fill();
+    for (let i=0;i<3;i++){ ctx.strokeStyle='#454a52'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x+11, y+14+i*6); ctx.lineTo(x+TILE-11, y+14+i*6); ctx.stroke(); }
+    if (st.hold) {
+      drawItem(st.hold, cx, cy - 1, 26);
+      const cooking = st.state === 'cooking';
+      if (cooking) {
+        if (st.hold.state === 'raw') bar(x+8, y+TILE-11, TILE-16, st.t/4, '#ff8b3d');
+        else if (st.hold.state === 'cooked') bar(x+8, y+TILE-11, TILE-16, (st.t-4)/5, '#e0453a');
+      }
+    } else { glyph('🔥', cx, cy, 20); ctx.globalAlpha = 1; }
+  } else if (st.type === 'board') {
+    glyph('🔪', x + 13, y + 14, 15);
+    if (st.hold) drawItem(st.hold, cx + 3, cy + 2, 24);
+    if (st.on) bar(x+8, y+TILE-11, TILE-16, st.prog, '#7ac77a');
+  } else if (st.type === 'assembly') {
+    // plate
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(cx, cy+2, TILE*0.33, TILE*0.26, 0, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#e0d3c0'; ctx.lineWidth = 2; ctx.stroke();
+    if (st.dish) drawItem(st.dish, cx, cy - 1, 27);
+    else if (st.contents.length) {
+      st.contents.forEach((b, i) => {
+        const a = (i / Math.max(1,st.contents.length)) * Math.PI * 2;
+        glyph(ING[b].emoji, cx + Math.cos(a)*9, cy + Math.sin(a)*7, 15);
+      });
+    } else { ctx.fillStyle = 'rgba(74,53,38,.3)'; ctx.font = '10px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('plate', cx, cy+1); }
+  } else if (st.type === 'deliver') {
+    glyph('🔔', cx, cy - 3, 22);
+    ctx.fillStyle = 'rgba(74,53,38,.5)'; ctx.font = 'bold 8px sans-serif'; ctx.textAlign='center';
+    ctx.fillText('SERVE', cx, cy + 15);
+  } else if (st.type === 'bin') {
+    glyph('🗑️', cx, cy, 24);
+  } else if (st.type === 'counter') {
+    if (st.hold) drawItem(st.hold, cx, cy, 26);
   }
-  chaosActive = { timeout: setTimeout(() => resolveSalsa(false), 7000), splats };
-  function resolveSalsa(ok) {
-    clearTimeout(chaosActive.timeout);
-    chaosActive.splats.forEach(s => s.remove());
-    chaosActive = null;
-    hideChaosBanner();
-    if (ok) {
-      save.money += 12;
-      stats.tips += 12;
-      toast('✨ Spotless! +$12');
-      updateHud();
-    } else if (has('salsaIns')) {
-      toast('🛡️ Salsa Insurance covered it!');
+}
+function drawChef() {
+  const p = G.player, cx = p.px, cy = p.py;
+  const bob = Math.sin(p.step) * 2;
+  // shadow
+  ctx.fillStyle = 'rgba(74,53,38,.22)'; ctx.beginPath(); ctx.ellipse(cx, cy + 15, 14, 6, 0, 0, 7); ctx.fill();
+  // body (apron)
+  ctx.fillStyle = '#ef6f5b'; ctx.strokeStyle = '#4a3526'; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.roundRect(cx - 12, cy - 4 + bob, 24, 20, 9); ctx.fill(); ctx.stroke();
+  // head
+  ctx.fillStyle = '#f4c9a0'; ctx.beginPath(); ctx.arc(cx, cy - 10 + bob, 10, 0, 7); ctx.fill(); ctx.stroke();
+  // chef hat
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.roundRect(cx - 9, cy - 24 + bob, 18, 8, 4); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx - 6, cy - 24 + bob, 5, 0, 7); ctx.arc(cx + 6, cy - 24 + bob, 5, 0, 7); ctx.arc(cx, cy - 27 + bob, 6, 0, 7); ctx.fill();
+  ctx.strokeStyle = '#4a3526'; ctx.lineWidth = 1;
+  // eyes based on facing
+  const d = DIRS[p.face]; const ex = d[0]*3, ey = d[1]*2;
+  ctx.fillStyle = '#4a3526';
+  if (p.face !== 'up') {
+    ctx.beginPath(); ctx.arc(cx - 3.5 + ex, cy - 10 + ey + bob, 1.7, 0, 7); ctx.arc(cx + 3.5 + ex, cy - 10 + ey + bob, 1.7, 0, 7); ctx.fill();
+  }
+  // carried item
+  if (p.carry) drawItem(p.carry, cx, cy - 30 + bob, 26);
+}
+function render() {
+  const W = canvas.width, H = canvas.height;
+  // floor
+  for (let y = 0; y < G.rows; y++) for (let x = 0; x < G.cols; x++) {
+    if (G.grid[y][x] === '.') {
+      const beach = G.loc.id === 'beach';
+      ctx.fillStyle = ((x + y) % 2 === 0) ? (beach ? '#f6e3bd' : '#fbe7c6') : (beach ? '#efd9ad' : '#f6dcb0');
+      ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
     } else {
-      stats.chaosFail = true;
-      for (const o of orders) if (o.state === 'open') o.patience *= 0.65;
-      toast('😱 Customers saw everything!');
+      ctx.fillStyle = '#efd4ad'; ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
     }
+  }
+  // stations
+  for (const st of G.stations) drawStation(st);
+  // highlight faced station
+  const fs = frontStation();
+  if (fs) { ctx.strokeStyle = 'rgba(255,207,92,.95)'; ctx.lineWidth = 3; rr(fs.gx*TILE+2, fs.gy*TILE+2, TILE-4, TILE-4, 9); ctx.stroke(); }
+  drawChef();
+  // particles
+  for (const pt of G.parts) {
+    ctx.globalAlpha = Math.max(0, Math.min(1, pt.life));
+    ctx.fillStyle = '#4a3526'; ctx.font = 'bold 18px "Nunito",sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(pt.text, pt.x, pt.y - (1 - pt.life) * 26);
+    ctx.globalAlpha = 1;
   }
 }
 
-function startInfluencer() {
-  influencerArmed = true;
-  stats.chaosFail = false;
-  showChaosBanner('📸 A FOOD INFLUENCER IS FILMING!<br><span style="font-size:12px">Next order rung up pays TRIPLE!</span>');
-  setTimeout(() => { if (influencerArmed) { influencerArmed = false; hideChaosBanner(); } }, 25000);
-}
-
-function startRush() {
-  showChaosBanner('🚌 A TOUR BUS JUST PULLED UP!');
-  spawnOrder(); spawnOrder(); spawnOrder();
-  setTimeout(hideChaosBanner, 3500);
-}
-
-/* ---------- HUD / render ---------- */
-function updateHud() {
-  $('hud-money').textContent = save.money;
-  $('hud-shift').textContent = 'Shift ' + save.shift;
-  const t = $('hud-timer');
-  t.textContent = fmtTime(timeLeft);
-  t.classList.toggle('low', timeLeft < 20000 && running);
-}
-
-function renderStations(dt) {
-  for (const id of Object.keys(STATIONS)) {
-    const st = stationState[id];
-    const el = $('st-' + id);
-    if (st.worker) {
-      let speed = 1;
-      if (st.worker === 'chuy') speed = (id === 'grill') ? 1.4 : 0.75;
-      st.progress += dt * speed / stationTime(id);
-      if (st.progress >= 1) finishStation(id, st.worker);
-    }
-    // auto-toppings
-    if (id === 'toppings' && has('autoToppings') && !st.worker && shelf.length < shelfCap() && demandFor('nachos') > 0) {
-      st.worker = 'auto';
-      st.progress = 0;
-    }
-    if (st.worker === 'auto') {
-      st.progress += dt * 0.5 / stationTime(id);
-      if (st.progress >= 1) finishStation(id, 'auto');
-    }
-    el.classList.toggle('working', !!st.worker);
-    el.querySelector('.st-fill').style.width = (st.progress * 100) + '%';
-    const w = el.querySelector('.st-worker');
-    w.textContent = st.worker === 'you' ? '👤 you' : st.worker === 'chuy' ? '🧑‍🍳 Chuy' : st.worker === 'auto' ? '🤖' : '';
+/* ---------------- HUD / orders DOM ---------------- */
+function fmt(t) { t = Math.max(0, Math.ceil(t)); return Math.floor(t/60) + ':' + String(t%60).padStart(2,'0'); }
+let hudAcc = 0;
+function syncHud() {
+  $('hud-level').textContent = G.loc.emoji + ' ' + G.loc.name + ' · ' + (G.lv + 1);
+  $('hud-score').textContent = G.score;
+  const t = $('hud-timer'); t.textContent = fmt(G.timeLeft); t.classList.toggle('low', G.timeLeft < 15);
+  // orders
+  const el = $('orders'); let html = '';
+  for (const o of G.orders) {
+    if (o.done) continue;
+    const r = RECIPES[o.recipe], frac = Math.max(0, o.pat / o.maxPat);
+    const col = frac > 0.5 ? 'var(--green)' : frac > 0.25 ? 'var(--yellow)' : 'var(--red)';
+    const comps = r.comp.map(b => ING[b].emoji).join('');
+    html += `<div class="ticket"><div class="t-emoji">${r.emoji}</div><div class="t-name">${r.name}</div>`
+         +  `<div class="t-comp">${comps}</div><div class="t-pat"><i style="width:${(frac*100).toFixed(0)}%;background:${col}"></i></div></div>`;
   }
-  $('st-register').classList.toggle('has-ready', orders.some(o => o.state === 'ready'));
+  el.innerHTML = html;
 }
 
-function renderOrders(dt) {
-  for (const o of [...orders]) {
-    if (o.state === 'open') {
-      o.patience -= dt;
-      if (o.patience <= 0) { expireOrder(o); continue; }
-    } else if (o.state === 'ready') {
-      o.patience = Math.max(0, o.patience - dt * 0.4); // tip decays but they won't leave
-    }
-    const frac = Math.max(0, o.patience / o.maxPatience);
-    const fill = o.el.querySelector('.oc-pat-fill');
-    fill.style.width = (frac * 100) + '%';
-    fill.style.background = frac > 0.5 ? 'var(--green)' : frac > 0.25 ? 'var(--yellow)' : 'var(--red)';
+/* ---------------- loop ---------------- */
+function frame(ts) {
+  requestAnimationFrame(frame);
+  const dt = Math.min(0.05, (ts - lastTs) / 1000 || 0); lastTs = ts;
+  if (screen === 'play' && G) {
+    update(dt);
+    render();
+    hudAcc += dt; if (hudAcc > 0.1) { hudAcc = 0; syncHud(); }
   }
 }
 
-/* ---------- shift lifecycle ---------- */
-function startShift() {
-  running = true;
-  timeLeft = SHIFT_LENGTH;
-  orders = [];
-  shelf = [];
-  spawnTimer = 800;
-  influencerArmed = false;
-  stats = { total: 0, served: 0, expired: 0, sales: 0, tips: 0, chaosFail: false };
-  stationState = {};
-  for (const id of Object.keys(STATIONS)) stationState[id] = { worker: null, progress: 0 };
-  chuy = has('hireChuy') ? { assign: 'auto', napUntil: 0, selected: false } : null;
-  $('orders').innerHTML = '';
-  renderShelf();
-  renderStaff();
-  scheduleChaos();
-  hideChaosBanner();
-  $('ov-title').classList.remove('visible');
-  $('ov-end').classList.remove('visible');
-  $('ov-shop').classList.remove('visible');
-  updateHud();
-  lastTs = performance.now();
+/* ---------------- flow / screens ---------------- */
+function showOverlay(id) {
+  for (const o of document.querySelectorAll('.overlay')) o.classList.remove('show');
+  if (id) $(id).classList.add('show');
 }
-
-function spawnInterval() {
-  const elapsed = SHIFT_LENGTH - timeLeft;
-  const ramp = elapsed / SHIFT_LENGTH; // 0→1 across the shift
-  const base = Math.max(4000, 9500 - save.shift * 500);
-  return Math.max(3200, base - ramp * 3000);
-}
-
-function endShift() {
-  running = false;
-  if (chaosActive) { clearTimeout(chaosActive.timeout); chaosActive.splats.forEach(s => s.remove()); chaosActive = null; }
-  hideChaosBanner();
-  const pct = stats.total ? Math.round(100 * stats.served / stats.total) : 100;
-  let chiles = 1;
-  if (stats.expired >= 1) chiles = 2;
-  if (stats.expired >= 3) chiles = 3;
-  if (stats.expired >= 5) chiles = 4;
-  if (stats.chaosFail) chiles++;
-  chiles = Math.min(5, chiles);
-  $('end-title').textContent = pct >= 80 ? '¡SHIFT COMPLETE! 🎉' : pct >= 50 ? 'SHIFT SURVIVED 😅' : 'THAT WAS ROUGH 🔥';
-  $('end-served').textContent = `${stats.served} / ${stats.total} (${pct}%)`;
-  $('end-sales').textContent = '$' + stats.sales;
-  $('end-tips').textContent = '$' + Math.round(stats.tips);
-  $('end-chaos').textContent = '🌶️'.repeat(chiles);
-  save.shift++;
-  persist();
-  updateHud();
-  $('ov-end').classList.add('visible');
-}
-
-/* ---------- shop ---------- */
-function openShop() {
-  $('ov-end').classList.remove('visible');
-  $('shop-money').textContent = save.money;
-  const pool = UPGRADES.filter(u => !has(u.id));
-  const picks = [];
-  const copy = [...pool];
-  while (picks.length < 3 && copy.length) picks.push(copy.splice(Math.floor(Math.random() * copy.length), 1)[0]);
-  const wrap = $('shop-cards');
-  wrap.innerHTML = '';
-  for (const u of picks) {
-    const btn = document.createElement('button');
-    btn.className = 'shop-card' + (save.money < u.cost ? ' disabled' : '');
-    btn.innerHTML = `
-      <span class="sc-emoji">${u.emoji}</span>
-      <span><div class="sc-name">${u.name}</div><div class="sc-desc">${u.desc}</div></span>
-      <span class="sc-cost">$${u.cost}</span>`;
-    btn.addEventListener('click', () => {
-      if (save.money < u.cost) return;
-      save.money -= u.cost;
-      save.owned.push(u.id);
-      persist();
-      toast(u.emoji + ' ' + u.name + ' purchased!');
-      startShift();
+function toMap() {
+  screen = 'map'; showOverlay('ov-map');
+  const body = $('map-body'); body.innerHTML = '';
+  LOCATIONS.forEach((loc, li) => {
+    const unlockedLoc = li === 0 || levelUnlocked(li, 0);
+    const div = document.createElement('div');
+    div.className = 'loc' + (unlockedLoc ? '' : ' locked');
+    let lvHtml = '';
+    loc.levels.forEach((L, lv) => {
+      const s = starsOf(li, lv), open = levelUnlocked(li, lv);
+      if (open) {
+        lvHtml += `<div class="lvl" data-li="${li}" data-lv="${lv}"><div class="n">${lv+1}</div>`
+               +  `<div class="st">${'⭐'.repeat(s)}${'·'.repeat(3-s)}</div></div>`;
+      } else {
+        lvHtml += `<div class="lvl locked"><div class="lock">🔒</div></div>`;
+      }
     });
-    wrap.appendChild(btn);
+    div.innerHTML = `<h3>${loc.emoji} ${loc.name}</h3><div class="blurb">${loc.blurb}</div><div class="lvls">${lvHtml}</div>`;
+    body.appendChild(div);
+  });
+  body.querySelectorAll('.lvl[data-li]').forEach(el => {
+    el.addEventListener('click', () => { sel = { li: +el.dataset.li, lv: +el.dataset.lv }; toIntro(); });
+  });
+}
+function toIntro() {
+  screen = 'intro'; showOverlay('ov-intro');
+  const loc = LOCATIONS[sel.li], L = loc.levels[sel.lv];
+  $('intro-title').textContent = loc.emoji + ' ' + loc.name + ' · Level ' + (sel.lv + 1) + ' — ' + L.name;
+  const mods = [];
+  if (loc.mod.slippery) mods.push('🏖️ slippery sandy floor');
+  if (loc.mod.patienceScale) mods.push('⏱️ impatient customers');
+  $('intro-goal').innerHTML = `You have <b>${fmt(L.time)}</b> to earn <b>⭐ ${L.stars[0]}</b> points.` + (mods.length ? '<br><span style="font-size:12px;opacity:.8">Twist: ' + mods.join(' · ') + '</span>' : '');
+  let rh = '<b>On the menu:</b><br>';
+  for (const rid of L.recipes) {
+    const r = RECIPES[rid];
+    rh += `${r.emoji} <b>${r.name}</b> = ` + r.comp.map(b => {
+      const m = ING[b]; const tag = m.prep === 'cook' ? '🔥' : m.prep === 'chop' ? '🔪' : '';
+      return m.emoji + tag;
+    }).join(' + ') + '<br>';
   }
-  if (!picks.length) wrap.innerHTML = '<div class="sub">You own everything. Taco mogul. 🏆</div>';
-  $('ov-shop').classList.add('visible');
+  $('intro-recipes').innerHTML = rh;
 }
-
-/* ---------- main loop ---------- */
-function loop(ts) {
-  requestAnimationFrame(loop);
-  const dt = Math.min(100, ts - lastTs); // clamp so tab-switch doesn't nuke the shift
-  lastTs = ts;
-  if (!running) return;
-
-  timeLeft -= dt;
-  if (timeLeft <= 0) { endShift(); return; }
-
-  spawnTimer -= dt;
-  if (spawnTimer <= 0) {
-    spawnOrder();
-    spawnTimer = spawnInterval();
+function startLevel() {
+  loadLevel(sel.li, sel.lv);
+  screen = 'play'; showOverlay(null);
+  syncHud();
+  if (actx && actx.state === 'suspended') actx.resume();
+}
+function endLevel() {
+  G.running = false; screen = 'results';
+  const L = G.L, s = G.score;
+  let stars = 0;
+  if (s >= L.stars[2]) stars = 3; else if (s >= L.stars[1]) stars = 2; else if (s >= L.stars[0]) stars = 1;
+  const prev = starsOf(G.li, G.lv);
+  if (stars > prev) { save.stars[starKey(G.li, G.lv)] = stars; persist(); }
+  $('res-title').textContent = stars > 0 ? (stars === 3 ? '¡Perfecto! 🎉' : 'Service done! 😊') : 'Out of time 😅';
+  $('res-stars').textContent = stars > 0 ? '⭐'.repeat(stars) + '☆'.repeat(3 - stars) : '☆☆☆';
+  $('res-served').textContent = G.served;
+  $('res-missed').textContent = G.missed;
+  $('res-score').textContent = s + '  (need ' + L.stars[0] + ')';
+  const btns = $('res-btns'); btns.innerHTML = '';
+  const retry = mkBtn('Retry 🔁', 'ghost sm', () => { toIntro(); });
+  btns.appendChild(retry);
+  const nextLv = G.lv + 1, hasNext = nextLv < LOCATIONS[G.li].levels.length;
+  if (stars > 0 && hasNext) {
+    btns.appendChild(mkBtn('Next ▶', 'alt', () => { sel = { li: G.li, lv: nextLv }; toIntro(); }));
+  } else if (stars > 0 && !hasNext) {
+    const nextLoc = G.li + 1;
+    if (nextLoc < LOCATIONS.length && levelUnlocked(nextLoc, 0)) {
+      btns.appendChild(mkBtn('New Kitchen! 🏖️', 'alt', () => { sel = { li: nextLoc, lv: 0 }; toIntro(); }));
+    }
   }
-
-  const elapsed = SHIFT_LENGTH - timeLeft;
-  if (!chaosDone && elapsed >= chaosAt) fireChaos();
-
-  chuyThink();
-  renderStations(dt);
-  renderOrders(dt);
-  renderStaff();
-  updateHud();
+  btns.appendChild(mkBtn('Map 🗺️', 'sm', () => toMap()));
+  showOverlay('ov-res');
 }
+function mkBtn(txt, cls, fn) { const b = document.createElement('button'); b.className = 'btn ' + cls; b.textContent = txt; b.addEventListener('click', fn); return b; }
 
-/* ---------- boot ---------- */
-buildKitchen();
-renderShelf();
-updateHud();
-if (save.shift > 1) {
-  $('btn-start').textContent = `Start Shift ${save.shift} 🔥`;
-  $('btn-reset').style.display = 'inline-block';
-}
-$('btn-start').addEventListener('click', startShift);
-$('btn-reset').addEventListener('click', () => {
-  localStorage.removeItem(SAVE_KEY);
-  location.reload();
+/* ---------------- input: keyboard ---------------- */
+const keys = {};
+window.addEventListener('keydown', e => {
+  const k = e.key.toLowerCase();
+  if (['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k)) e.preventDefault();
+  if (!document.body.classList.contains('has-kb')) document.body.classList.add('has-kb');
+  if (k === ' ' || k === 'e' || k === 'enter' && screen === 'play') { if (screen === 'play') interact(); }
+  keys[k] = true; recompute();
 });
-$('btn-shop').addEventListener('click', openShop);
-$('btn-skip').addEventListener('click', startShift);
-requestAnimationFrame(ts => { lastTs = ts; requestAnimationFrame(loop); });
+window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; recompute(); });
+function recompute() {
+  let x = 0, y = 0;
+  if (keys['arrowleft'] || keys['a']) x -= 1;
+  if (keys['arrowright']|| keys['d']) x += 1;
+  if (keys['arrowup']   || keys['w']) y -= 1;
+  if (keys['arrowdown'] || keys['s']) y += 1;
+  if (screen !== 'play') { input.x = 0; input.y = 0; return; }
+  input.x = x; input.y = y;
+}
+
+/* ---------------- input: touch joystick ---------------- */
+(function () {
+  const stick = $('stick'), nub = $('stick-nub'); let id = null, cx0 = 0, cy0 = 0;
+  const rad = 34;
+  function set(e) {
+    const t = [...e.changedTouches || []].find(t => t.identifier === id) || (e.clientX != null ? e : null);
+    if (!t) return;
+    let dx = t.clientX - cx0, dy = t.clientY - cy0;
+    const d = Math.hypot(dx, dy); if (d > rad) { dx = dx/d*rad; dy = dy/d*rad; }
+    nub.style.left = (58 + dx) + 'px'; nub.style.top = (58 + dy) + 'px';
+    input.x = dx / rad; input.y = dy / rad;
+  }
+  function start(e) {
+    const t = e.changedTouches ? e.changedTouches[0] : e; id = e.changedTouches ? t.identifier : 'm';
+    const r = stick.getBoundingClientRect(); cx0 = r.left + r.width/2; cy0 = r.top + r.height/2;
+    set(e); e.preventDefault();
+  }
+  function end() { id = null; input.x = 0; input.y = 0; nub.style.left = '50%'; nub.style.top = '50%'; }
+  stick.addEventListener('touchstart', start, { passive: false });
+  stick.addEventListener('touchmove', e => { set(e); e.preventDefault(); }, { passive: false });
+  stick.addEventListener('touchend', end); stick.addEventListener('touchcancel', end);
+  stick.addEventListener('mousedown', e => { start(e); const mv = ev => set(ev), up = () => { end(); window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); }; window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up); });
+})();
+const useBtn = $('use-btn');
+useBtn.addEventListener('touchstart', e => { e.preventDefault(); if (screen === 'play') interact(); }, { passive: false });
+useBtn.addEventListener('mousedown', e => { e.preventDefault(); if (screen === 'play') interact(); });
+
+/* ---------------- buttons ---------------- */
+$('btn-play').addEventListener('click', () => { try { actx = actx || new (window.AudioContext||window.webkitAudioContext)(); } catch(e){} toMap(); });
+$('btn-reset').addEventListener('click', () => { if (confirm('Reset all stars and progress?')) { save = { stars: {} }; persist(); toMap(); } });
+$('btn-map-back').addEventListener('click', () => { screen = 'title'; showOverlay('ov-title'); });
+$('btn-go').addEventListener('click', startLevel);
+$('btn-intro-back').addEventListener('click', toMap);
+
+/* ---------------- debug hooks (for automated verification) ---------------- */
+window.TL = {
+  get G() { return G; }, get screen() { return screen; },
+  start(li, lv) { sel = { li, lv }; startLevel(); },
+  teleport(gx, gy) { G.player.px = (gx + 0.5) * TILE; G.player.py = (gy + 0.5) * TILE; G.player.vx = 0; G.player.vy = 0; },
+  face(d) { G.player.face = d; },
+  use() { interact(); },
+  front() { const s = frontStation(); return s ? s.type + (s.base ? ':' + s.base : '') : null; },
+  carry() { const c = G.player.carry; return c ? (c.base === 'dish' ? 'dish:' + c.recipe : c.base + ':' + c.state) : null; },
+  setTime(t) { G.timeLeft = t; },
+  tick(dt) { update(dt); },
+};
+
+/* boot */
+requestAnimationFrame(ts => { lastTs = ts; requestAnimationFrame(frame); });
 </script>
 </body>
 </html>
