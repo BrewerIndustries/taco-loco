@@ -16,7 +16,11 @@ python3 -m http.server 4977 --directory .
 ```
 
 Designed for **portrait phone** (on-screen joystick + USE button); on desktop use
-**WASD / arrows** to move and **Space / E** to use.
+**WASD / arrows** to move and **Space / E** to use. First-time players get a short
+**interactive tutorial** on Taco Truck level 1 that walks through grabbing,
+grilling, plating and serving a taco step by step (orders and the timer pause
+until you finish). The kitchen is drawn in a chunky **2.5D** style — raised
+counters with front faces and soft contact shadows.
 
 ## How it plays
 
