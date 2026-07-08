@@ -20,11 +20,18 @@ walk there, tap a **station** to walk up and automatically use it (grab, drop,
 cook, chop, plate, serve). The chef pathfinds around obstacles. WASD / arrows
 still work as an optional desktop fallback.
 
+**Plating like Overcooked:** grab clean plates from the **plate stack**, set several
+down on the counters (there's a central **prep island**), and build multiple dishes
+in parallel — carry each prepped component to whichever plate needs it. When a
+plate's contents match an order it becomes a finished dish; carry the plate to the
+serve window. Kitchens are **compact** (a small island layout) so there's little
+walking.
+
 **Clarity built in:** every station is labelled, and whatever you're holding makes
-its valid destinations **glow green** (carry raw meat → the grills glow; carry a
-finished dish → the serve window glows), so the next move is always obvious. A
-first-time **interactive tutorial** on Taco Truck level 1 walks through a whole
-taco step by step (orders + timer pause until you finish).
+its valid destinations **glow green** (hold a plate → empty counters glow; hold
+cooked meat → plates that need it glow; hold a finished plate → the serve window
+glows), so the next move is always obvious. A first-time **interactive tutorial**
+walks through a whole taco step by step (orders + timer pause until you finish).
 
 The kitchen renders in an angled **2.5D perspective** — a foreshortened floor with
 tall, depth-sorted counters (the chef passes correctly in front of and behind
