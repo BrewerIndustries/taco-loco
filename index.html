@@ -65,29 +65,14 @@
 
   /* ---------- Stage ---------- */
   #stage { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; padding: 8px; min-height: 0; position: relative; }
-  #game { image-rendering: auto; max-width: 100%; max-height: 100%; border-radius: 16px; box-shadow: 0 8px 24px rgba(74,53,38,.32); }
+  #game { image-rendering: auto; max-width: 100%; max-height: 100%; border-radius: 16px; box-shadow: 0 8px 24px rgba(74,53,38,.32); touch-action: none; cursor: pointer; }
 
-  /* ---------- Controls ---------- */
-  #controls { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 6px 22px 16px; gap: 10px; }
-  #stick {
-    width: 116px; height: 116px; border-radius: 50%; position: relative; flex: 0 0 auto;
-    background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.35), rgba(255,255,255,.12));
-    border: 3px solid rgba(255,255,255,.5); touch-action: none;
+  /* ---------- Controls hint ---------- */
+  #controls { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: 8px 16px 16px; }
+  #ctrl-hint {
+    font-size: 12.5px; font-weight: 800; color: var(--ink); opacity: .72;
+    background: rgba(255,255,255,.4); border-radius: 999px; padding: 7px 16px; text-align: center;
   }
-  #stick-nub {
-    position: absolute; width: 52px; height: 52px; border-radius: 50%; left: 50%; top: 50%;
-    transform: translate(-50%,-50%); background: var(--cream); border: 3px solid var(--ink);
-    box-shadow: 0 3px 0 rgba(74,53,38,.4);
-  }
-  #use-btn {
-    width: 104px; height: 104px; border-radius: 50%; flex: 0 0 auto; font-family: inherit;
-    background: var(--red); color: #fff; border: 4px solid var(--ink);
-    box-shadow: 0 6px 0 var(--ink); font-weight: 800; font-size: 17px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; line-height: 1.05; touch-action: none;
-  }
-  #use-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--ink); }
-  .kbd-hint { display: none; font-size: 11px; opacity: .7; font-weight: 700; text-align: center; }
-  body.has-kb .kbd-hint { display: block; }
 
   /* ---------- Overlays ---------- */
   .overlay { position: absolute; inset: 0; z-index: 30; display: none; flex-direction: column; align-items: center; justify-content: center;
@@ -152,10 +137,8 @@
   </div>
   <div id="orders"></div>
   <div id="stage"><canvas id="game" width="432" height="432"></canvas><div id="tut"></div></div>
-  <div class="kbd-hint">move: WASD / arrows &nbsp;·&nbsp; use: Space or E</div>
   <div id="controls">
-    <div id="stick"><div id="stick-nub"></div></div>
-    <button id="use-btn">USE</button>
+    <span id="ctrl-hint">👆 Tap a spot to walk &nbsp;·&nbsp; tap a station to use it</span>
   </div>
   <div class="toast" id="toast"></div>
 
@@ -164,11 +147,11 @@
     <div class="card">
       <h1 class="logo">TACO LOCO<span class="sub2">a cozy taco kitchen</span></h1>
       <div class="how">
-        🕹️ <b>Move</b> your chef with the stick (or WASD)<br>
-        🤚 <b>USE</b> to grab, chop, cook, plate &amp; serve<br>
-        🔥 Grill raw meat &nbsp;·&nbsp; 🔪 chop veg on the board<br>
-        🍽️ Add prepped items to a plate, then run it to the <b>window</b><br>
-        ⏱️ Serve before patience runs out — earn stars!
+        👆 <b>Tap</b> where to walk — tap a <b>station</b> to walk up &amp; use it<br>
+        🔥 Tap the grill to cook meat &nbsp;·&nbsp; 🔪 the board to chop veg<br>
+        🍽️ Tap a plate to add prepped items into a dish<br>
+        🔔 Carry the dish to the <b>serve window</b><br>
+        💡 Glowing stations show your next move · ⏱️ beat the clock for stars!
       </div>
       <button class="btn" id="btn-play">Let's cook! 🌮</button>
       <div><button class="btn ghost sm" id="btn-reset">reset progress</button></div>
@@ -316,9 +299,19 @@ function levelUnlocked(li, lv) {
 
 /* ---------------- constants ---------------- */
 const TILE = 48, R = 15;
+// 2.5D camera: foreshorten the vertical axis and stand counters up as tall blocks.
+const YSCALE = 0.72;         // vertical squash → angled "looking-down-the-counter" view
+const CH = TILE * YSCALE;    // a cell's on-screen height
+const BLOCK_H = 22;          // counter/wall block height in px
+const OFF_Y = BLOCK_H + 6;   // top margin so the back row's tall blocks aren't clipped
 const DIRS = { up:[0,-1], down:[0,1], left:[-1,0], right:[1,0] };
 const $ = id => document.getElementById(id);
 const canvas = $('game'), ctx = canvas.getContext('2d');
+// world (px) → screen (px)
+const sX = wx => wx;
+const sY = wy => OFF_Y + wy * YSCALE;
+const cellSX = gx => gx * TILE;
+const cellSY = gy => OFF_Y + gy * TILE * YSCALE;
 
 /* ---------------- audio (tiny, optional) ---------------- */
 let actx = null;
@@ -361,7 +354,8 @@ function loadLevel(li, lv) {
   const loc = LOCATIONS[li], L = loc.levels[lv];
   const grid = L.layout;
   const rows = grid.length, cols = grid[0].length;
-  canvas.width = cols * TILE; canvas.height = rows * TILE;
+  canvas.width = cols * TILE;
+  canvas.height = Math.ceil(OFF_Y + rows * CH + BLOCK_H + 8);
   const stationMap = new Map(), stations = [];
   for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
     const ch = grid[y][x];
@@ -379,7 +373,7 @@ function loadLevel(li, lv) {
   G = {
     li, lv, loc, L, grid, rows, cols, stationMap, stations,
     mod: loc.mod || {},
-    player: { px: (L.start[0] + 0.5) * TILE, py: (L.start[1] + 0.5) * TILE, vx: 0, vy: 0, face: 'down', carry: null, step: 0 },
+    player: { px: (L.start[0] + 0.5) * TILE, py: (L.start[1] + 0.5) * TILE, vx: 0, vy: 0, face: 'down', carry: null, step: 0, path: null, pending: null, dest: null },
     orders: [], oseq: 0, spawnT: L.delay, timeLeft: L.time,
     score: 0, served: 0, missed: 0, running: true, parts: [],
     orderEls: new Map(), tut: null,
@@ -409,11 +403,11 @@ function interact() {
       else if (P && st.hold) { const tmp = st.hold; st.hold = P; p.carry = tmp; beep(460,.05,'sine'); }
       break;
     case 'board':
-      if (P && !st.hold && canChop(P)) { st.hold = P; st.on = true; st.prog = 0; beep(300,.05,'square'); }
+      if (P && !st.hold && canChop(P)) { st.hold = P; p.carry = null; st.on = true; st.prog = 0; beep(300,.05,'square'); }
       else if (!P && st.hold && !st.on) { p.carry = st.hold; st.hold = null; beep(560,.05,'triangle'); }
       break;
     case 'grill':
-      if (P && !st.hold && canGrill(P)) { st.hold = P; st.state = 'cooking'; st.t = 0; beep(240,.06,'sawtooth'); }
+      if (P && !st.hold && canGrill(P)) { st.hold = P; p.carry = null; st.state = 'cooking'; st.t = 0; beep(240,.06,'sawtooth'); }
       else if (!P && st.hold) { p.carry = st.hold; st.hold = null; st.state = null; st.t = 0; beep(560,.05,'triangle'); }
       break;
     case 'assembly': {
@@ -461,27 +455,98 @@ function spawnOrder() {
 }
 
 /* ---------------- update ---------------- */
-let input = { x: 0, y: 0 };
+let input = { x: 0, y: 0 };   // keyboard vector (desktop convenience; pointer is primary)
+const tileOf = p => [Math.floor(p.px / TILE), Math.floor(p.py / TILE)];
+
+// BFS over floor tiles → shortest tile path (excludes start). null if unreachable.
+function bfsPath(sx, sy, gx, gy) {
+  if (solid(gx, gy)) return null;
+  const key = (x, y) => x + ',' + y;
+  const q = [[sx, sy]], prev = new Map(); prev.set(key(sx, sy), null);
+  while (q.length) {
+    const [x, y] = q.shift();
+    if (x === gx && y === gy) {
+      const path = []; let k = key(x, y);
+      while (k) { const [px, py] = k.split(',').map(Number); if (!(px === sx && py === sy)) path.unshift([px, py]); k = prev.get(k); }
+      return path;
+    }
+    for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+      const nx = x + dx, ny = y + dy, nk = key(nx, ny);
+      if (!solid(nx, ny) && !prev.has(nk)) { prev.set(nk, key(x, y)); q.push([nx, ny]); }
+    }
+  }
+  return null;
+}
+// Turn a tap into a walk order (and, for a station, an action-on-arrival).
+function goTo(wx, wy, station) {
+  const p = G.player, [sx, sy] = tileOf(p);
+  let goal, pending = null;
+  if (station) {
+    pending = station;
+    // pick the reachable floor neighbour of the station with the shortest path
+    let best = null, bestLen = 1e9;
+    for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+      const nx = station.gx + dx, ny = station.gy + dy;
+      if (solid(nx, ny)) continue;
+      const pth = bfsPath(sx, sy, nx, ny);
+      if (pth && pth.length < bestLen) { bestLen = pth.length; best = [nx, ny]; }
+    }
+    if (!best) return;
+    goal = best;
+  } else {
+    let gx = Math.max(0, Math.min(G.cols - 1, Math.floor(wx / TILE)));
+    let gy = Math.max(0, Math.min(G.rows - 1, Math.floor(wy / TILE)));
+    if (solid(gx, gy)) return; // ignore taps on counters that aren't stations
+    goal = [gx, gy];
+  }
+  const path = bfsPath(sx, sy, goal[0], goal[1]) || [];
+  p.path = path.map(([tx, ty]) => ({ x: (tx + 0.5) * TILE, y: (ty + 0.5) * TILE }));
+  p.pending = pending;
+  p.dest = { x: (goal[0] + 0.5) * TILE, y: (goal[1] + 0.5) * TILE };
+  input.x = 0; input.y = 0;
+}
+function faceToward(gx, gy) {
+  const [tx, ty] = tileOf(G.player);
+  const dx = gx - tx, dy = gy - ty;
+  if (Math.abs(dx) >= Math.abs(dy)) G.player.face = dx >= 0 ? 'right' : 'left';
+  else G.player.face = dy >= 0 ? 'down' : 'up';
+}
 function updateMove(dt) {
   const p = G.player;
   let ix = input.x, iy = input.y;
+  // keyboard overrides any tap-path
+  if (ix || iy) { p.path = null; p.pending = null; p.dest = null; }
+  else if (p.path && p.path.length) {
+    // consume every waypoint we could reach this frame so we never overshoot & stall
+    const step = 172 * dt + 4;
+    let wp = p.path[0], dx = wp.x - p.px, dy = wp.y - p.py, d = Math.hypot(dx, dy);
+    while (d <= step && p.path.length) { p.path.shift(); wp = p.path[0]; if (wp) { dx = wp.x - p.px; dy = wp.y - p.py; d = Math.hypot(dx, dy); } }
+    if (p.path.length) { ix = dx / d; iy = dy / d; } else { ix = 0; iy = 0; }
+  }
   const mag = Math.hypot(ix, iy);
   if (mag > 1) { ix /= mag; iy /= mag; }
-  if (mag > 0.15) {
-    p.face = Math.abs(ix) > Math.abs(iy) ? (ix > 0 ? 'right' : 'left') : (iy > 0 ? 'down' : 'up');
-  }
-  const speed = 168; // px/sec
+  if (mag > 0.15) p.face = Math.abs(ix) > Math.abs(iy) ? (ix > 0 ? 'right' : 'left') : (iy > 0 ? 'down' : 'up');
+  const speed = 172;
   if (G.mod.slippery) {
     p.vx += (ix * speed - p.vx) * Math.min(1, dt * 3.2);
     p.vy += (iy * speed - p.vy) * Math.min(1, dt * 3.2);
-  } else {
-    p.vx = ix * speed; p.vy = iy * speed;
-  }
+  } else { p.vx = ix * speed; p.vy = iy * speed; }
   const nx = p.px + p.vx * dt;
-  if (!blocked(nx, p.py)) p.px = nx; else p.vx = 0;
+  if (!blocked(nx, p.py)) p.px = nx; else { p.vx = 0; }
   const ny = p.py + p.vy * dt;
-  if (!blocked(p.px, ny)) p.py = ny; else p.vy = 0;
+  if (!blocked(p.px, ny)) p.py = ny; else { p.vy = 0; }
   if (mag > 0.15) p.step += dt * 10; else p.step = 0;
+  // interact as soon as we're orthogonally adjacent to the tapped station (robust vs exact arrival)
+  if (p.pending) {
+    const [tx, ty] = tileOf(p);
+    if (Math.abs(tx - p.pending.gx) + Math.abs(ty - p.pending.gy) === 1) {
+      const st = p.pending; p.pending = null; p.path = null; p.dest = null;
+      faceToward(st.gx, st.gy);
+      interact();
+    }
+  } else if ((!p.path || !p.path.length) && Math.hypot(p.vx, p.vy) < 30) {
+    p.dest = null;
+  }
 }
 function solid(gx, gy) {
   if (gx < 0 || gy < 0 || gx >= G.cols || gy >= G.rows) return true;
@@ -574,110 +639,149 @@ const STCOL = {
   crate: ['#c69a68', '#a97f4f'], grill: ['#5c626b', '#3f444c'], board: ['#e7c9a0', '#caa877'],
   assembly: ['#f3ede2', '#d8cdb9'], deliver: ['#ffd873', '#f2b53c'], bin: ['#93a2ae', '#75828d'], counter: ['#d9b389','#c39c6f'],
 };
-const BLOCK_H = 15;
+const STLABEL = { grill: 'GRILL', board: 'CHOP', assembly: 'PLATE', deliver: 'SERVE', bin: 'TRASH' };
+const INGNAME = { tortilla:'TORTILLA', meat:'MEAT', fish:'FISH', lettuce:'LETTUCE', jalapeno:'JALAPEÑO', cheese:'CHEESE', chips:'CHIPS', salsa:'SALSA' };
+const LIGHT_FRONT = { board:1, assembly:1, deliver:1 };
 function shade(hex, amt) {
   const n = parseInt(hex.slice(1), 16);
   const cl = v => Math.max(0, Math.min(255, v));
   return 'rgb(' + cl((n>>16)+amt) + ',' + cl(((n>>8)&255)+amt) + ',' + cl((n&255)+amt) + ')';
 }
+// Which stations should glow given what the chef is holding — the core "what do I do now" hint.
+function isTarget(st) {
+  const c = G.player.carry;
+  if (!c) {
+    if (st.type === 'crate') return 0.42;
+    if (st.type === 'grill' && st.hold && st.hold.state === 'cooked') return 1;
+    if (st.type === 'board' && st.hold && !st.on) return 1;
+    if (st.type === 'assembly' && st.dish) return 1;
+    if (st.type === 'counter' && st.hold) return 1;
+    if ((st.type === 'grill' || st.type === 'board') && st.hold) return 0; // still cooking/chopping
+    return 0;
+  }
+  if (c.base === 'dish') return st.type === 'deliver' ? 1 : 0;
+  if (canGrill(c)) return st.type === 'grill' && !st.hold ? 1 : 0;
+  if (canChop(c)) return st.type === 'board' && !st.hold ? 1 : 0;
+  if (isReady(c)) return st.type === 'assembly' && !st.dish ? 1 : 0;
+  return (st.type === 'bin' || (st.type === 'counter' && !st.hold)) ? 1 : 0; // burnt / stuck → trash it
+}
 function drawStation(st) {
-  const x = st.gx * TILE, y = st.gy * TILE, cx = x + TILE/2, cy = y + TILE/2;
+  const x = cellSX(st.gx), topY = cellSY(st.gy) - BLOCK_H, w = TILE, h = CH;
+  const cx = x + w/2, cy = topY + h/2;   // centre of the raised top face
   const col = STCOL[st.type] || STCOL.counter;
-  // raised block — front (side) face then top face, for a chunky 3D look
-  ctx.fillStyle = shade(col[1], -30);
-  rr(x+3, y + TILE - 12, TILE-6, BLOCK_H + 7, [0,0,10,10]); ctx.fill();
-  ctx.fillStyle = col[0]; rr(x+3, y+3, TILE-6, TILE-9, 10); ctx.fill();
-  ctx.fillStyle = 'rgba(255,255,255,.22)'; rr(x+3, y+3, TILE-6, 9, [10,10,0,0]); ctx.fill();
-  ctx.strokeStyle = 'rgba(74,53,38,.22)'; ctx.lineWidth = 2; rr(x+3, y+3, TILE-6, TILE-9, 10); ctx.stroke();
+  // front (side) face
+  ctx.fillStyle = shade(col[1], -34);
+  rr(x+3, topY + h - 6, w-6, BLOCK_H + 4, [0,0,10,10]); ctx.fill();
+  // top face + highlight + outline
+  ctx.fillStyle = col[0]; rr(x+3, topY+2, w-6, h-3, 10); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,.22)'; rr(x+3, topY+2, w-6, 8, [10,10,0,0]); ctx.fill();
+  ctx.strokeStyle = 'rgba(74,53,38,.22)'; ctx.lineWidth = 2; rr(x+3, topY+2, w-6, h-3, 10); ctx.stroke();
+  // contextual glow ring (what to do next)
+  const tg = G.running ? isTarget(st) : 0;
+  if (tg > 0) {
+    const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 240);
+    ctx.save(); ctx.globalAlpha = tg * (0.5 + 0.5 * pulse); ctx.strokeStyle = '#63d67f';
+    ctx.lineWidth = 3.5; ctx.shadowColor = '#63d67f'; ctx.shadowBlur = 9;
+    rr(x+3, topY+2, w-6, h-3, 10); ctx.stroke(); ctx.restore();
+  }
 
   if (st.type === 'crate') {
-    ctx.strokeStyle = 'rgba(74,53,38,.28)'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(x+6, y+TILE/2); ctx.lineTo(x+TILE-6, y+TILE/2); ctx.stroke();
-    glyph(ING[st.base].emoji, cx, cy - 2, 26);
+    ctx.strokeStyle = 'rgba(74,53,38,.26)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(x+7, cy+3); ctx.lineTo(x+w-7, cy+3); ctx.stroke();
+    glyph(ING[st.base].emoji, cx, cy - 3, 25);
   } else if (st.type === 'grill') {
-    ctx.fillStyle = '#2c2f35'; rr(x+8, y+9, TILE-16, TILE-20, 6); ctx.fill();
-    for (let i=0;i<3;i++){ ctx.strokeStyle='#454a52'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x+11, y+14+i*6); ctx.lineTo(x+TILE-11, y+14+i*6); ctx.stroke(); }
+    ctx.fillStyle = '#2c2f35'; rr(x+8, topY+7, w-16, h-11, 6); ctx.fill();
+    for (let i=0;i<3;i++){ ctx.strokeStyle='#4a5058'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x+11, topY+12+i*5); ctx.lineTo(x+w-11, topY+12+i*5); ctx.stroke(); }
     if (st.hold) {
-      drawItem(st.hold, cx, cy - 1, 26);
-      const cooking = st.state === 'cooking';
-      if (cooking) {
-        if (st.hold.state === 'raw') bar(x+8, y+TILE-11, TILE-16, st.t/4, '#ff8b3d');
-        else if (st.hold.state === 'cooked') bar(x+8, y+TILE-11, TILE-16, (st.t-4)/5, '#e0453a');
+      drawItem(st.hold, cx, cy - 2, 25);
+      if (st.state === 'cooking') {
+        if (st.hold.state === 'raw') bar(x+9, topY+h-8, w-18, st.t/4, '#ff8b3d');
+        else if (st.hold.state === 'cooked') bar(x+9, topY+h-8, w-18, (st.t-4)/5, '#e0453a');
       }
-    } else { glyph('🔥', cx, cy, 20); ctx.globalAlpha = 1; }
+    } else glyph('🔥', cx, cy - 2, 19);
   } else if (st.type === 'board') {
-    glyph('🔪', x + 13, y + 14, 15);
-    if (st.hold) drawItem(st.hold, cx + 3, cy + 2, 24);
-    if (st.on) bar(x+8, y+TILE-11, TILE-16, st.prog, '#7ac77a');
+    glyph('🔪', x + 13, topY + 12, 14);
+    if (st.hold) drawItem(st.hold, cx + 3, cy, 22);
+    if (st.on) bar(x+9, topY+h-8, w-18, st.prog, '#7ac77a');
   } else if (st.type === 'assembly') {
-    // plate
-    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(cx, cy+2, TILE*0.33, TILE*0.26, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(cx, cy+1, w*0.34, h*0.3, 0, 0, 7); ctx.fill();
     ctx.strokeStyle = '#e0d3c0'; ctx.lineWidth = 2; ctx.stroke();
-    if (st.dish) drawItem(st.dish, cx, cy - 1, 27);
+    if (st.dish) drawItem(st.dish, cx, cy - 2, 26);
     else if (st.contents.length) {
       st.contents.forEach((b, i) => {
-        const a = (i / Math.max(1,st.contents.length)) * Math.PI * 2;
-        glyph(ING[b].emoji, cx + Math.cos(a)*9, cy + Math.sin(a)*7, 15);
+        const a = -Math.PI/2 + (i / Math.max(1,st.contents.length)) * Math.PI * 2;
+        glyph(ING[b].emoji, cx + Math.cos(a)*9, cy + Math.sin(a)*7, 14);
       });
-    } else { ctx.fillStyle = 'rgba(74,53,38,.3)'; ctx.font = '10px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('plate', cx, cy+1); }
+    }
   } else if (st.type === 'deliver') {
-    glyph('🔔', cx, cy - 3, 22);
-    ctx.fillStyle = 'rgba(74,53,38,.5)'; ctx.font = 'bold 8px sans-serif'; ctx.textAlign='center';
-    ctx.fillText('SERVE', cx, cy + 15);
+    glyph('🔔', cx, cy - 2, 22);
   } else if (st.type === 'bin') {
-    glyph('🗑️', cx, cy, 24);
+    glyph('🗑️', cx, cy - 1, 23);
   } else if (st.type === 'counter') {
-    if (st.hold) drawItem(st.hold, cx, cy, 26);
+    if (st.hold) drawItem(st.hold, cx, cy - 2, 25);
+  }
+  // name label on the front face
+  const lab = st.type === 'crate' ? INGNAME[st.base] : STLABEL[st.type];
+  if (lab) {
+    ctx.fillStyle = LIGHT_FRONT[st.type] ? 'rgba(74,53,38,.8)' : 'rgba(255,255,255,.92)';
+    ctx.font = 'bold 8px "Nunito",system-ui,sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(lab, cx, topY + h + BLOCK_H/2 - 3);
   }
 }
 function drawChef() {
-  const p = G.player, cx = p.px, cy = p.py;
-  const bob = Math.sin(p.step) * 2;
-  // soft contact shadow
-  ctx.fillStyle = 'rgba(74,53,38,.13)'; ctx.beginPath(); ctx.ellipse(cx, cy + 17, 17, 7, 0, 0, 7); ctx.fill();
-  ctx.fillStyle = 'rgba(74,53,38,.20)'; ctx.beginPath(); ctx.ellipse(cx, cy + 16, 13, 5.5, 0, 0, 7); ctx.fill();
+  const p = G.player, cx = sX(p.px), base = sY(p.py), bob = Math.sin(p.step) * 2;
+  // contact shadow on the floor
+  ctx.fillStyle = 'rgba(74,53,38,.12)'; ctx.beginPath(); ctx.ellipse(cx, base + 2, 16, 6, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = 'rgba(74,53,38,.20)'; ctx.beginPath(); ctx.ellipse(cx, base + 1, 12, 4.5, 0, 0, 7); ctx.fill();
+  const f = base - 2 + bob;   // feet anchor
   // body (apron)
   ctx.fillStyle = '#ef6f5b'; ctx.strokeStyle = '#4a3526'; ctx.lineWidth = 2.5;
-  ctx.beginPath(); ctx.roundRect(cx - 12, cy - 4 + bob, 24, 20, 9); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.roundRect(cx - 12, f - 22, 24, 22, 9); ctx.fill(); ctx.stroke();
   // head
-  ctx.fillStyle = '#f4c9a0'; ctx.beginPath(); ctx.arc(cx, cy - 10 + bob, 10, 0, 7); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#f4c9a0'; ctx.beginPath(); ctx.arc(cx, f - 28, 10, 0, 7); ctx.fill(); ctx.stroke();
   // chef hat
   ctx.fillStyle = '#fff';
-  ctx.beginPath(); ctx.roundRect(cx - 9, cy - 24 + bob, 18, 8, 4); ctx.fill(); ctx.stroke();
-  ctx.beginPath(); ctx.arc(cx - 6, cy - 24 + bob, 5, 0, 7); ctx.arc(cx + 6, cy - 24 + bob, 5, 0, 7); ctx.arc(cx, cy - 27 + bob, 6, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.roundRect(cx - 9, f - 42, 18, 8, 4); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx - 6, f - 42, 5, 0, 7); ctx.arc(cx + 6, f - 42, 5, 0, 7); ctx.arc(cx, f - 45, 6, 0, 7); ctx.fill();
   ctx.strokeStyle = '#4a3526'; ctx.lineWidth = 1;
-  // eyes based on facing
-  const d = DIRS[p.face]; const ex = d[0]*3, ey = d[1]*2;
+  // eyes
+  const d = DIRS[p.face], ex = d[0]*3, ey = d[1]*2;
   ctx.fillStyle = '#4a3526';
-  if (p.face !== 'up') {
-    ctx.beginPath(); ctx.arc(cx - 3.5 + ex, cy - 10 + ey + bob, 1.7, 0, 7); ctx.arc(cx + 3.5 + ex, cy - 10 + ey + bob, 1.7, 0, 7); ctx.fill();
-  }
-  // carried item
-  if (p.carry) drawItem(p.carry, cx, cy - 30 + bob, 26);
+  if (p.face !== 'up') { ctx.beginPath(); ctx.arc(cx - 3.5 + ex, f - 28 + ey, 1.7, 0, 7); ctx.arc(cx + 3.5 + ex, f - 28 + ey, 1.7, 0, 7); ctx.fill(); }
+  // carried item floats above head
+  if (p.carry) drawItem(p.carry, cx, f - 52, 26);
+}
+function drawDest(dz) {
+  const t = (performance.now() % 750) / 750, cx = sX(dz.x), cy = sY(dz.y);
+  ctx.save();
+  ctx.globalAlpha = 0.55 * (1 - t); ctx.strokeStyle = '#39a99a'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.ellipse(cx, cy, 7 + t*15, (7 + t*15)*YSCALE, 0, 0, 7); ctx.stroke();
+  ctx.globalAlpha = 0.85; ctx.fillStyle = '#39a99a';
+  ctx.beginPath(); ctx.ellipse(cx, cy, 4, 4*YSCALE, 0, 0, 7); ctx.fill();
+  ctx.restore();
 }
 function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   const beach = G.loc.id === 'beach';
-  // floor (every cell, with a subtle top-lit bevel for depth)
+  // foreshortened floor
   for (let y = 0; y < G.rows; y++) for (let x = 0; x < G.cols; x++) {
-    const even = (x + y) % 2 === 0;
+    const even = (x + y) % 2 === 0, px = cellSX(x), py = cellSY(y);
     ctx.fillStyle = even ? (beach ? '#f7e6c2' : '#fce9cc') : (beach ? '#eedcae' : '#f5ddb4');
-    ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
-    ctx.fillStyle = 'rgba(255,255,255,.05)'; ctx.fillRect(x * TILE, y * TILE, TILE, 3);
-    ctx.fillStyle = 'rgba(74,53,38,.045)'; ctx.fillRect(x * TILE, y * TILE + TILE - 2, TILE, 2);
+    ctx.fillRect(px, py, TILE, CH + 1);
+    ctx.fillStyle = 'rgba(255,255,255,.045)'; ctx.fillRect(px, py, TILE, 2);
   }
-  // raised counters/stations, drawn back-to-front so front faces overlap correctly
-  const order = G.stations.slice().sort((a, b) => a.gy - b.gy || a.gx - b.gx);
-  for (const st of order) drawStation(st);
-  // highlight faced station (its top face)
-  const fs = frontStation();
-  if (fs) { ctx.strokeStyle = 'rgba(255,207,92,.95)'; ctx.lineWidth = 3; rr(fs.gx*TILE+3, fs.gy*TILE+3, TILE-6, TILE-9, 10); ctx.stroke(); }
-  drawChef();
-  // particles
+  if (G.player.dest) drawDest(G.player.dest);
+  // depth-sorted counters + chef so the chef passes correctly in front of / behind them
+  const list = [];
+  for (const st of G.stations) list.push({ y: cellSY(st.gy) + CH, f: () => drawStation(st) });
+  list.push({ y: sY(G.player.py) + 0.5, f: drawChef });
+  list.sort((a, b) => a.y - b.y);
+  for (const e of list) e.f();
+  // particles (world → screen, floating above the counters)
   for (const pt of G.parts) {
     ctx.globalAlpha = Math.max(0, Math.min(1, pt.life));
-    ctx.fillStyle = '#4a3526'; ctx.font = 'bold 18px "Nunito",sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(pt.text, pt.x, pt.y - (1 - pt.life) * 26);
+    ctx.fillStyle = '#4a3526'; ctx.font = 'bold 17px "Nunito",sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(pt.text, sX(pt.x), sY(pt.y) - BLOCK_H - (1 - pt.life) * 22);
     ctx.globalAlpha = 1;
   }
 }
@@ -724,17 +828,17 @@ function setupTutorial() {
   const asmHasMeat = () => G.stations.some(s => s.type === 'assembly' && s.contents.includes('meat'));
   const asmDish = () => G.stations.some(s => s.type === 'assembly' && s.dish);
   G.tut = { step: 0, moved: 0, spawned: false, steps: [
-    { text: 'Welcome to the kitchen! 👋', sub: 'Use the stick (or WASD) to walk around.', check: () => G.tut.moved > 110 },
-    { text: 'Grab the raw meat 🥩', sub: 'Face its crate (yellow outline) and press USE.', check: () => carryIs('meat') },
-    { text: 'Cook it on the grill 🔥', sub: 'Carry it over and press USE to drop it on.', check: grillHasMeat },
+    { text: 'Welcome to the kitchen! 👋', sub: 'Tap anywhere on the floor to walk there.', check: () => G.tut.moved > 90 },
+    { text: 'Grab the raw meat 🥩', sub: 'Tap the glowing MEAT crate.', check: () => carryIs('meat') },
+    { text: 'Cook it on the grill 🔥', sub: 'Tap the glowing GRILL to drop it on.', check: grillHasMeat },
     { text: 'Let it sizzle…', sub: 'Wait a few seconds until the meat is cooked 🍖.', check: grillCooked },
-    { text: 'Pick the cooked meat back up', sub: 'Stand at the grill and press USE.', check: () => carryIs('meat', 'cooked') },
-    { text: 'Plate it up 🍽️', sub: 'Press USE at a plate to add the meat.', check: asmHasMeat },
-    { text: 'Now grab a tortilla 🫓', sub: 'From its crate, press USE.', check: () => carryIs('tortilla') },
-    { text: 'Add it to the same plate', sub: 'Tortilla + meat = a Taco 🌮!', check: asmDish },
-    { text: 'Pick up your finished taco 🌮', sub: 'Press USE at the plate.', check: () => carryIs('dish'),
+    { text: 'Pick the cooked meat back up', sub: 'Tap the glowing grill again.', check: () => carryIs('meat', 'cooked') },
+    { text: 'Plate it up 🍽️', sub: 'Tap a glowing PLATE to add the meat.', check: asmHasMeat },
+    { text: 'Now grab a tortilla 🫓', sub: 'Tap the glowing TORTILLA crate.', check: () => carryIs('tortilla') },
+    { text: 'Add it to the same plate', sub: 'Tap the plate — tortilla + meat = a Taco 🌮!', check: asmDish },
+    { text: 'Pick up your finished taco 🌮', sub: 'Tap the plate to grab it.', check: () => carryIs('dish'),
       onEnter: () => { if (!G.tut.spawned) { spawnOrder(); G.tut.spawned = true; } } },
-    { text: 'Serve it! 🔔', sub: 'Run to the SERVE window and press USE.', check: () => G.served > 0 },
+    { text: 'Serve it! 🔔', sub: 'Tap the glowing SERVE window.', check: () => G.served > 0 },
   ] };
   showTut();
 }
@@ -876,32 +980,30 @@ function recompute() {
   input.x = x; input.y = y;
 }
 
-/* ---------------- input: touch joystick ---------------- */
-(function () {
-  const stick = $('stick'), nub = $('stick-nub'); let id = null, cx0 = 0, cy0 = 0;
-  const rad = 34;
-  function set(e) {
-    const t = [...e.changedTouches || []].find(t => t.identifier === id) || (e.clientX != null ? e : null);
-    if (!t) return;
-    let dx = t.clientX - cx0, dy = t.clientY - cy0;
-    const d = Math.hypot(dx, dy); if (d > rad) { dx = dx/d*rad; dy = dy/d*rad; }
-    nub.style.left = (58 + dx) + 'px'; nub.style.top = (58 + dy) + 'px';
-    input.x = dx / rad; input.y = dy / rad;
+/* ---------------- input: tap / click to move (touch + mouse) ---------------- */
+function canvasPoint(e) {
+  const r = canvas.getBoundingClientRect();
+  return [(e.clientX - r.left) * (canvas.width / r.width), (e.clientY - r.top) * (canvas.height / r.height)];
+}
+function stationAtScreen(sx, sy) {
+  // front-to-back: things with a larger gy are drawn later / on top, so test them first
+  const sorted = G.stations.slice().sort((a, b) => b.gy - a.gy);
+  for (const st of sorted) {
+    const x = cellSX(st.gx), topY = cellSY(st.gy) - BLOCK_H;
+    if (sx >= x + 2 && sx <= x + TILE - 2 && sy >= topY - 2 && sy <= topY + CH + BLOCK_H) return st;
   }
-  function start(e) {
-    const t = e.changedTouches ? e.changedTouches[0] : e; id = e.changedTouches ? t.identifier : 'm';
-    const r = stick.getBoundingClientRect(); cx0 = r.left + r.width/2; cy0 = r.top + r.height/2;
-    set(e); e.preventDefault();
-  }
-  function end() { id = null; input.x = 0; input.y = 0; nub.style.left = '50%'; nub.style.top = '50%'; }
-  stick.addEventListener('touchstart', start, { passive: false });
-  stick.addEventListener('touchmove', e => { set(e); e.preventDefault(); }, { passive: false });
-  stick.addEventListener('touchend', end); stick.addEventListener('touchcancel', end);
-  stick.addEventListener('mousedown', e => { start(e); const mv = ev => set(ev), up = () => { end(); window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); }; window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up); });
-})();
-const useBtn = $('use-btn');
-useBtn.addEventListener('touchstart', e => { e.preventDefault(); if (screen === 'play') interact(); }, { passive: false });
-useBtn.addEventListener('mousedown', e => { e.preventDefault(); if (screen === 'play') interact(); });
+  return null;
+}
+function onTap(e) {
+  if (screen !== 'play' || !G || !G.running) return;
+  if (actx && actx.state === 'suspended') actx.resume();
+  const [sx, sy] = canvasPoint(e);
+  const st = stationAtScreen(sx, sy);
+  if (st) { goTo(0, 0, st); return; }
+  goTo(sx, (sy - OFF_Y) / YSCALE, null);
+}
+canvas.addEventListener('pointerdown', e => { e.preventDefault(); onTap(e); });
+canvas.addEventListener('contextmenu', e => e.preventDefault());
 
 /* ---------------- buttons ---------------- */
 $('btn-play').addEventListener('click', () => { try { actx = actx || new (window.AudioContext||window.webkitAudioContext)(); } catch(e){} toMap(); });
@@ -921,6 +1023,9 @@ window.TL = {
   carry() { const c = G.player.carry; return c ? (c.base === 'dish' ? 'dish:' + c.recipe : c.base + ':' + c.state) : null; },
   setTime(t) { G.timeLeft = t; },
   tick(dt) { update(dt); },
+  tapStation(gx, gy) { const st = G.stationMap.get(gx + ',' + gy); if (st) goTo(0, 0, st); },
+  tapTile(gx, gy) { goTo((gx + 0.5) * TILE, (gy + 0.5) * TILE, null); },
+  settle(n) { for (let i = 0; i < (n || 200); i++) { update(0.05); if ((!G.player.path || !G.player.path.length) && !G.player.pending) break; } },
 };
 
 /* boot */
