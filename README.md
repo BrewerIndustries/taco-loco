@@ -18,18 +18,27 @@ python3 -m http.server 4977 --directory .
 
 Designed for **portrait phone** (tap), works with a mouse on desktop.
 
+## Look
+
+All game art is **custom vector** (flat shapes, bold outlines, soft shadows — a
+clean, whimsical Switch-indie style), not emoji: hand-drawn ingredient icons, **blob
+customers** with faces that react to their patience, and **speech bubbles** over the
+window. (Blob characters are intentional placeholders — easy to swap for real
+characters later.)
+
 ## How it plays
 
-- Customers appear at the **window** with order tickets. A ticket shows the dish and
-  **which ingredients** it needs (as an unordered set) plus a patience bar — but
-  **not the order**.
-- The correct **order** lives in the **📖 Recipe Book** (button in the window). You
-  can open it any time — the game **pauses** while it's open. Learn the sequence,
-  then build it.
-- Build the **active** order (highlighted) by tapping the counter ingredients **in
-  the right order**. Tap another ticket to switch which order you're working.
-- A **wrong** ingredient breaks your combo and nicks that customer's patience, but
-  your progress isn't wiped.
+- **Blob customers** wait at the **window**; a **speech bubble** shows *which*
+  ingredients they want (as an unordered set) and a patience bar — but **not the
+  order**. Tap a customer to make their plate active.
+- The correct **order** lives in the **📖 Recipe Book** (button in the window). Open
+  it any time — the game **pauses** while it's open.
+- **Build the plate**: tap ingredients on the counter to stack them, then **drag the
+  chips to reorder** them into the right sequence, and hit **Serve**.
+- **Ruined plates**: adding an ingredient that doesn't belong, or serving a wrong
+  order, **ruins the plate** — you must hit the **🗑 Trash** to throw it out and
+  start that order over. (Right ingredients in the wrong order are *not* ruined —
+  just drag to fix them before serving.)
 - Finish orders fast and clean for **tips** and a **combo multiplier** (x1.3 → x2).
   A customer whose patience runs out leaves hungry (score penalty).
 

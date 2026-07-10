@@ -6,198 +6,210 @@
 <title>Taco Loco 🌮</title>
 <style>
   :root {
-    --ink: #4a3526;
+    --ink: #3a271b;
     --cream: #fff6e6;
-    --paper: #fff3dc;
+    --paper: #fff1d8;
     --red: #ef6f5b;
+    --red-d: #d5543f;
     --orange: #f8a24b;
     --teal: #3fb0a0;
+    --teal-d: #2f9184;
     --yellow: #ffcf5c;
     --green: #6ec46e;
-    --steel: #c9d3d9;
-    --steel-d: #9aa8b1;
+    --green-d: #4f9f4f;
+    --steel: #cdd7dd;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; overflow: hidden; }
   body {
-    font-family: ui-rounded, "Arial Rounded MT Bold", "Baloo 2", "Nunito", system-ui, sans-serif;
-    background: #2a1c14; color: var(--ink);
+    font-family: ui-rounded, "Baloo 2", "Nunito", "Arial Rounded MT Bold", system-ui, sans-serif;
+    background: #241811; color: var(--ink);
     user-select: none; -webkit-user-select: none; touch-action: manipulation; overscroll-behavior: none;
   }
   #app { max-width: 480px; height: 100%; height: 100dvh; margin: 0 auto; position: relative; overflow: hidden;
-    display: flex; flex-direction: column; background: #241811; }
+    display: flex; flex-direction: column; background: #23303a; }
+  .isvg, .bsvg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .ui { width: 26px; height: 26px; }
 
   /* ---------- HUD ---------- */
   #hud { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    padding: 7px 12px; background: var(--ink); color: var(--cream); font-weight: 800; font-size: 15px; z-index: 5; }
-  #hud .pill { background: rgba(255,255,255,.14); border-radius: 999px; padding: 3px 12px; white-space: nowrap; display: flex; gap: 5px; align-items: center; }
+    padding: 8px 12px; background: var(--ink); color: var(--cream); font-weight: 800; font-size: 15px; z-index: 6; }
+  #hud .pill { background: rgba(255,255,255,.13); border-radius: 999px; padding: 4px 13px; white-space: nowrap; display: flex; gap: 6px; align-items: center; }
   #hud-timer.low { color: #ffb1a1; animation: blink .6s steps(2) infinite; }
   @keyframes blink { 50% { opacity: .35; } }
 
   /* ---------- Window (looking out) ---------- */
-  #view { flex: 1 1 auto; position: relative; min-height: 0;
-    background: linear-gradient(#bfe6f5 0%, #d8f0f6 45%, #eaf6ef 62%, #cdeacb 62%, #bfe3bd 100%);
-    overflow: hidden; }
-  /* distant street */
-  #view::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 38%;
-    background: linear-gradient(#c7ac86, #b69670); }
-  .cloud { position: absolute; font-size: 34px; opacity: .9; animation: drift linear infinite; }
-  @keyframes drift { from { transform: translateX(-60px);} to { transform: translateX(520px);} }
-  /* street scene behind the tickets */
-  #street { position: absolute; left: 0; right: 0; bottom: 0; height: 40%; z-index: 1; pointer-events: none; }
-  .bldg { position: absolute; bottom: 38%; border-radius: 6px 6px 0 0; box-shadow: inset 0 0 0 2px rgba(0,0,0,.06); }
-  .bldg::after { content: ""; position: absolute; inset: 8px 6px auto 6px; height: 60%;
-    background-image: radial-gradient(rgba(255,255,255,.5) 2px, transparent 2.5px); background-size: 11px 13px; border-radius: 3px; }
-  .ped { position: absolute; bottom: 4%; font-size: 30px; filter: drop-shadow(0 2px 2px rgba(0,0,0,.2)); animation: bobp 1.6s ease-in-out infinite; }
-  @keyframes bobp { 50% { transform: translateY(-3px); } }
-
+  #view { flex: 1 1 auto; position: relative; min-height: 0; overflow: hidden;
+    background: linear-gradient(#8fd4ef 0%, #bfe8f4 46%, #d9f0e4 60%, #a9dca6 60%, #93cf8f 100%); }
+  #street { position: absolute; left: 0; right: 0; bottom: 0; height: 46%; z-index: 1; pointer-events: none; }
+  .bldg { position: absolute; bottom: 34%; border-radius: 7px 7px 0 0; box-shadow: inset 0 -6px 0 rgba(0,0,0,.06); }
+  .bldg::after { content: ""; position: absolute; inset: 9px 7px 30% 7px;
+    background-image: radial-gradient(rgba(255,255,255,.55) 2px, transparent 2.6px); background-size: 12px 15px; border-radius: 3px; }
+  .cloud { position: absolute; border-radius: 40px; background: rgba(255,255,255,.9); box-shadow: 22px 6px 0 -4px rgba(255,255,255,.9), -20px 6px 0 -3px rgba(255,255,255,.85); animation: drift linear infinite; }
+  @keyframes drift { from { transform: translateX(-80px);} to { transform: translateX(540px);} }
   /* awning */
-  #awning { position: absolute; top: 0; left: 0; right: 0; height: 34px; z-index: 3;
-    background: repeating-linear-gradient(90deg, var(--red) 0 26px, #fff 26px 52px);
-    border-bottom: 4px solid #d85b48;
-    -webkit-mask: radial-gradient(13px 15px at 13px 0, #0000 98%, #000) repeat-x;
-    -webkit-mask-size: 26px 100%; mask: radial-gradient(13px 15px at 13px 0, #0000 98%, #000) repeat-x; mask-size: 26px 100%;
-  }
-  #awning-shadow { position: absolute; top: 34px; left: 0; right: 0; height: 14px; z-index: 3;
-    background: linear-gradient(rgba(0,0,0,.18), transparent); pointer-events: none; }
+  #awning { position: absolute; top: 0; left: -2px; right: -2px; height: 32px; z-index: 4;
+    background: repeating-linear-gradient(90deg, var(--red) 0 27px, #fff6e6 27px 54px); border-bottom: 4px solid var(--red-d);
+    -webkit-mask: radial-gradient(14px 16px at 13.5px 0, #0000 98%, #000) repeat-x; -webkit-mask-size: 27px 100%;
+    mask: radial-gradient(14px 16px at 13.5px 0, #0000 98%, #000) repeat-x; mask-size: 27px 100%; }
+  #sill { position: absolute; left: 0; right: 0; bottom: 0; height: 14px; z-index: 3;
+    background: linear-gradient(#e8dcc6, #cdba9f); box-shadow: 0 -2px 6px rgba(0,0,0,.12); }
 
-  /* order tickets rail */
-  #orders { position: absolute; top: 54px; left: 0; right: 0; height: 150px; z-index: 4;
-    display: flex; align-items: flex-start; justify-content: flex-start; gap: 10px; padding: 6px 12px; overflow-x: auto; overflow-y: visible; scrollbar-width: none; }
-  #orders::-webkit-scrollbar { display: none; }
-  #orders:empty::after { content: "🙂 waiting for customers…"; color: #5c7a86; font-weight: 800; font-size: 14px; align-self: center; }
+  /* customers */
+  #customers { position: absolute; left: 0; right: 0; bottom: 8px; z-index: 4;
+    display: flex; align-items: flex-end; justify-content: flex-start; gap: 8px; padding: 0 12px; overflow-x: auto; overflow-y: visible; scrollbar-width: none; height: 88%; }
+  #customers::-webkit-scrollbar { display: none; }
+  #customers:empty::after { content: "waiting for customers…"; color: #4c6b74; font-weight: 800; font-size: 14px; align-self: center; margin: auto; }
+  .guest { flex: 0 0 auto; width: 108px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%;
+    cursor: pointer; position: relative; }
+  .bubble { background: #fff; border: 3px solid var(--ink); border-radius: 15px; box-shadow: 0 4px 0 rgba(58,39,27,.22);
+    padding: 7px 8px 8px; width: 104px; position: relative; }
+  .bubble::after { content: ""; position: absolute; left: 50%; bottom: -12px; transform: translateX(-50%);
+    border: 8px solid transparent; border-top-color: var(--ink); }
+  .bubble::before { content: ""; position: absolute; left: 50%; bottom: -7px; transform: translateX(-50%); z-index: 1;
+    border: 6px solid transparent; border-top-color: #fff; }
+  .bubble .bname { font-size: 12px; font-weight: 800; text-align: center; margin-bottom: 4px; }
+  .bubble .bset { display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; }
+  .bubble .bi { width: 22px; height: 22px; }
+  .bubble .bpat { height: 6px; border-radius: 999px; background: #e7d8c2; overflow: hidden; margin-top: 6px; }
+  .bubble .bpat > i { display: block; height: 100%; background: var(--green); }
+  .blob { width: 64px; height: 60px; margin-top: 8px; transition: transform .12s; }
+  .guest.active .bubble { border-color: var(--teal); box-shadow: 0 4px 0 var(--teal-d); }
+  .guest.active .blob { transform: scale(1.12) translateY(-2px); }
+  .guest.building .bubble { border-color: var(--orange); }
+  .guest.leaving { animation: leave .45s ease-in forwards; }
+  @keyframes leave { to { transform: translateY(40px); opacity: 0; } }
 
-  .ticket { flex: 0 0 auto; width: 118px; background: var(--paper); border-radius: 14px;
-    border: 3px solid var(--ink); box-shadow: 0 5px 0 rgba(74,53,38,.3); padding: 8px 8px 9px; position: relative;
-    transition: transform .12s; cursor: pointer; }
-  .ticket .cust { position: absolute; top: -22px; left: 50%; transform: translateX(-50%); font-size: 30px;
-    filter: drop-shadow(0 2px 2px rgba(0,0,0,.25)); }
-  .ticket.active { transform: translateY(-4px) scale(1.05); border-color: var(--teal); box-shadow: 0 7px 0 var(--teal); z-index: 2; }
-  .ticket .dish { text-align: center; font-weight: 800; font-size: 14px; margin-top: 10px; }
-  .ticket .steps { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin: 6px 0 7px; min-height: 30px; }
-  .step { width: 28px; height: 28px; border-radius: 8px; background: #fff; border: 2px solid #e0d3bd;
-    display: flex; align-items: center; justify-content: center; font-size: 17px; position: relative; }
-  .step.done { background: var(--green); border-color: #4f9f4f; }
-  .step.done .em { filter: grayscale(.1) brightness(1.05); }
-  .step.next { border-color: var(--teal); animation: pulse 1s ease-in-out infinite; }
-  @keyframes pulse { 0%,100%{ box-shadow: 0 0 0 0 rgba(63,176,160,.6);} 50%{ box-shadow: 0 0 0 5px rgba(63,176,160,0);} }
-  .ticket .pat { height: 7px; border-radius: 999px; background: #e7d8c2; overflow: hidden; }
-  .ticket .pat > i { display: block; height: 100%; background: var(--green); }
-  .ticket.wrong { animation: shake .3s; }
-  @keyframes shake { 0%,100%{transform:translateX(0) translateY(-4px) scale(1.05);} 25%{transform:translateX(-6px) translateY(-4px) scale(1.05);} 75%{transform:translateX(6px) translateY(-4px) scale(1.05);} }
-  .ticket.serving { animation: serveout .4s ease-in forwards; }
-  @keyframes serveout { to { transform: translateY(-60px) scale(.6) rotate(-8deg); opacity: 0; } }
+  #book-btn { position: absolute; right: 12px; top: 40px; z-index: 6; width: 46px; height: 46px; border-radius: 13px;
+    background: var(--yellow); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink); cursor: pointer; display: none;
+    align-items: center; justify-content: center; color: var(--ink); }
+  #book-btn.on { display: flex; }
+  #book-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  #combo { position: absolute; left: 14px; top: 42px; z-index: 6; font-weight: 800; color: var(--orange);
+    text-shadow: 1.5px 1.5px 0 var(--ink); font-size: 18px; display: none; }
+  #combo.show { display: block; animation: cpop .25s; }
+  @keyframes cpop { from { transform: scale(1.4);} }
 
-  /* ---------- Counter (prep) ---------- */
-  #counter { flex: 0 0 auto; z-index: 5;
-    background: linear-gradient(#e7edf0, var(--steel) 20%, #b7c2c9);
-    border-top: 5px solid #8fa0a9; padding: 10px 10px 14px;
-    box-shadow: 0 -4px 12px rgba(0,0,0,.25); }
-  #counter-label { text-align: center; font-size: 10px; font-weight: 800; letter-spacing: 2px; color: #6d7b83; margin-bottom: 7px; }
-  #grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  /* ---------- Assembly ---------- */
+  #stage { flex: 0 0 auto; z-index: 5; display: flex; align-items: stretch; gap: 8px; padding: 8px 10px;
+    background: linear-gradient(#3a4a55, #2b3841); border-top: 3px solid #1d262c; }
+  .act { flex: 0 0 60px; border-radius: 14px; border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; cursor: pointer; color: #fff; font-weight: 800; font-size: 10px; }
+  .act:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .act.trash { background: var(--red); }
+  .act.serve { background: var(--green); }
+  .act:disabled { opacity: .4; filter: grayscale(.4); cursor: default; }
+  .act.pulse { animation: apulse .7s ease-in-out infinite; }
+  @keyframes apulse { 50% { box-shadow: 0 4px 0 var(--ink), 0 0 0 4px rgba(239,111,91,.4); } }
+
+  #plate-wrap { flex: 1 1 auto; position: relative; border-radius: 16px; background: #f4ede0;
+    border: 3px solid var(--ink); box-shadow: inset 0 3px 8px rgba(58,39,27,.15); overflow: hidden; min-width: 0; }
+  #plate { position: absolute; inset: 0; display: flex; align-items: center; gap: 6px; padding: 0 10px; touch-action: none; }
+  #plate-hint { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; color: #b3a389; pointer-events: none; text-align: center; padding: 0 8px; }
+  .chip { flex: 0 0 auto; width: 46px; height: 46px; border-radius: 12px; background: #fff; border: 2.5px solid var(--ink);
+    box-shadow: 0 3px 0 rgba(58,39,27,.25); display: flex; align-items: center; justify-content: center; padding: 5px; touch-action: none; }
+  .chip .ci { width: 100%; height: 100%; pointer-events: none; }
+  .chip.dragging { opacity: .25; }
+  #plate-wrap.ruined { background: #ffdcd4; border-color: var(--red-d); animation: shake .3s; }
+  #plate-wrap.ruined .chip { filter: grayscale(.7) brightness(.9); }
+  @keyframes shake { 0%,100%{transform:translateX(0);} 20%{transform:translateX(-5px);} 60%{transform:translateX(5px);} }
+  #drag-ghost { position: fixed; z-index: 90; width: 46px; height: 46px; border-radius: 12px; background: #fff; border: 2.5px solid var(--ink);
+    box-shadow: 0 6px 10px rgba(0,0,0,.3); display: none; padding: 5px; pointer-events: none; transform: translate(-50%,-50%) scale(1.1); }
+
+  /* ---------- Counter ---------- */
+  #counter { flex: 0 0 auto; z-index: 5; background: linear-gradient(#eef2f4, var(--steel) 22%, #b9c4cb);
+    border-top: 5px solid #91a1aa; padding: 8px 10px 12px; box-shadow: 0 -4px 12px rgba(0,0,0,.22); }
+  #grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
   .ing { background: var(--cream); border: 3px solid var(--ink); border-radius: 13px; box-shadow: 0 4px 0 var(--ink);
-    padding: 7px 2px 5px; display: flex; flex-direction: column; align-items: center; gap: 1px; cursor: pointer; }
+    padding: 5px 2px 4px; display: flex; flex-direction: column; align-items: center; gap: 0; cursor: pointer; }
   .ing:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
-  .ing .em { font-size: 27px; line-height: 1; }
-  .ing .nm { font-size: 9.5px; font-weight: 800; opacity: .78; }
-  .ing.hot { border-color: var(--teal); box-shadow: 0 4px 0 var(--teal), 0 0 0 3px rgba(63,176,160,.25); }
-  .ing.bad { animation: shakeb .3s; border-color: var(--red); }
-  @keyframes shakeb { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} }
+  .ing .ci { width: 34px; height: 34px; }
+  .ing .nm { font-size: 9px; font-weight: 800; opacity: .78; margin-top: 1px; }
   .ing.pop { animation: popb .2s; }
   @keyframes popb { 50% { transform: scale(1.12); } }
 
-  /* combo + floaters */
-  #combo { position: absolute; top: 52px; right: 14px; z-index: 6; font-weight: 800; color: var(--orange);
-    text-shadow: 1px 1px 0 var(--ink); font-size: 17px; display: none; }
-  #combo.show { display: block; animation: cpop .25s; }
-  @keyframes cpop { from { transform: scale(1.4);} }
-  .float { position: absolute; z-index: 20; font-weight: 800; font-size: 20px; color: var(--yellow);
+  /* floaters + toast */
+  .float { position: absolute; z-index: 40; font-weight: 800; font-size: 20px; color: var(--yellow);
     text-shadow: 2px 2px 0 var(--ink); pointer-events: none; animation: fl 1s ease-out forwards; }
   @keyframes fl { to { transform: translateY(-46px); opacity: 0; } }
-  #toast { position: absolute; top: 50%; left: 50%; transform: translateX(-50%); z-index: 22;
-    background: var(--ink); color: var(--yellow); font-weight: 800; padding: 8px 18px; border-radius: 999px; display: none; }
-  #toast.show { display: block; animation: tst 1.4s ease-out forwards; }
+  #toast { position: absolute; top: 46%; left: 50%; transform: translateX(-50%); z-index: 42;
+    background: var(--ink); color: var(--yellow); font-weight: 800; padding: 9px 20px; border-radius: 999px; display: none; font-size: 15px; }
+  #toast.show { display: block; animation: tst 1.5s ease-out forwards; }
   @keyframes tst { 0%{opacity:0;} 12%,72%{opacity:1;} 100%{opacity:0;} }
 
   /* ---------- Overlays ---------- */
-  .overlay { position: absolute; inset: 0; z-index: 30; display: none; flex-direction: column; align-items: center; justify-content: center;
-    padding: 24px; text-align: center; }
+  .overlay { position: absolute; inset: 0; z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; }
   .overlay.show { display: flex; }
-  .overlay::before { content: ""; position: absolute; inset: 0; background: rgba(36,24,17,.62); backdrop-filter: blur(3px); z-index: -1; }
-  .card { background: var(--cream); border-radius: 22px; border: 3px solid var(--ink); box-shadow: 0 10px 0 rgba(74,53,38,.35);
-    padding: 22px; max-width: 360px; width: 100%; }
+  .overlay::before { content: ""; position: absolute; inset: 0; background: rgba(35,24,17,.62); backdrop-filter: blur(3px); z-index: -1; }
+  .card { background: var(--cream); border-radius: 22px; border: 3px solid var(--ink); box-shadow: 0 10px 0 rgba(58,39,27,.35); padding: 22px; max-width: 360px; width: 100%; }
   h1.logo { font-size: 44px; color: var(--yellow); -webkit-text-stroke: 2px var(--ink); letter-spacing: 1px; line-height: 1; }
   h1.logo .s { display: block; font-size: 14px; color: var(--red); -webkit-text-stroke: 0; margin-top: 8px; font-weight: 800; }
-  .card h2 { font-size: 26px; color: var(--red); }
-  .how { text-align: left; background: var(--paper); border-radius: 14px; padding: 12px 15px; font-size: 13.5px; line-height: 1.75; margin: 10px 0; }
-  .btn { font-family: inherit; font-weight: 800; font-size: 19px; background: var(--red); color: #fff;
-    border: 3px solid var(--ink); border-radius: 14px; box-shadow: 0 5px 0 var(--ink); padding: 12px 30px; cursor: pointer; margin-top: 6px; }
+  .card h2 { font-size: 25px; color: var(--red); }
+  .how { text-align: left; background: var(--paper); border-radius: 14px; padding: 12px 15px; font-size: 13px; line-height: 1.7; margin: 10px 0; }
+  .btn { font-family: inherit; font-weight: 800; font-size: 18px; background: var(--red); color: #fff; border: 3px solid var(--ink);
+    border-radius: 14px; box-shadow: 0 5px 0 var(--ink); padding: 11px 26px; cursor: pointer; margin-top: 6px; }
   .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
-  .btn.ghost { background: #fff; color: var(--ink); }
-  .btn.alt { background: var(--teal); }
+  .btn.ghost { background: #fff; color: var(--ink); font-size: 15px; padding: 9px 18px; }
   .stars { font-size: 40px; letter-spacing: 4px; margin: 8px 0; }
-  .row { display: flex; justify-content: space-between; font-size: 16px; padding: 5px 2px; border-bottom: 2px dashed rgba(74,53,38,.2); }
+  .row { display: flex; justify-content: space-between; font-size: 16px; padding: 5px 2px; border-bottom: 2px dashed rgba(58,39,27,.2); }
   .row b { color: var(--teal); }
-
-  /* recipe book button (in the window) */
-  #book-btn { position: absolute; right: 12px; bottom: 10px; z-index: 6; width: 52px; height: 52px; border-radius: 14px;
-    background: var(--yellow); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink); font-size: 26px; cursor: pointer; padding: 0; display: none; }
-  #book-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
-  #book-btn.on { display: block; }
-
-  /* recipe rows in the book */
+  /* recipe rows */
   .rec { background: var(--paper); border: 2.5px solid var(--ink); border-radius: 13px; padding: 9px 11px; margin-bottom: 9px; text-align: left; }
   .rec.new { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(63,176,160,.2); }
-  .rec .rh { font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 6px; }
-  .rec .rh .tag { margin-left: auto; font-size: 10px; background: var(--teal); color: #fff; padding: 2px 7px; border-radius: 999px; }
-  .rec .rs { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-top: 6px; }
-  .rec .rstep { display: flex; align-items: center; gap: 3px; background: #fff; border: 2px solid #e0d3bd; border-radius: 8px; padding: 3px 6px 3px 4px; font-size: 18px; }
-  .rec .rstep b { font-size: 11px; color: var(--teal); }
-  .rec .arrow { color: #b9a988; font-weight: 800; }
-
-  /* level select buttons */
-  .lvl { width: 88px; background: var(--cream); border: 3px solid var(--ink); border-radius: 14px; box-shadow: 0 4px 0 var(--ink);
-    padding: 8px 4px; cursor: pointer; }
+  .rec .rh { font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 7px; }
+  .rec .rh .ri { width: 26px; height: 26px; } .rec .rh .tag { margin-left: auto; font-size: 10px; background: var(--teal); color: #fff; padding: 2px 8px; border-radius: 999px; }
+  .rec .rs { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; margin-top: 7px; }
+  .rec .rstep { display: flex; align-items: center; gap: 4px; background: #fff; border: 2px solid #e2d5bf; border-radius: 9px; padding: 3px 7px 3px 5px; }
+  .rec .rstep .ri { width: 24px; height: 24px; } .rec .rstep b { font-size: 12px; color: var(--teal); }
+  .rec .arrow { color: #c3b393; font-weight: 800; }
+  #map-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 14px 0; }
+  .lvl { width: 92px; background: var(--cream); border: 3px solid var(--ink); border-radius: 14px; box-shadow: 0 4px 0 var(--ink); padding: 8px 4px; cursor: pointer; }
   .lvl.locked { background: #e3d3bd; color: #a08c74; border-color: #a08c74; box-shadow: 0 4px 0 #a08c74; cursor: default; }
-  .lvl .lem { font-size: 26px; } .lvl .lnm { font-size: 10px; font-weight: 800; margin: 2px 0; } .lvl .lst { font-size: 12px; letter-spacing: -1px; }
+  .lvl .li { width: 30px; height: 30px; margin: 0 auto; } .lvl .lnm { font-size: 10px; font-weight: 800; margin: 2px 0; } .lvl .lst { font-size: 12px; letter-spacing: -1px; }
 </style>
 </head>
 <body>
 <div id="app">
   <div id="hud">
-    <span class="pill">🌮 <span id="hud-shift">Shift 1</span></span>
+    <span class="pill">Lvl <span id="hud-shift">1</span></span>
     <span class="pill" id="hud-timer">1:40</span>
     <span class="pill">⭐ <span id="hud-score">0</span></span>
   </div>
 
   <div id="view">
     <div id="street"></div>
-    <div id="awning"></div><div id="awning-shadow"></div>
+    <div id="awning"></div>
     <div id="combo"></div>
-    <div id="orders"></div>
-    <button id="book-btn" title="Recipe book">📖</button>
+    <button id="book-btn" title="Recipe book"></button>
+    <div id="customers"></div>
+    <div id="sill"></div>
   </div>
 
-  <div id="counter">
-    <div id="counter-label">◍ PREP COUNTER — TAP IN THE RIGHT ORDER (see 📖) ◍</div>
-    <div id="grid"></div>
+  <div id="stage">
+    <button class="act trash" id="trash-btn"><span class="ui"></span><span>Trash</span></button>
+    <div id="plate-wrap"><div id="plate"></div><div id="plate-hint">tap ingredients below to build ↓</div></div>
+    <button class="act serve" id="serve-btn"><span class="ui"></span><span>Serve</span></button>
   </div>
+
+  <div id="counter"><div id="grid"></div></div>
 
   <div id="toast"></div>
+  <div id="drag-ghost"></div>
 
   <!-- Title -->
   <div class="overlay show" id="ov-title">
     <div class="card">
       <h1 class="logo">TACO LOCO<span class="s">food truck rush</span></h1>
       <div class="how">
-        🚚 Work the window of your taco truck.<br>
-        🎫 Tickets show <b>what</b> a customer wants — but not the order.<br>
-        📖 The <b>recipe book</b> shows the correct sequence. Tap it anytime.<br>
-        👆 Tap the ingredients on your counter <b>in that order</b> to build each dish.<br>
-        ⭐ Clear a level to unlock a new recipe. Fast + clean = tips &amp; combos!
+        🚚 Work the window of your taco truck — customers wait outside with orders.<br>
+        🧾 A speech bubble shows <b>which</b> ingredients they want (not the order).<br>
+        📖 The <b>recipe book</b> shows the correct <b>sequence</b> — check it anytime.<br>
+        👆 Tap ingredients to stack a plate, <b>drag to reorder</b>, then <b>Serve</b>.<br>
+        🗑️ Wrong ingredients or a bad order <b>ruin the plate</b> — throw it in the trash and redo!
       </div>
-      <button class="btn" id="btn-play">Play 🌮</button>
-      <div><button class="btn ghost" id="btn-title-book" style="font-size:15px;padding:9px 20px">📖 Recipe Book</button></div>
+      <button class="btn" id="btn-play">Play</button>
+      <div><button class="btn ghost" id="btn-title-book">📖 Recipe Book</button></div>
     </div>
   </div>
 
@@ -205,9 +217,9 @@
   <div class="overlay" id="ov-map">
     <div class="card">
       <h2>Choose a Level</h2>
-      <div id="map-grid" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:14px 0"></div>
-      <button class="btn ghost" id="btn-map-book" style="font-size:15px;padding:9px 20px">📖 Recipe Book</button>
-      <div><button class="btn ghost" id="btn-map-back" style="font-size:14px;padding:8px 16px">back</button></div>
+      <div id="map-grid"></div>
+      <button class="btn ghost" id="btn-map-book">📖 Recipe Book</button>
+      <div><button class="btn ghost" id="btn-map-back">back</button></div>
     </div>
   </div>
 
@@ -216,10 +228,10 @@
     <div class="card">
       <h2 id="intro-title">Level 1</h2>
       <div id="intro-new"></div>
-      <div class="how" id="intro-note">Tickets show the ingredients — check the 📖 recipe book for the right <b>order</b>, then build it on the counter.</div>
-      <button class="btn" id="btn-go">Start! 🔔</button>
-      <div><button class="btn ghost" id="btn-intro-book" style="font-size:15px;padding:9px 20px">📖 Recipe Book</button></div>
-      <div><button class="btn ghost" id="btn-intro-back" style="font-size:14px;padding:8px 16px">back</button></div>
+      <div class="how">Bubbles show the ingredients — check the 📖 book for the right <b>order</b>. Stack the plate, drag to fix the order, then Serve. Ruined plate? Trash it!</div>
+      <button class="btn" id="btn-go">Start!</button>
+      <div><button class="btn ghost" id="btn-intro-book">📖 Recipe Book</button></div>
+      <div><button class="btn ghost" id="btn-intro-back">back</button></div>
     </div>
   </div>
 
@@ -230,7 +242,7 @@
       <div class="stars" id="res-stars">⭐⭐⭐</div>
       <div class="row"><span>Served</span><b id="res-served">0</b></div>
       <div class="row"><span>Best combo</span><b id="res-combo">0</b></div>
-      <div class="row"><span>Missed</span><b id="res-missed">0</b></div>
+      <div class="row"><span>Ruined / Missed</span><b id="res-missed">0</b></div>
       <div class="row"><span>Score</span><b id="res-score">0</b></div>
       <div id="res-btns" style="margin-top:12px"></div>
     </div>
@@ -241,7 +253,7 @@
     <div class="card">
       <h2>📖 Recipe Book</h2>
       <div id="book-body" style="margin:12px 0; max-height:56vh; overflow-y:auto"></div>
-      <button class="btn" id="btn-book-close">Got it! ✕</button>
+      <button class="btn" id="btn-book-close">Got it!</button>
     </div>
   </div>
 </div>
@@ -249,359 +261,367 @@
 <script>
 'use strict';
 /* ==========================================================
-   TACO LOCO — Food Truck Rush
-   First-person truck window. Orders arrive; tap ingredients
-   in the correct sequence to build each order.
+   TACO LOCO — Food Truck Rush (custom art build)
    ========================================================== */
 
+/* ---------- custom vector icons (no emoji) ---------- */
+const O = 'stroke="#3a271b" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"';
+const ICONS = {
+  tortilla: `<circle cx="32" cy="34" r="21" fill="#ecd3a5" ${O}/><circle cx="25" cy="29" r="2.2" fill="#cdaa78"/><circle cx="39" cy="36" r="2" fill="#cdaa78"/><circle cx="31" cy="43" r="1.8" fill="#cdaa78"/>`,
+  meat:     `<rect x="12" y="21" width="40" height="26" rx="13" fill="#a5654a" ${O}/><rect x="19" y="27" width="26" height="7" rx="3.5" fill="#c07d60"/>`,
+  chicken:  `<path d="M42 18 a13 13 0 1 1 -15 19 l-9 9 a4.5 4.5 0 0 1 -7 -7 l9 -9 a13 13 0 0 1 22 -12 Z" fill="#d99b57" ${O}/><circle cx="15" cy="49" r="6" fill="#fff5e6" ${O}/>`,
+  cheese:   `<path d="M12 45 L44 19 L52 45 Z" fill="#ffd24d" ${O}/><circle cx="33" cy="39" r="3" fill="#ecb62f"/><circle cx="41" cy="35" r="2.2" fill="#ecb62f"/>`,
+  lettuce:  `<path d="M32 15 C49 15 53 30 48 40 C44 50 20 50 16 40 C11 30 15 15 32 15 Z" fill="#8cc46a" ${O}/><path d="M32 21 V45 M23 30 L41 40" stroke="#5f9a45" stroke-width="3.5" fill="none" stroke-linecap="round"/>`,
+  salsa:    `<path d="M12 39 C12 27 52 27 52 39 A20 9 0 0 1 12 39 Z" fill="#e0503c" ${O}/><circle cx="25" cy="35" r="2.2" fill="#a83426"/><circle cx="37" cy="37" r="2" fill="#a83426"/><circle cx="32" cy="32" r="1.8" fill="#f6b64a"/>`,
+  beans:    `<ellipse cx="24" cy="30" rx="9" ry="5.5" transform="rotate(-22 24 30)" fill="#8a5a3a" ${O}/><ellipse cx="38" cy="36" rx="9" ry="5.5" transform="rotate(18 38 36)" fill="#7a4a2f" ${O}/><ellipse cx="28" cy="42" rx="8" ry="5" transform="rotate(-8 28 42)" fill="#8a5a3a" ${O}/>`,
+  rice:     `<path d="M14 40 C14 29 50 29 50 40 A18 8 0 0 1 14 40 Z" fill="#fbfaf3" ${O}/><ellipse cx="26" cy="35" rx="3" ry="1.6" transform="rotate(-20 26 35)" fill="#e6e0cf"/><ellipse cx="36" cy="37" rx="3" ry="1.6" transform="rotate(15 36 37)" fill="#e6e0cf"/>`,
+  guac:     `<circle cx="32" cy="34" r="18" fill="#8dbf5f" ${O}/><circle cx="32" cy="34" r="6.5" fill="#8a5a33" ${O}/>`,
+  jalapeno: `<path d="M23 16 C23 24 28 27 32 32 C42 43 40 50 33 51 C26 52 22 45 23 38 C24 30 18 25 18 21 C18 17 23 13 23 16 Z" fill="#5aa64a" ${O}/><path d="M23 16 l5 -5" stroke="#4a3a1b" stroke-width="4.5" stroke-linecap="round"/>`,
+  chips:    `<path d="M13 45 L32 16 L51 45 Z" fill="#f0b74e" ${O}/><path d="M24 40 h16" stroke="#d79a2f" stroke-width="3" stroke-linecap="round"/>`,
+};
+function icon(id, cls) { return `<svg viewBox="0 0 64 64" class="${cls||'isvg'}">${ICONS[id]}</svg>`; }
+const BLOB_COLS = ['#f2a6a6','#a6c8f2','#b8e6a6','#f4d69a','#d3a6f2','#9ee6d8','#f4b6d6','#f7c98f'];
+function blobSVG(color, mood) {
+  const mouth = mood === 'happy' ? `<path d="M30 50 Q40 60 50 50" ${O} fill="none"/>`
+    : mood === 'sad' ? `<path d="M30 56 Q40 48 50 56" ${O} fill="none"/>`
+    : `<path d="M31 53 H49" ${O} fill="none"/>`;
+  return `<svg viewBox="0 0 80 82" class="bsvg">
+    <ellipse cx="40" cy="76" rx="24" ry="5" fill="rgba(58,39,27,.18)"/>
+    <path d="M40 8 C60 8 71 22 71 42 C71 64 58 76 40 76 C22 76 9 64 9 42 C9 22 20 8 40 8 Z" fill="${color}" ${O}/>
+    <circle cx="30" cy="40" r="6.5" fill="#fff"/><circle cx="50" cy="40" r="6.5" fill="#fff"/>
+    <circle cx="31" cy="41" r="3.1" fill="#3a271b"/><circle cx="51" cy="41" r="3.1" fill="#3a271b"/>
+    <circle cx="22" cy="34" r="3.5" fill="rgba(255,255,255,.45)"/>${mouth}</svg>`;
+}
+const UI_TRASH = `<svg viewBox="0 0 24 24" class="ui"><path d="M5 7h14M9.5 7V5h5v2M7 7l1 12h8l1-12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const UI_CHECK = `<svg viewBox="0 0 24 24" class="ui"><path d="M5 13l4 4L19 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const UI_BOOK = `<svg viewBox="0 0 24 24" class="ui"><path d="M4 5c3-1 6-1 8 1 2-2 5-2 8-1v14c-3-1-6-1-8 1-2-2-5-2-8-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 7v13" stroke="currentColor" stroke-width="2"/></svg>`;
+
+/* ---------- data ---------- */
 const ING = {
-  tortilla: { emoji: '🫓', name: 'Tortilla' },
-  chips:    { emoji: '🌽', name: 'Chips' },
-  rice:     { emoji: '🍚', name: 'Rice' },
-  meat:     { emoji: '🥩', name: 'Beef' },
-  chicken:  { emoji: '🍗', name: 'Chicken' },
-  beans:    { emoji: '🫘', name: 'Beans' },
-  cheese:   { emoji: '🧀', name: 'Cheese' },
-  lettuce:  { emoji: '🥬', name: 'Lettuce' },
-  salsa:    { emoji: '🥫', name: 'Salsa' },
-  guac:     { emoji: '🥑', name: 'Guac' },
-  jalapeno: { emoji: '🌶️', name: 'Jalapeño' },
+  tortilla:{name:'Tortilla'}, chips:{name:'Chips'}, rice:{name:'Rice'}, meat:{name:'Beef'}, chicken:{name:'Chicken'},
+  beans:{name:'Beans'}, cheese:{name:'Cheese'}, lettuce:{name:'Lettuce'}, salsa:{name:'Salsa'}, guac:{name:'Guac'}, jalapeno:{name:'Jalapeño'},
 };
-// counter layout (order of buttons)
 const PALETTE = ['tortilla','chips','rice','meat','chicken','beans','cheese','lettuce','salsa','guac','jalapeno'];
-
 const RECIPES = {
-  taco:       { name: 'Taco',       emoji: '🌮', steps: ['tortilla','meat','lettuce','salsa'] },
-  quesadilla: { name: 'Quesadilla', emoji: '🫓', steps: ['tortilla','cheese','chicken'] },
-  nachos:     { name: 'Nachos',     emoji: '🧀', steps: ['chips','cheese','meat','jalapeno'] },
-  burrito:    { name: 'Burrito',    emoji: '🌯', steps: ['tortilla','beans','meat','cheese','salsa'] },
-  bowl:       { name: 'Bowl',       emoji: '🥗', steps: ['rice','beans','chicken','guac'] },
+  taco:       { name:'Taco',       steps:['tortilla','meat','lettuce','salsa'] },
+  quesadilla: { name:'Quesadilla', steps:['tortilla','cheese','chicken'] },
+  nachos:     { name:'Nachos',     steps:['chips','cheese','meat','jalapeno'] },
+  burrito:    { name:'Burrito',    steps:['tortilla','beans','meat','cheese','salsa'] },
+  bowl:       { name:'Bowl',       steps:['rice','beans','chicken','guac'] },
 };
-// Each level introduces one new recipe; its pool is cumulative. Cleared level (≥1★) unlocks the next.
 const LEVELS = [
-  { name: 'Grand Opening', newR: 'taco',       pool: ['taco'],                                        time: 70, every: [4.6, 3.2], patScale: 1.2,  stars: [22, 44, 66] },
-  { name: 'Cheese, Please',newR: 'quesadilla', pool: ['taco','quesadilla'],                           time: 80, every: [4.2, 2.9], patScale: 1.12, stars: [34, 68, 102] },
-  { name: 'Nacho Average', newR: 'nachos',     pool: ['taco','quesadilla','nachos'],                  time: 88, every: [3.9, 2.6], patScale: 1.06, stars: [48, 92, 136] },
-  { name: 'Big Burrito',   newR: 'burrito',    pool: ['taco','quesadilla','nachos','burrito'],        time: 95, every: [3.6, 2.4], patScale: 1.0,  stars: [58, 112, 165] },
-  { name: 'Bowl Bonanza',  newR: 'bowl',       pool: ['taco','quesadilla','nachos','burrito','bowl'], time: 100, every: [3.2, 2.2], patScale: 1.0, stars: [72, 138, 200] },
+  { name:'Grand Opening', newR:'taco',       pool:['taco'],                                        time:70, every:[4.6,3.2], patScale:1.25, stars:[20,40,62] },
+  { name:'Cheese, Please',newR:'quesadilla', pool:['taco','quesadilla'],                           time:80, every:[4.2,2.9], patScale:1.15, stars:[32,64,96] },
+  { name:'Nacho Average', newR:'nachos',     pool:['taco','quesadilla','nachos'],                  time:88, every:[3.9,2.6], patScale:1.08, stars:[44,86,128] },
+  { name:'Big Burrito',   newR:'burrito',    pool:['taco','quesadilla','nachos','burrito'],        time:95, every:[3.6,2.4], patScale:1.02, stars:[54,104,155] },
+  { name:'Bowl Bonanza',  newR:'bowl',       pool:['taco','quesadilla','nachos','burrito','bowl'], time:100, every:[3.2,2.2], patScale:1.0, stars:[66,128,188] },
 ];
-const CUSTOMERS = ['😀','🤠','👵','🧑‍🎤','👷','🕵️','🧛','👩‍🚀','🤡','🧙','👨‍🎨','🦸','🧕','👨‍🍳','🧟','👽'];
-
-const lerp = (a, b, t) => a + (b - a) * t;
+const lerp = (a,b,t) => a + (b-a)*t;
 const $ = id => document.getElementById(id);
 
 /* ---------- audio ---------- */
 let actx = null;
-function beep(f, d, t, v) { try {
-  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
-  const o = actx.createOscillator(), g = actx.createGain();
-  o.type = t || 'sine'; o.frequency.value = f; g.gain.value = v || 0.05;
-  o.connect(g); g.connect(actx.destination); o.start();
-  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (d || 0.08)); o.stop(actx.currentTime + (d || 0.08));
-} catch (e) {} }
+function beep(f,d,t,v){ try { if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
+  const o=actx.createOscillator(), g=actx.createGain(); o.type=t||'sine'; o.frequency.value=f; g.gain.value=v||0.05;
+  o.connect(g); g.connect(actx.destination); o.start(); g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime+(d||0.08)); o.stop(actx.currentTime+(d||0.08)); } catch(e){} }
 
-/* ---------- persistent ---------- */
-const SAVE_KEY = 'tacoLoco.truck.v2';
-let save = { unlocked: 1, stars: {}, best: {} };   // unlocked = # of playable levels
-try { const r = localStorage.getItem(SAVE_KEY); if (r) save = Object.assign(save, JSON.parse(r)); } catch (e) {}
-const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} };
+/* ---------- save ---------- */
+const SAVE_KEY = 'tacoLoco.truck.v3';
+let save = { unlocked:1, stars:{}, best:{} };
+try { const r = localStorage.getItem(SAVE_KEY); if (r) save = Object.assign(save, JSON.parse(r)); } catch(e){}
+const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch(e){} };
 const levelUnlocked = i => i < save.unlocked;
 const starsOf = i => save.stars[i] || 0;
-// recipes the player has unlocked = pool of the highest unlocked level (pools are cumulative)
-const unlockedRecipes = () => LEVELS[Math.min(save.unlocked, LEVELS.length) - 1].pool;
+const unlockedRecipes = () => LEVELS[Math.min(save.unlocked, LEVELS.length)-1].pool;
 
 /* ---------- state ---------- */
 let G = null, lastTs = 0, screen = 'title', selLevel = 0;
-
-function patienceFor(steps, scale) { return (13 + steps * 3.4) * (scale || 1); }
+const patienceFor = (n, s) => (13 + n*3.6) * (s||1);
+const subMultiset = (a, b) => { const c = {}; for (const x of b) c[x]=(c[x]||0)+1; for (const x of a){ if(!c[x]) return false; c[x]--; } return true; };
+const seqEqual = (a, b) => a.length===b.length && a.every((x,i)=>x===b[i]);
 
 function startLevel(idx) {
-  selLevel = idx;
-  const L = LEVELS[idx];
-  G = { running: true, paused: false, idx, L, timeLeft: L.time, score: 0, served: 0, missed: 0,
-        combo: 0, bestCombo: 0, orders: [], seq: 0, spawnT: 0.8, activeId: null };
-  screen = 'play';
-  $('orders').innerHTML = '';
-  buildGrid();
-  showOverlay(null);
-  updateBookBtn();
-  syncHud();
-  if (actx && actx.state === 'suspended') actx.resume();
+  selLevel = idx; const L = LEVELS[idx];
+  G = { running:true, paused:false, idx, L, timeLeft:L.time, score:0, served:0, missed:0, ruinedCount:0,
+        combo:0, bestCombo:0, orders:[], seq:0, spawnT:0.8, activeId:null };
+  screen = 'play'; $('customers').innerHTML=''; buildGrid(); showOverlay(null); updateBookBtn();
+  renderPlate(); syncHud();
+  if (actx && actx.state==='suspended') actx.resume();
   lastTs = performance.now();
 }
-
 function spawnOrder() {
-  const pool = G.L.pool;
-  const rid = pool[Math.floor(Math.random() * pool.length)];
-  const steps = RECIPES[rid].steps;
-  const pat = patienceFor(steps.length, G.L.patScale);
-  const o = { id: ++G.seq, recipe: rid, cust: CUSTOMERS[Math.floor(Math.random()*CUSTOMERS.length)],
-              progress: 0, clean: true, pat, maxPat: pat, el: null };
-  G.orders.push(o);
-  if (G.activeId == null) G.activeId = o.id;
-  beep(560, .06, 'sine');
+  const pool = G.L.pool, rid = pool[Math.floor(Math.random()*pool.length)];
+  const pat = patienceFor(RECIPES[rid].steps.length, G.L.patScale);
+  const o = { id:++G.seq, recipe:rid, color:BLOB_COLS[Math.floor(Math.random()*BLOB_COLS.length)],
+              pat, maxPat:pat, plate:[], ruined:false, el:null, blobEl:null };
+  G.orders.push(o); const first = G.activeId==null; if (first) G.activeId=o.id; render(); if (first) renderPlate(); beep(560,.06,'sine');
 }
+const activeOrder = () => G.orders.find(o => o.id===G.activeId) || G.orders[0] || null;
 
-function activeOrder() { return G.orders.find(o => o.id === G.activeId) || G.orders[0] || null; }
-
-function tapIngredient(id, btnEl) {
-  if (!G || !G.running) return;
-  let o = activeOrder();
-  if (!o) return;
+/* ---------- assembly ---------- */
+function addIngredient(id, btn) {
+  if (!G || !G.running || G.paused) return;
+  const o = activeOrder();
+  if (!o) { toast('tap a customer first'); return; }
+  if (o.ruined) { buzzPlate(); toast('Plate ruined — trash it! 🗑️'); return; }
+  o.plate.push(id); btn && flash(btn,'pop');
+  if (!subMultiset(o.plate, RECIPES[o.recipe].steps)) { o.ruined = true; ruinPlate(o, 'wrong ingredient!'); }
+  else { beep(430 + o.plate.length*80, .05, 'triangle'); }
+  render(); renderPlate();
+}
+function ruinPlate(o, why) {
+  o.ruined = true; G.combo = 0; o.pat = Math.max(0, o.pat - 2.5);
+  beep(150,.14,'square'); buzzPlate(); if (why) toast(why + ' 🗑️ trash it');
+}
+function buzzPlate() { const w = $('plate-wrap'); w.classList.remove('ruined'); void w.offsetWidth; w.classList.add('ruined'); }
+function serve() {
+  if (!G || !G.running || G.paused) return;
+  const o = activeOrder(); if (!o) return;
+  if (o.ruined) { buzzPlate(); toast('Trash the ruined plate first! 🗑️'); return; }
   const steps = RECIPES[o.recipe].steps;
-  const need = steps[o.progress];
-  if (id === need) {
-    o.progress++;
-    btnEl && flash(btnEl, 'pop');
-    beep(480 + o.progress * 90, .05, 'triangle');
-    if (o.progress >= steps.length) completeOrder(o);
-    render();
-  } else {
-    // wrong ingredient
-    o.clean = false;
-    o.pat = Math.max(0, o.pat - 1.6);
-    G.combo = 0;
-    btnEl && flash(btnEl, 'bad');
-    if (o.el) { o.el.classList.remove('wrong'); void o.el.offsetWidth; o.el.classList.add('wrong'); }
-    beep(150, .12, 'square');
-    render();
-  }
+  if (o.plate.length < steps.length) { toast('Not finished — add more'); beep(240,.08,'sine'); return; }
+  if (seqEqual(o.plate, steps)) completeOrder(o);
+  else { ruinPlate(o, 'wrong order!'); render(); renderPlate(); }
 }
-
+function trashPlate() {
+  if (!G || !G.running || G.paused) return;
+  const o = activeOrder(); if (!o) return;
+  if (!o.plate.length && !o.ruined) return;
+  o.plate = []; o.ruined = false; beep(300,.08,'square'); render(); renderPlate();
+}
 function completeOrder(o) {
-  const frac = Math.max(0, o.pat / o.maxPat);
+  const frac = Math.max(0, o.pat/o.maxPat);
   G.combo++; G.bestCombo = Math.max(G.bestCombo, G.combo);
   const mult = comboMult();
-  const base = RECIPES[o.recipe].steps.length * 4;
-  const tip = Math.round((o.clean ? 6 : 2) + frac * 8);
-  const gain = Math.round((base + tip) * mult);
+  const gain = Math.round((RECIPES[o.recipe].steps.length*4 + 6 + Math.round(frac*9)) * mult);
   G.score += gain; G.served++;
-  if (o.el) { const r = o.el.getBoundingClientRect(); floatText('+' + gain, r.left + r.width/2, r.top); o.el.classList.add('serving'); }
-  beep(720, .08, 'triangle'); setTimeout(() => beep(980, .1, 'triangle'), 70);
-  if (G.combo >= 2) showCombo();
-  const wasActive = G.activeId === o.id;
-  setTimeout(() => { G.orders = G.orders.filter(x => x !== o); if (o.el) o.el.remove();
-    if (wasActive) G.activeId = G.orders[0] ? G.orders[0].id : null; render(); }, 380);
+  if (o.el) { const r = o.el.getBoundingClientRect(); floatText('+'+gain, r.left+r.width/2, r.top+20); o.el.classList.add('leaving'); }
+  beep(720,.08,'triangle'); setTimeout(()=>beep(980,.1,'triangle'),70);
+  if (G.combo>=2) showCombo();
+  const wasActive = G.activeId===o.id;
+  setTimeout(()=>{ G.orders=G.orders.filter(x=>x!==o); if(o.el)o.el.remove();
+    if(wasActive) G.activeId = G.orders[0]?G.orders[0].id:null; render(); renderPlate(); }, 420);
   syncHud();
 }
-
 function missOrder(o) {
-  G.missed++; G.combo = 0; G.score = Math.max(0, G.score - 6);
-  if (o.el) o.el.remove();
-  G.orders = G.orders.filter(x => x !== o);
-  if (G.activeId === o.id) G.activeId = G.orders[0] ? G.orders[0].id : null;
-  toast(o.cust + ' left hungry 😞');
-  beep(140, .2, 'square');
+  G.missed++; G.combo=0; G.score=Math.max(0,G.score-6);
+  if (o.el) o.el.remove(); G.orders=G.orders.filter(x=>x!==o);
+  if (G.activeId===o.id) G.activeId = G.orders[0]?G.orders[0].id:null;
+  toast('a customer left hungry'); beep(140,.2,'square'); renderPlate();
 }
+const comboMult = () => G.combo>=8?2:G.combo>=5?1.6:G.combo>=3?1.3:1;
 
-const comboMult = () => G.combo >= 8 ? 2 : G.combo >= 5 ? 1.6 : G.combo >= 3 ? 1.3 : 1;
-
-/* ---------- render ---------- */
+/* ---------- render: customers ---------- */
 function buildGrid() {
-  const g = $('grid'); g.innerHTML = '';
+  const g = $('grid'); g.innerHTML='';
   for (const id of PALETTE) {
-    const b = document.createElement('button'); b.className = 'ing'; b.dataset.id = id;
-    b.innerHTML = `<span class="em">${ING[id].emoji}</span><span class="nm">${ING[id].name}</span>`;
-    b.addEventListener('pointerdown', e => { e.preventDefault(); tapIngredient(id, b); });
+    const b = document.createElement('button'); b.className='ing'; b.dataset.id=id;
+    b.innerHTML = icon(id,'ci') + `<span class="nm">${ING[id].name}</span>`;
+    b.addEventListener('pointerdown', e => { e.preventDefault(); addIngredient(id, b); });
     g.appendChild(b);
   }
 }
-function flash(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); setTimeout(() => el.classList.remove(cls), 320); }
-function floatText(txt, x, y) { const el = document.createElement('div'); el.className = 'float'; el.textContent = txt;
-  const a = $('app').getBoundingClientRect(); el.style.left = (x - a.left) + 'px'; el.style.top = (y - a.top) + 'px';
-  $('app').appendChild(el); setTimeout(() => el.remove(), 1000); }
-function toast(m) { const t = $('toast'); t.textContent = m; t.classList.remove('show'); void t.offsetWidth; t.classList.add('show'); }
-function showCombo() { const c = $('combo'); c.textContent = 'COMBO x' + G.combo + (comboMult() > 1 ? '  (' + comboMult() + '×)' : '');
-  c.classList.remove('show'); void c.offsetWidth; c.classList.add('show');
-  clearTimeout(c._t); c._t = setTimeout(() => c.classList.remove('show'), 1400); }
-
+function moodOf(o){ const f=o.pat/o.maxPat; return o.ruined?'sad':f>0.45?'happy':f>0.22?'neutral':'sad'; }
 function render() {
-  const cont = $('orders');
-  // create/remove ticket elements
-  const ids = new Set(G.orders.map(o => o.id));
+  if (!G) return;
+  const cont = $('customers');
   for (const o of G.orders) {
     if (!o.el) {
-      const el = document.createElement('div'); el.className = 'ticket'; el.dataset.id = o.id;
-      el.addEventListener('pointerdown', () => { G.activeId = o.id; render(); });
+      const el = document.createElement('div'); el.className='guest'; el.dataset.id=o.id;
+      el.addEventListener('pointerdown', () => { G.activeId=o.id; render(); renderPlate(); });
       cont.appendChild(el); o.el = el;
     }
   }
-  // update tickets — show WHICH items are needed (as a set), not the order. The book has the order.
   for (const o of G.orders) {
-    const r = RECIPES[o.recipe];
-    const active = o.id === G.activeId;
+    const r = RECIPES[o.recipe], active = o.id===G.activeId;
     o.el.classList.toggle('active', active);
-    const doneSet = new Set(r.steps.slice(0, o.progress));   // ingredients already added, order-agnostic
-    const display = [...r.steps].sort();                     // alphabetical → never leaks the cook order
-    const stepsHtml = display.map(s => {
-      return `<div class="step ${doneSet.has(s) ? 'done' : ''}"><span class="em">${ING[s].emoji}</span></div>`;
-    }).join('');
-    const frac = Math.max(0, o.pat / o.maxPat);
-    const col = frac > 0.5 ? 'var(--green)' : frac > 0.25 ? 'var(--yellow)' : 'var(--red)';
-    o.el.innerHTML = `<div class="cust">${o.cust}</div><div class="dish">${r.emoji} ${r.name}</div>`
-      + `<div class="steps">${stepsHtml}</div><div class="pat"><i style="width:${(frac*100).toFixed(1)}%;background:${col}"></i></div>`;
+    o.el.classList.toggle('building', o.plate.length>0 && !active);
+    const set = [...r.steps].sort().map(s => icon(s,'bi')).join('');
+    const frac = Math.max(0, o.pat/o.maxPat);
+    const col = frac>0.5?'var(--green)':frac>0.25?'var(--yellow)':'var(--red)';
+    o.el.innerHTML = `<div class="bubble"><div class="bname">${r.name}</div><div class="bset">${set}</div>`
+      + `<div class="bpat"><i style="width:${(frac*100).toFixed(1)}%;background:${col}"></i></div></div>`
+      + `<div class="blob">${blobSVG(o.color, moodOf(o))}</div>`;
+  }
+}
+/* ---------- render: plate ---------- */
+function renderPlate() {
+  const wrap = $('plate-wrap'), plate = $('plate'), hint = $('plate-hint');
+  const o = activeOrder();
+  wrap.classList.toggle('ruined', !!(o && o.ruined));
+  plate.innerHTML = '';
+  if (!o || (!o.plate.length)) {
+    hint.style.display = 'flex';
+    hint.textContent = o ? (o.ruined ? 'Ruined! Throw it out 🗑️' : 'tap ingredients below to build ↓') : 'tap a customer to start';
+  } else {
+    hint.style.display = 'none';
+    o.plate.forEach((id, i) => {
+      const c = document.createElement('div'); c.className='chip'; c.dataset.index=i;
+      c.innerHTML = icon(id,'ci');
+      c.addEventListener('pointerdown', e => startChipDrag(e, i));
+      plate.appendChild(c);
+    });
+  }
+  $('serve-btn').disabled = !(o && o.plate.length && !o.ruined);
+  $('trash-btn').classList.toggle('pulse', !!(o && o.ruined));
+}
+/* drag to reorder chips */
+let drag = null;
+function startChipDrag(e, index) {
+  const o = activeOrder(); if (!o || o.ruined) return;
+  e.preventDefault();
+  drag = { o, from:index, id:o.plate[index], x:e.clientX, target:index };
+  const g = $('drag-ghost'); g.innerHTML = icon(drag.id,'ci'); g.style.display='block';
+  moveGhost(e);
+  $('plate').children[index] && $('plate').children[index].classList.add('dragging');
+  window.addEventListener('pointermove', onChipMove);
+  window.addEventListener('pointerup', endChipDrag);
+}
+function moveGhost(e){ const g=$('drag-ghost'); g.style.left=e.clientX+'px'; g.style.top=e.clientY+'px'; }
+function onChipMove(e) {
+  if (!drag) return; moveGhost(e);
+  const chips = [...$('plate').children];
+  let t = chips.length - 1;
+  for (let i=0;i<chips.length;i++){ const r=chips[i].getBoundingClientRect(); if (e.clientX < r.left + r.width/2){ t=i; break; } }
+  drag.target = t;
+}
+function endChipDrag() {
+  window.removeEventListener('pointermove', onChipMove);
+  window.removeEventListener('pointerup', endChipDrag);
+  $('drag-ghost').style.display='none';
+  if (drag) {
+    const o = drag.o, arr = o.plate; const [it] = arr.splice(drag.from,1);
+    let t = drag.target; if (t>drag.from) t--; if (t<0) t=0; if (t>arr.length) t=arr.length;
+    arr.splice(t, 0, it); beep(360,.04,'sine');
+    drag = null; renderPlate();
   }
 }
 
+/* ---------- ui helpers ---------- */
+function flash(el,cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); setTimeout(()=>el.classList.remove(cls),320); }
+function floatText(txt,x,y){ const el=document.createElement('div'); el.className='float'; el.textContent=txt;
+  const a=$('app').getBoundingClientRect(); el.style.left=(x-a.left)+'px'; el.style.top=(y-a.top)+'px'; $('app').appendChild(el); setTimeout(()=>el.remove(),1000); }
+function toast(m){ const t=$('toast'); t.textContent=m; t.classList.remove('show'); void t.offsetWidth; t.classList.add('show'); }
+function showCombo(){ const c=$('combo'); c.textContent='COMBO x'+G.combo+(comboMult()>1?'  '+comboMult()+'×':'');
+  c.classList.remove('show'); void c.offsetWidth; c.classList.add('show'); clearTimeout(c._t); c._t=setTimeout(()=>c.classList.remove('show'),1400); }
+
 /* ---------- loop ---------- */
-function syncHud() {
-  $('hud-shift').textContent = 'Lvl ' + (G.idx + 1);
-  $('hud-score').textContent = G.score;
-  const t = $('hud-timer'); const s = Math.max(0, Math.ceil(G.timeLeft));
-  t.textContent = Math.floor(s/60) + ':' + String(s%60).padStart(2,'0'); t.classList.toggle('low', G.timeLeft < 12);
-}
+function syncHud(){ $('hud-shift').textContent=G.idx+1; $('hud-score').textContent=G.score;
+  const t=$('hud-timer'), s=Math.max(0,Math.ceil(G.timeLeft)); t.textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); t.classList.toggle('low',G.timeLeft<12); }
 function frame(ts) {
   requestAnimationFrame(frame);
-  const dt = Math.min(0.1, (ts - lastTs) / 1000 || 0); lastTs = ts;
-  if (screen !== 'play' || !G || !G.running || G.paused) return;
-  G.timeLeft -= dt;
-  if (G.timeLeft <= 0) { G.timeLeft = 0; return endLevel(); }
-  G.spawnT -= dt;
-  const frac = 1 - G.timeLeft / G.L.time;
-  if (G.spawnT <= 0 && G.orders.length < 5) { spawnOrder(); G.spawnT = lerp(G.L.every[0], G.L.every[1], frac); render(); }
-  // patience
-  for (const o of [...G.orders]) { o.pat -= dt; if (o.pat <= 0) missOrder(o); }
-  for (const o of G.orders) { if (!o.el) continue; const bar = o.el.querySelector('.pat > i'); if (bar) {
-    const f = Math.max(0, o.pat / o.maxPat); bar.style.width = (f*100).toFixed(1) + '%';
-    bar.style.background = f > 0.5 ? 'var(--green)' : f > 0.25 ? 'var(--yellow)' : 'var(--red)'; } }
+  const dt = Math.min(0.1,(ts-lastTs)/1000||0); lastTs=ts;
+  if (screen!=='play'||!G||!G.running||G.paused) return;
+  G.timeLeft-=dt; if (G.timeLeft<=0){ G.timeLeft=0; return endLevel(); }
+  G.spawnT-=dt; const frac=1-G.timeLeft/G.L.time;
+  if (G.spawnT<=0 && G.orders.length<4){ spawnOrder(); G.spawnT=lerp(G.L.every[0],G.L.every[1],frac); }
+  for (const o of [...G.orders]){ o.pat-=dt; if(o.pat<=0) missOrder(o); }
+  for (const o of G.orders){ if(!o.el) continue; const bar=o.el.querySelector('.bpat > i'); if(bar){
+    const f=Math.max(0,o.pat/o.maxPat); bar.style.width=(f*100).toFixed(1)+'%';
+    bar.style.background=f>0.5?'var(--green)':f>0.25?'var(--yellow)':'var(--red)'; } }
   syncHud();
 }
-
 function endLevel() {
-  G.running = false; screen = 'results'; updateBookBtn();
-  const s = G.score, L = G.L, i = G.idx;
-  let stars = 0; if (s >= L.stars[2]) stars = 3; else if (s >= L.stars[1]) stars = 2; else if (s >= L.stars[0]) stars = 1;
-  if (stars > starsOf(i)) save.stars[i] = stars;
-  if (s > (save.best[i] || 0)) save.best[i] = s;
-  const unlockedNew = stars > 0 && i + 1 < LEVELS.length && save.unlocked < i + 2;
-  if (unlockedNew) save.unlocked = i + 2;
+  G.running=false; screen='results'; updateBookBtn();
+  const s=G.score, L=G.L, i=G.idx;
+  let stars=0; if(s>=L.stars[2])stars=3; else if(s>=L.stars[1])stars=2; else if(s>=L.stars[0])stars=1;
+  if (stars>starsOf(i)) save.stars[i]=stars;
+  if (s>(save.best[i]||0)) save.best[i]=s;
+  const unlockedNew = stars>0 && i+1<LEVELS.length && save.unlocked<i+2;
+  if (unlockedNew) save.unlocked=i+2;
   persist();
-  $('res-title').textContent = stars === 3 ? '¡Perfecto! 🎉' : stars ? 'Level clear! 😊' : 'Not quite 😅';
-  $('res-stars').textContent = stars ? '⭐'.repeat(stars) + '☆'.repeat(3 - stars) : '☆☆☆';
-  $('res-served').textContent = G.served;
-  $('res-combo').textContent = 'x' + G.bestCombo;
-  $('res-missed').textContent = G.missed;
-  $('res-score').textContent = s + '   (need ' + L.stars[0] + ')';
-  // buttons
-  const btns = $('res-btns'); btns.innerHTML = '';
-  btns.appendChild(mkBtn('Retry 🔁', 'ghost', () => startLevel(i)));
-  const hasNext = i + 1 < LEVELS.length;
-  if (stars > 0 && hasNext) btns.appendChild(mkBtn('Next ▶', '', () => { selLevel = i + 1; toIntro(); }));
-  btns.appendChild(mkBtn('Levels 🗺️', 'ghost', toMap));
-  if (unlockedNew) toast('New recipe unlocked: ' + RECIPES[LEVELS[i+1].newR].name + ' ' + RECIPES[LEVELS[i+1].newR].emoji);
+  $('res-title').textContent = stars===3?'¡Perfecto! 🎉':stars?'Level clear! 😊':'Not quite 😅';
+  $('res-stars').textContent = stars?'⭐'.repeat(stars)+'☆'.repeat(3-stars):'☆☆☆';
+  $('res-served').textContent=G.served; $('res-combo').textContent='x'+G.bestCombo;
+  $('res-missed').textContent=G.missed; $('res-score').textContent=s+'   (need '+L.stars[0]+')';
+  const btns=$('res-btns'); btns.innerHTML='';
+  btns.appendChild(mkBtn('Retry',()=>startLevel(i),'ghost'));
+  if (stars>0 && i+1<LEVELS.length) btns.appendChild(mkBtn('Next ▶',()=>{selLevel=i+1;toIntro();}));
+  btns.appendChild(mkBtn('Levels',toMap,'ghost'));
+  if (unlockedNew) toast('New recipe unlocked: '+RECIPES[LEVELS[i+1].newR].name);
   showOverlay('ov-res');
 }
-function mkBtn(txt, cls, fn) { const b = document.createElement('button'); b.className = 'btn ' + cls; b.textContent = txt; b.addEventListener('click', fn); return b; }
+function mkBtn(txt,fn,cls){ const b=document.createElement('button'); b.className='btn '+(cls||''); b.textContent=txt; b.addEventListener('click',fn); return b; }
 
 /* ---------- overlays / screens ---------- */
-function showOverlay(id) { for (const o of document.querySelectorAll('.overlay')) o.classList.remove('show'); if (id) $(id).classList.add('show'); }
-function updateBookBtn() { $('book-btn').classList.toggle('on', screen === 'play'); }
-
-function toTitle() { screen = 'title'; showOverlay('ov-title'); updateBookBtn(); }
+function showOverlay(id){ for(const o of document.querySelectorAll('.overlay')) o.classList.remove('show'); if(id)$(id).classList.add('show'); }
+function updateBookBtn(){ $('book-btn').classList.toggle('on', screen==='play'); }
+function toTitle(){ screen='title'; showOverlay('ov-title'); updateBookBtn(); }
 function toMap() {
-  screen = 'map'; showOverlay('ov-map'); updateBookBtn();
-  const g = $('map-grid'); g.innerHTML = '';
-  LEVELS.forEach((L, i) => {
-    const open = levelUnlocked(i), s = starsOf(i);
-    const el = document.createElement('div'); el.className = 'lvl' + (open ? '' : ' locked');
-    el.innerHTML = open
-      ? `<div class="lem">${RECIPES[L.newR].emoji}</div><div class="lnm">${i+1}. ${L.name}</div><div class="lst">${'⭐'.repeat(s)}${'·'.repeat(3-s)}</div>`
-      : `<div class="lem">🔒</div><div class="lnm">Level ${i+1}</div><div class="lst">···</div>`;
-    if (open) el.addEventListener('click', () => { selLevel = i; toIntro(); });
+  screen='map'; showOverlay('ov-map'); updateBookBtn();
+  const g=$('map-grid'); g.innerHTML='';
+  LEVELS.forEach((L,i)=>{ const open=levelUnlocked(i), s=starsOf(i);
+    const el=document.createElement('div'); el.className='lvl'+(open?'':' locked');
+    el.innerHTML = open ? `${icon(L.newR? (RECIPES[L.newR].steps[0]) : 'taco','li')}<div class="lnm">${i+1}. ${L.name}</div><div class="lst">${'⭐'.repeat(s)}${'·'.repeat(3-s)}</div>`
+      : `<div class="li" style="font-size:22px">🔒</div><div class="lnm">Level ${i+1}</div><div class="lst">···</div>`;
+    if (open) el.addEventListener('click',()=>{selLevel=i;toIntro();});
     g.appendChild(el);
   });
 }
 function toIntro() {
-  screen = 'intro'; showOverlay('ov-intro'); updateBookBtn();
-  const L = LEVELS[selLevel];
-  $('intro-title').textContent = 'Level ' + (selLevel + 1) + ' — ' + L.name;
-  const r = RECIPES[L.newR];
-  $('intro-new').innerHTML = `<div style="font-size:14px;margin:6px 0 2px">✨ New recipe:</div>`
-    + `<div class="rec new">${recipeRowHtml(L.newR, false)}</div>`;
+  screen='intro'; showOverlay('ov-intro'); updateBookBtn();
+  const L=LEVELS[selLevel]; $('intro-title').textContent='Level '+(selLevel+1)+' — '+L.name;
+  $('intro-new').innerHTML = `<div style="font-size:14px;margin:6px 0 2px">✨ New recipe:</div><div class="rec new">${recipeRowHtml(L.newR,false)}</div>`;
 }
-function recipeRowHtml(rid, showTag) {
-  const r = RECIPES[rid];
-  const steps = r.steps.map((s, i) => `<span class="rstep"><b>${i+1}</b>${ING[s].emoji}</span>`).join('<span class="arrow">›</span>');
-  return `<div class="rh">${r.emoji} ${r.name}${showTag ? '<span class="tag">NEW</span>' : ''}</div><div class="rs">${steps}</div>`;
+function recipeRowHtml(rid, tag) {
+  const r=RECIPES[rid];
+  const steps=r.steps.map((s,i)=>`<span class="rstep"><b>${i+1}</b>${icon(s,'ri')}</span>`).join('<span class="arrow">›</span>');
+  return `<div class="rh">${icon(r.steps[0],'ri')} ${r.name}${tag?'<span class="tag">NEW</span>':''}</div><div class="rs">${steps}</div>`;
 }
-let bookReturn = null;
+let bookReturn=null;
 function openBook(list, newR) {
-  bookReturn = screen;
-  if (screen === 'play' && G) G.paused = true;
-  const body = $('book-body'); body.innerHTML = '';
-  list.forEach(rid => { const d = document.createElement('div'); d.className = 'rec' + (rid === newR ? ' new' : '');
-    d.innerHTML = recipeRowHtml(rid, rid === newR); body.appendChild(d); });
+  bookReturn=screen; if (screen==='play'&&G) G.paused=true;
+  const body=$('book-body'); body.innerHTML='';
+  list.forEach(rid=>{ const d=document.createElement('div'); d.className='rec'+(rid===newR?' new':''); d.innerHTML=recipeRowHtml(rid, rid===newR); body.appendChild(d); });
   $('ov-book').classList.add('show');
 }
-function closeBook() {
-  $('ov-book').classList.remove('show');
-  if (bookReturn === 'play' && G) { G.paused = false; lastTs = performance.now(); }
-  bookReturn = null;
-}
-// which recipes to show in the book, given context
-function bookList() {
-  if (screen === 'play' && G) return G.L.pool;
-  if (screen === 'intro') return LEVELS[selLevel].pool;
-  return unlockedRecipes();
-}
+function closeBook(){ $('ov-book').classList.remove('show'); if(bookReturn==='play'&&G){ G.paused=false; lastTs=performance.now(); } bookReturn=null; }
+function bookList(){ if(screen==='play'&&G) return G.L.pool; if(screen==='intro') return LEVELS[selLevel].pool; return unlockedRecipes(); }
 
-/* ---------- ambiance: clouds + street ---------- */
-function initClouds() {
-  const v = $('view');
-  ['☁️','☁️','🌤️'].forEach((c, i) => {
-    const el = document.createElement('div'); el.className = 'cloud'; el.textContent = c;
-    el.style.top = (4 + i * 4) + 'px'; el.style.animationDuration = (30 + i * 10) + 's'; el.style.animationDelay = (-i * 11) + 's';
-    v.appendChild(el);
-  });
-}
+/* ---------- ambiance ---------- */
 function initStreet() {
-  const s = $('street');
-  const cols = ['#e6a06a','#d98f8f','#8fb8c9','#c9b48f','#b79cc7','#9cc7a4','#e0b76a'];
-  const heights = [64, 92, 52, 108, 76, 96, 58, 84];
-  let x = -6;
-  for (let i = 0; x < 470; i++) {
-    const w = 40 + (i % 3) * 12, h = heights[i % heights.length];
-    const b = document.createElement('div'); b.className = 'bldg';
-    b.style.left = x + 'px'; b.style.width = w + 'px'; b.style.height = h + 'px';
-    b.style.background = cols[i % cols.length];
-    s.appendChild(b); x += w + 5;
-  }
-  ['🧑','🧓','🧑‍🦱','👩'].forEach((p, i) => {
-    const el = document.createElement('div'); el.className = 'ped'; el.textContent = p;
-    el.style.left = (40 + i * 92) + 'px'; el.style.animationDelay = (-i * 0.4) + 's';
-    s.appendChild(el);
-  });
+  const s=$('street');
+  const cols=['#e6a06a','#d98f8f','#8fb8c9','#c9b48f','#b79cc7','#9cc7a4','#e0b76a'];
+  const hts=[62,90,50,106,74,94,56,82]; let x=-6;
+  for (let i=0; x<500; i++){ const w=42+(i%3)*12, h=hts[i%hts.length];
+    const b=document.createElement('div'); b.className='bldg'; b.style.left=x+'px'; b.style.width=w+'px'; b.style.height=h+'px'; b.style.background=cols[i%cols.length];
+    s.appendChild(b); x+=w+5; }
+  for (let i=0;i<3;i++){ const c=document.createElement('div'); c.className='cloud';
+    c.style.width=(40+i*10)+'px'; c.style.height=(16+i*3)+'px'; c.style.top=(8+i*6)+'px';
+    c.style.animationDuration=(32+i*10)+'s'; c.style.animationDelay=(-i*11)+'s'; $('view').appendChild(c); }
 }
 
-/* ---------- buttons ---------- */
-function startAt(i) { try { actx = actx || new (window.AudioContext||window.webkitAudioContext)(); } catch (e) {} startLevel(i); }
-$('btn-play').addEventListener('click', () => { try { actx = actx || new (window.AudioContext||window.webkitAudioContext)(); } catch (e) {} toMap(); });
-$('btn-title-book').addEventListener('click', () => openBook(unlockedRecipes()));
-$('btn-map-book').addEventListener('click', () => openBook(unlockedRecipes()));
+/* ---------- wire ---------- */
+$('trash-btn').querySelector('.ui').outerHTML = UI_TRASH;
+$('serve-btn').querySelector('.ui').outerHTML = UI_CHECK;
+$('book-btn').innerHTML = UI_BOOK;
+$('trash-btn').addEventListener('click', trashPlate);
+$('serve-btn').addEventListener('click', serve);
+$('btn-play').addEventListener('click', ()=>{ try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();}catch(e){} toMap(); });
+$('btn-title-book').addEventListener('click', ()=>openBook(unlockedRecipes()));
+$('btn-map-book').addEventListener('click', ()=>openBook(unlockedRecipes()));
 $('btn-map-back').addEventListener('click', toTitle);
-$('btn-intro-book').addEventListener('click', () => openBook(LEVELS[selLevel].pool, LEVELS[selLevel].newR));
+$('btn-intro-book').addEventListener('click', ()=>openBook(LEVELS[selLevel].pool, LEVELS[selLevel].newR));
 $('btn-intro-back').addEventListener('click', toMap);
-$('btn-go').addEventListener('click', () => startAt(selLevel));
-$('book-btn').addEventListener('click', () => openBook(bookList(), screen === 'intro' ? LEVELS[selLevel].newR : null));
+$('btn-go').addEventListener('click', ()=>{ try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();}catch(e){} startLevel(selLevel); });
+$('book-btn').addEventListener('click', ()=>openBook(bookList(), screen==='intro'?LEVELS[selLevel].newR:null));
 $('btn-book-close').addEventListener('click', closeBook);
 
 /* ---------- debug ---------- */
 window.TG = {
-  get G() { return G; }, get screen() { return screen; },
-  start(i) { startLevel(i || 0); },
-  tap(id) { tapIngredient(id, document.querySelector('.ing[data-id="' + id + '"]')); },
-  active() { const o = activeOrder(); return o ? { recipe: o.recipe, progress: o.progress, need: RECIPES[o.recipe].steps[o.progress] } : null; },
-  autoserveActive() { const o = activeOrder(); if (!o) return null; const steps = RECIPES[o.recipe].steps; while (o.progress < steps.length && G.running) this.tap(steps[o.progress]); return G.score; },
-  book() { openBook(bookList()); return $('ov-book').classList.contains('show'); },
-  closeBook, toMap, toIntro,
-  tick(dt) { const now = lastTs + (dt||0.1)*1000; frame(now); },
-  setTime(t) { G.timeLeft = t; },
+  get G(){return G;}, get screen(){return screen;},
+  start(i){ startLevel(i||0); },
+  add(id){ addIngredient(id, document.querySelector('.ing[data-id="'+id+'"]')); },
+  serve, trash: trashPlate,
+  plate(){ const o=activeOrder(); return o?{recipe:o.recipe, plate:o.plate.slice(), ruined:o.ruined}:null; },
+  reorder(from,to){ const o=activeOrder(); const [x]=o.plate.splice(from,1); o.plate.splice(to,0,x); renderPlate(); },
+  book(){ openBook(bookList()); return $('ov-book').classList.contains('show'); }, closeBook, toMap,
+  tick(dt){ frame(lastTs + (dt||0.1)*1000); }, setTime(t){ G.timeLeft=t; },
 };
 
 /* boot */
 initStreet();
-initClouds();
-requestAnimationFrame(ts => { lastTs = ts; requestAnimationFrame(frame); });
+requestAnimationFrame(ts => { lastTs=ts; requestAnimationFrame(frame); });
 </script>
 </body>
 </html>
