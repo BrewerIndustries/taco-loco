@@ -141,6 +141,7 @@
   /* floaters + toast */
   .float { position: absolute; z-index: 40; font-weight: 800; font-size: 20px; color: var(--yellow);
     text-shadow: 2px 2px 0 var(--ink); pointer-events: none; animation: fl 1s ease-out forwards; }
+  .float.neg { color: #ff7a66; }
   @keyframes fl { to { transform: translateY(-46px); opacity: 0; } }
   #toast { position: absolute; top: 46%; left: 50%; transform: translateX(-50%); z-index: 42;
     background: var(--ink); color: var(--yellow); font-weight: 800; padding: 9px 20px; border-radius: 999px; display: none; font-size: 15px; }
@@ -414,9 +415,10 @@ function checkDone(o) {
   return o.done;
 }
 function ruinPlate(o, why) {
-  o.ruined = true; G.combo = 0; o.pat = Math.max(0, o.pat - 2.5);
+  o.ruined = true; G.combo = 0;   // real cost is paid when you trash it
   beep(150,.14,'square'); buzzPlate(); if (why) toast(why + ' 🗑️ trash it');
 }
+const TRASH_PENALTY = 5;
 function buzzPlate() { const w = $('plate-wrap'); w.classList.remove('ruined'); void w.offsetWidth; w.classList.add('ruined'); }
 function serve() {
   if (!G || !G.running || G.paused) return;
@@ -431,7 +433,11 @@ function trashPlate() {
   if (!G || !G.running || G.paused) return;
   const o = activeOrder(); if (!o) return;
   if (!o.plate.length && !o.ruined) return;
-  o.plate = []; o.ruined = false; o.done = false; beep(300,.08,'square'); render(); renderPlate();
+  o.plate = []; o.ruined = false; o.done = false;
+  G.score = Math.max(0, G.score - TRASH_PENALTY); G.combo = 0;
+  const r = $('trash-btn').getBoundingClientRect(); floatText('−'+TRASH_PENALTY, r.left+r.width/2, r.top-4, 'neg');
+  toast('Plate trashed  −'+TRASH_PENALTY);
+  beep(160,.12,'square'); render(); renderPlate(); syncHud();
 }
 function completeOrder(o) {
   const frac = Math.max(0, o.pat/o.maxPat);
@@ -584,7 +590,7 @@ function endChipDrag() {
 
 /* ---------- ui helpers ---------- */
 function flash(el,cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); setTimeout(()=>el.classList.remove(cls),320); }
-function floatText(txt,x,y){ const el=document.createElement('div'); el.className='float'; el.textContent=txt;
+function floatText(txt,x,y,cls){ const el=document.createElement('div'); el.className='float'+(cls?' '+cls:''); el.textContent=txt;
   const a=$('app').getBoundingClientRect(); el.style.left=(x-a.left)+'px'; el.style.top=(y-a.top)+'px'; $('app').appendChild(el); setTimeout(()=>el.remove(),1000); }
 function toast(m){ const t=$('toast'); t.textContent=m; t.classList.remove('show'); void t.offsetWidth; t.classList.add('show'); }
 function showCombo(){ const c=$('combo'); c.textContent='COMBO x'+G.combo+(comboMult()>1?'  '+comboMult()+'×':'');
