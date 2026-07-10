@@ -45,6 +45,26 @@ characters later.)
 - **Arrange your station**: drag the counter ingredient buttons to reorder them
   however you like — the layout is saved. (Tap = add, press-and-drag = rearrange.)
 
+## Your restaurant (hire cooks, buy stations)
+
+You run a growing kitchen, not just one window:
+- Serving dishes earns **🪙 coins** (both your serves and your employees').
+- Between shifts, open the **🛒 Shop** (from the results screen or the level map):
+  **hire a cook**, **train** each cook on one recipe, and **buy an ingredient
+  station** for every ingredient in that recipe.
+- **Stations are assigned to cooks.** You and an employee can't share one station,
+  so if your taco-cook needs tortillas and you do too, you buy a *second* tortilla
+  station and assign it to them. Equip a cook fully and they **auto-cook their
+  recipe** during service, in parallel with you.
+- During a shift, orders your employees take are marked **claimed** (dashed, with a
+  👨‍🍳 badge) and cook themselves on their station; you handle the rest. Everything
+  (coins, cooks, stations) is saved and carries across the campaign.
+
+## Trashing
+
+Throwing out a plate costs **−5 score** and breaks your combo, so a ruined plate
+(wrong ingredient, or a wrong-order serve) has a real cost.
+
 ## Levels & recipes
 
 Five levels, each ~70–100s. **Clearing a level (≥1 ⭐) unlocks the next one and a new

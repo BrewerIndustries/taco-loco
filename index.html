@@ -77,8 +77,28 @@
   .guest.active .bubble { border-color: var(--teal); box-shadow: 0 4px 0 var(--teal-d); }
   .guest.active .blob { transform: scale(1.12) translateY(-2px); }
   .guest.building .bubble { border-color: var(--orange); }
+  .guest.claimed { opacity: .82; }
+  .guest.claimed .bubble { border-color: var(--teal); border-style: dashed; }
+  .bubble .cooking { position: absolute; right: -6px; top: -8px; font-size: 18px; }
   .guest.leaving { animation: leave .45s ease-in forwards; }
   @keyframes leave { to { transform: translateY(40px); opacity: 0; } }
+
+  /* employee cook stations (in the restaurant) */
+  #emps { position: absolute; left: 0; right: 0; top: 92px; z-index: 4; display: flex; gap: 8px; padding: 0 12px; overflow-x: auto; scrollbar-width: none; }
+  #emps::-webkit-scrollbar { display: none; }
+  .emp { flex: 0 0 auto; display: flex; align-items: center; gap: 7px; background: rgba(255,255,255,.92);
+    border: 3px solid var(--ink); border-radius: 14px; box-shadow: 0 4px 0 rgba(58,39,27,.25); padding: 6px 10px 6px 6px; }
+  .emp.cooking { border-color: var(--orange); }
+  .emp .eblob { width: 40px; height: 40px; }
+  .emp .ecol { display: flex; flex-direction: column; gap: 2px; }
+  .emp .ename { font-size: 11px; font-weight: 800; }
+  .emp .edwrap { display: flex; align-items: center; gap: 5px; }
+  .emp .edish { width: 30px; height: 30px; }
+  .emp .edish.q { display: flex; align-items: center; justify-content: center; font-size: 20px; color: #b3a389; }
+  .emp .estat { font-size: 10px; font-weight: 800; color: #7a8a72; }
+  .emp .estat.warn { color: var(--red-d); }
+  .emp .ebar { width: 62px; height: 8px; border-radius: 999px; background: #e7d8c2; overflow: hidden; }
+  .emp .ebar > i { display: block; height: 100%; width: 0; background: var(--orange); }
 
   #book-btn { position: absolute; right: 12px; top: 40px; z-index: 6; width: 46px; height: 46px; border-radius: 13px;
     background: var(--yellow); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink); cursor: pointer; display: none;
@@ -177,6 +197,21 @@
   .lvl { width: 92px; background: var(--cream); border: 3px solid var(--ink); border-radius: 14px; box-shadow: 0 4px 0 var(--ink); padding: 8px 4px; cursor: pointer; }
   .lvl.locked { background: #e3d3bd; color: #a08c74; border-color: #a08c74; box-shadow: 0 4px 0 #a08c74; cursor: default; }
   .lvl .li { width: 30px; height: 30px; margin: 0 auto; } .lvl .lnm { font-size: 10px; font-weight: 800; margin: 2px 0; } .lvl .lst { font-size: 12px; letter-spacing: -1px; }
+  /* shop */
+  .shopemp { background: var(--paper); border: 2.5px solid var(--ink); border-radius: 14px; padding: 9px 11px; margin: 9px 0; text-align: left; }
+  .shopemp .seh { font-weight: 800; font-size: 14px; display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .shopemp .seh .ok { margin-left: auto; font-size: 11px; color: var(--green-d); }
+  .shopemp .seh .warn { margin-left: auto; font-size: 11px; color: var(--red-d); }
+  .shopemp .lbl { font-size: 11px; font-weight: 800; opacity: .7; margin-right: 4px; }
+  .setrain, .sestat { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; margin-top: 6px; }
+  .rbtn { display: inline-flex; align-items: center; gap: 4px; font-family: inherit; font-weight: 800; font-size: 12px;
+    background: #fff; color: var(--ink); border: 2px solid var(--ink); border-radius: 9px; padding: 3px 8px 3px 5px; cursor: pointer; }
+  .rbtn .rbi { width: 20px; height: 20px; }
+  .rbtn.sel { background: var(--teal); color: #fff; border-color: var(--teal-d); }
+  .stbtn { display: inline-flex; flex-direction: column; align-items: center; gap: 1px; font-family: inherit; font-weight: 800; font-size: 10px;
+    background: #fff; color: var(--ink); border: 2px solid var(--ink); border-radius: 10px; padding: 4px 6px; cursor: pointer; }
+  .stbtn .sti { width: 26px; height: 26px; }
+  .stbtn.owned { background: #e8f7e2; border-color: var(--green-d); color: var(--green-d); }
 </style>
 </head>
 <body>
@@ -193,6 +228,7 @@
     <div id="combo"></div>
     <button id="book-btn" title="Recipe book"></button>
     <div id="customers"></div>
+    <div id="emps"></div>
     <div id="sill"></div>
   </div>
 
@@ -229,6 +265,7 @@
     <div class="card">
       <h2>Choose a Level</h2>
       <div id="map-grid"></div>
+      <button class="btn alt" id="btn-map-shop">🛒 Shop</button>
       <button class="btn ghost" id="btn-map-book">📖 Recipe Book</button>
       <div><button class="btn ghost" id="btn-map-back">back</button></div>
     </div>
@@ -255,7 +292,19 @@
       <div class="row"><span>Best combo</span><b id="res-combo">0</b></div>
       <div class="row"><span>Ruined / Missed</span><b id="res-missed">0</b></div>
       <div class="row"><span>Score</span><b id="res-score">0</b></div>
+      <div class="row"><span>Coins</span><b id="res-coins">+0</b></div>
       <div id="res-btns" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <!-- Shop -->
+  <div class="overlay" id="ov-shop">
+    <div class="card">
+      <h2>🛒 Kitchen Shop</h2>
+      <div style="font-weight:800;margin:2px 0 8px">🪙 <span id="shop-coins">0</span> coins</div>
+      <div class="how" style="font-size:12px;margin:0 0 10px">Hire cooks and <b>train</b> each on a recipe. Buy an <b>ingredient station</b> for every ingredient in their recipe so they can cook it alongside you.</div>
+      <div id="shop-body" style="max-height:52vh;overflow-y:auto"></div>
+      <button class="btn" id="btn-shop-done">Done</button>
     </div>
   </div>
 
@@ -359,8 +408,10 @@ function beep(f,d,t,v){ try { if(!actx) actx=new (window.AudioContext||window.we
 
 /* ---------- save ---------- */
 const SAVE_KEY = 'tacoLoco.truck.v3';
-let save = { unlocked:1, stars:{}, best:{}, counter:null };
+// coins = money for the shop · employees = hired cooks {recipe, access:[ingredient stations they own]}
+let save = { unlocked:1, stars:{}, best:{}, counter:null, coins:0, employees:[] };
 try { const r = localStorage.getItem(SAVE_KEY); if (r) save = Object.assign(save, JSON.parse(r)); } catch(e){}
+if (!Array.isArray(save.employees)) save.employees = [];
 // restore a valid saved counter layout (same set of ingredients, any order)
 if (Array.isArray(save.counter) && save.counter.length === DEFAULT_PALETTE.length
     && DEFAULT_PALETTE.every(id => save.counter.includes(id))) PALETTE = save.counter.slice();
@@ -369,6 +420,11 @@ const persistCounter = () => { save.counter = PALETTE.slice(); persist(); };
 const levelUnlocked = i => i < save.unlocked;
 const starsOf = i => save.stars[i] || 0;
 const unlockedRecipes = () => LEVELS[Math.min(save.unlocked, LEVELS.length)-1].pool;
+/* ---------- restaurant economy ---------- */
+const HIRE_COST = 60, STATION_COST = 15;
+const empEquipped = e => !!e.recipe && RECIPES[e.recipe].steps.every(s => e.access.includes(s));
+const coinFor = rid => RECIPES[rid].steps.length * 2 + 3;   // coins earned per served dish
+const cookTime = rid => RECIPES[rid].steps.length * 1.5;    // seconds an employee takes to cook one
 
 /* ---------- state ---------- */
 let G = null, lastTs = 0, screen = 'title', selLevel = 0;
@@ -378,10 +434,11 @@ const seqEqual = (a, b) => a.length===b.length && a.every((x,i)=>x===b[i]);
 
 function startLevel(idx) {
   selLevel = idx; const L = LEVELS[idx];
-  G = { running:true, paused:false, idx, L, timeLeft:L.time, score:0, served:0, missed:0, ruinedCount:0,
-        combo:0, bestCombo:0, orders:[], seq:0, spawnT:0.8, activeId:null };
-  screen = 'play'; $('customers').innerHTML=''; buildGrid(); showOverlay(null); updateBookBtn();
-  renderPlate(); syncHud();
+  G = { running:true, paused:false, idx, L, timeLeft:L.time, score:0, served:0, missed:0, ruinedCount:0, coinsEarned:0,
+        combo:0, bestCombo:0, orders:[], seq:0, spawnT:0.8, activeId:null,
+        emps: save.employees.map((e,i)=>({ recipe:e.recipe, access:e.access.slice(), busy:false, order:null, prog:0, i })) };
+  screen = 'play'; $('customers').innerHTML=''; $('emps').innerHTML=''; buildGrid(); showOverlay(null); updateBookBtn();
+  renderPlate(); renderEmps(); syncHud();
   if (actx && actx.state==='suspended') actx.resume();
   lastTs = performance.now();
 }
@@ -389,10 +446,32 @@ function spawnOrder() {
   const pool = G.L.pool, rid = pool[Math.floor(Math.random()*pool.length)];
   const pat = patienceFor(RECIPES[rid].steps.length, G.L.patScale);
   const o = { id:++G.seq, recipe:rid, color:BLOB_COLS[Math.floor(Math.random()*BLOB_COLS.length)],
-              pat, maxPat:pat, plate:[], ruined:false, done:false, el:null, blobEl:null };
+              pat, maxPat:pat, plate:[], ruined:false, done:false, claimedBy:null, el:null, blobEl:null };
   G.orders.push(o); const first = G.activeId==null; if (first) G.activeId=o.id; render(); if (first) renderPlate(); beep(560,.06,'sine');
 }
-const activeOrder = () => G.orders.find(o => o.id===G.activeId) || G.orders[0] || null;
+const activeOrder = () => {
+  const a = G.orders.find(o => o.id===G.activeId && !o.claimedBy);
+  return a || G.orders.find(o => !o.claimedBy) || null;
+};
+
+/* ---------- employees (AI cooks) ---------- */
+function updateEmployees(dt) {
+  for (const e of G.emps) {
+    if (!empEquipped(e)) continue;
+    if (e.busy) {
+      e.prog += dt / cookTime(e.recipe);
+      if (e.prog >= 1) {
+        const o = e.order; e.busy=false; e.order=null; e.prog=0;
+        if (o && G.orders.includes(o) && !o.done) completeOrder(o, true);
+        renderEmps();
+      }
+    } else {
+      // claim an unclaimed matching order the player hasn't started
+      const o = G.orders.find(x => x.recipe===e.recipe && !x.claimedBy && x.id!==G.activeId && x.plate.length===0 && !x.done && !x.ruined);
+      if (o) { o.claimedBy = e; e.busy=true; e.order=o; e.prog=0; render(); renderEmps(); beep(500,.05,'sine'); }
+    }
+  }
+}
 
 /* ---------- assembly ---------- */
 function addIngredient(id, btn) {
@@ -439,25 +518,27 @@ function trashPlate() {
   toast('Plate trashed  −'+TRASH_PENALTY);
   beep(160,.12,'square'); render(); renderPlate(); syncHud();
 }
-function completeOrder(o) {
+function completeOrder(o, byEmp) {
   const frac = Math.max(0, o.pat/o.maxPat);
-  G.combo++; G.bestCombo = Math.max(G.bestCombo, G.combo);
-  const mult = comboMult();
+  const coins = coinFor(o.recipe); G.coinsEarned += coins; save.coins += coins;
+  if (!byEmp) { G.combo++; G.bestCombo = Math.max(G.bestCombo, G.combo); }   // combo is the player's
+  const mult = byEmp ? 1 : comboMult();
   const gain = Math.round((RECIPES[o.recipe].steps.length*4 + 6 + Math.round(frac*9)) * mult);
   G.score += gain; G.served++;
   if (o.el) { const r = o.el.getBoundingClientRect(); floatText('+'+gain, r.left+r.width/2, r.top+20); o.el.classList.add('leaving'); }
   beep(720,.08,'triangle'); setTimeout(()=>beep(980,.1,'triangle'),70);
-  if (G.combo>=2) showCombo();
+  if (!byEmp && G.combo>=2) showCombo();
   const wasActive = G.activeId===o.id;
   setTimeout(()=>{ G.orders=G.orders.filter(x=>x!==o); if(o.el)o.el.remove();
-    if(wasActive) G.activeId = G.orders[0]?G.orders[0].id:null; render(); renderPlate(); }, 420);
+    if(wasActive) G.activeId = (G.orders.find(x=>!x.claimedBy)||{}).id || null; render(); renderPlate(); }, 420);
   syncHud();
 }
 function missOrder(o) {
-  G.missed++; G.combo=0; G.score=Math.max(0,G.score-6);
+  G.missed++; if (!o.claimedBy) G.combo=0; G.score=Math.max(0,G.score-6);
+  for (const e of G.emps) if (e.order===o) { e.busy=false; e.order=null; e.prog=0; }
   if (o.el) o.el.remove(); G.orders=G.orders.filter(x=>x!==o);
-  if (G.activeId===o.id) G.activeId = G.orders[0]?G.orders[0].id:null;
-  toast('a customer left hungry'); beep(140,.2,'square'); renderPlate();
+  if (G.activeId===o.id) G.activeId = (G.orders.find(x=>!x.claimedBy)||{}).id || null;
+  toast('a customer left hungry'); beep(140,.2,'square'); renderPlate(); renderEmps();
 }
 const comboMult = () => G.combo>=8?2:G.combo>=5?1.6:G.combo>=3?1.3:1;
 
@@ -513,21 +594,38 @@ function render() {
   for (const o of G.orders) {
     if (!o.el) {
       const el = document.createElement('div'); el.className='guest'; el.dataset.id=o.id;
-      el.addEventListener('pointerdown', () => { G.activeId=o.id; render(); renderPlate(); });
+      el.addEventListener('pointerdown', () => { if (o.claimedBy) { toast('your cook is on it 👨‍🍳'); return; } G.activeId=o.id; render(); renderPlate(); });
       cont.appendChild(el); o.el = el;
     }
   }
   for (const o of G.orders) {
-    const r = RECIPES[o.recipe], active = o.id===G.activeId;
+    const r = RECIPES[o.recipe], active = o.id===G.activeId && !o.claimedBy;
     o.el.classList.toggle('active', active);
-    o.el.classList.toggle('building', o.plate.length>0 && !active);
+    o.el.classList.toggle('building', o.plate.length>0 && !active && !o.claimedBy);
+    o.el.classList.toggle('claimed', !!o.claimedBy);
     const frac = Math.max(0, o.pat/o.maxPat);
     const col = frac>0.5?'var(--green)':frac>0.25?'var(--yellow)':'var(--red)';
     // the order is the FINISHED product
-    o.el.innerHTML = `<div class="bubble"><div class="bname">${r.name}</div><div class="bdish-wrap">${dishIcon(o.recipe,'bdish')}</div>`
+    o.el.innerHTML = `<div class="bubble"><div class="bname">${r.name}</div><div class="bdish-wrap">${dishIcon(o.recipe,'bdish')}${o.claimedBy?'<div class="cooking">👨‍🍳</div>':''}</div>`
       + `<div class="bpat"><i style="width:${(frac*100).toFixed(1)}%;background:${col}"></i></div></div>`
       + `<div class="blob">${blobSVG(o.color, moodOf(o))}</div>`;
   }
+}
+/* ---------- render: employee stations ---------- */
+function renderEmps() {
+  const cont = $('emps'); if (!cont) return;
+  if (!G || !G.emps.length) { cont.innerHTML=''; return; }
+  cont.innerHTML = G.emps.map((e,i) => {
+    const eq = empEquipped(e);
+    const dish = e.recipe ? dishIcon(e.recipe,'edish') : '<div class="edish q">?</div>';
+    let status;
+    if (!e.recipe) status = '<div class="estat">untrained</div>';
+    else if (!eq) status = '<div class="estat warn">needs stations</div>';
+    else if (e.busy) status = `<div class="ebar"><i style="width:${(e.prog*100).toFixed(0)}%"></i></div>`;
+    else status = '<div class="estat">ready</div>';
+    return `<div class="emp ${eq&&e.busy?'cooking':''}"><div class="eblob">${blobSVG(BLOB_COLS[(i+3)%BLOB_COLS.length],'happy')}</div>`
+      + `<div class="ecol"><div class="ename">Cook ${i+1}</div><div class="edwrap">${dish}</div>${status}</div></div>`;
+  }).join('');
 }
 /* ---------- render: plate ---------- */
 function renderPlate() {
@@ -605,11 +703,15 @@ function frame(ts) {
   if (screen!=='play'||!G||!G.running||G.paused) return;
   G.timeLeft-=dt; if (G.timeLeft<=0){ G.timeLeft=0; return endLevel(); }
   G.spawnT-=dt; const frac=1-G.timeLeft/G.L.time;
-  if (G.spawnT<=0 && G.orders.length<4){ spawnOrder(); G.spawnT=lerp(G.L.every[0],G.L.every[1],frac); }
+  const cap = 4 + G.emps.length;
+  if (G.spawnT<=0 && G.orders.length<cap){ spawnOrder(); G.spawnT=lerp(G.L.every[0],G.L.every[1],frac); }
   for (const o of [...G.orders]){ o.pat-=dt; if(o.pat<=0) missOrder(o); }
+  updateEmployees(dt);
   for (const o of G.orders){ if(!o.el) continue; const bar=o.el.querySelector('.bpat > i'); if(bar){
     const f=Math.max(0,o.pat/o.maxPat); bar.style.width=(f*100).toFixed(1)+'%';
     bar.style.background=f>0.5?'var(--green)':f>0.25?'var(--yellow)':'var(--red)'; } }
+  // live employee cook progress
+  for (const e of G.emps){ if(e.busy){ const bar=$('emps').children[e.i]&&$('emps').children[e.i].querySelector('.ebar > i'); if(bar) bar.style.width=(e.prog*100).toFixed(0)+'%'; } }
   syncHud();
 }
 function endLevel() {
@@ -625,9 +727,12 @@ function endLevel() {
   $('res-stars').textContent = stars?'⭐'.repeat(stars)+'☆'.repeat(3-stars):'☆☆☆';
   $('res-served').textContent=G.served; $('res-combo').textContent='x'+G.bestCombo;
   $('res-missed').textContent=G.missed; $('res-score').textContent=s+'   (need '+L.stars[0]+')';
+  $('res-coins').textContent='+'+G.coinsEarned+'  (🪙 '+save.coins+')';
+  persist();   // coins were added live; make sure they're saved
   const btns=$('res-btns'); btns.innerHTML='';
-  btns.appendChild(mkBtn('Retry',()=>startLevel(i),'ghost'));
+  btns.appendChild(mkBtn('🛒 Shop',toShop,'alt'));
   if (stars>0 && i+1<LEVELS.length) btns.appendChild(mkBtn('Next ▶',()=>{selLevel=i+1;toIntro();}));
+  btns.appendChild(mkBtn('Retry',()=>startLevel(i),'ghost'));
   btns.appendChild(mkBtn('Levels',toMap,'ghost'));
   if (unlockedNew) toast('New recipe unlocked: '+RECIPES[LEVELS[i+1].newR].name);
   showOverlay('ov-res');
@@ -658,6 +763,33 @@ function recipeRowHtml(rid, tag) {
   const r=RECIPES[rid];
   const steps=r.steps.map((s,i)=>`<span class="rstep"><b>${i+1}</b>${icon(s,'ri')}</span>`).join('<span class="arrow">›</span>');
   return `<div class="rh">${icon(r.steps[0],'ri')} ${r.name}${tag?'<span class="tag">NEW</span>':''}</div><div class="rs">${steps}</div>`;
+}
+/* ---------- shop (between shifts) ---------- */
+function toShop(){ screen='shop'; showOverlay('ov-shop'); updateBookBtn(); renderShop(); }
+function renderShop() {
+  $('shop-coins').textContent = save.coins;
+  const body = $('shop-body'); body.innerHTML='';
+  const canHire = save.coins >= HIRE_COST;
+  const hire = mkBtn('Hire a cook — 🪙'+HIRE_COST, ()=>{ if(save.coins<HIRE_COST) return; save.coins-=HIRE_COST; save.employees.push({recipe:null, access:[]}); persist(); renderShop(); beep(660,.08,'triangle'); }, canHire?'alt':'ghost');
+  hire.disabled = !canHire; hire.style.width='100%'; body.appendChild(hire);
+  save.employees.forEach((e, idx) => {
+    const eq = empEquipped(e);
+    const card = document.createElement('div'); card.className='shopemp';
+    let html = `<div class="seh"><span>👨‍🍳 Cook ${idx+1}</span>${eq?'<span class="ok">equipped ✓</span>':(e.recipe?'<span class="warn">needs stations</span>':'<span class="warn">pick a recipe</span>')}</div>`;
+    html += `<div class="setrain"><span class="lbl">Trained on:</span>` + unlockedRecipes().map(rid => `<button class="rbtn ${e.recipe===rid?'sel':''}" data-emp="${idx}" data-rec="${rid}">${dishIcon(rid,'rbi')}${RECIPES[rid].name}</button>`).join('') + `</div>`;
+    if (e.recipe) {
+      html += `<div class="sestat"><span class="lbl">Ingredient stations:</span>` + RECIPES[e.recipe].steps.map(s => {
+        const owned = e.access.includes(s);
+        return `<button class="stbtn ${owned?'owned':''}" data-emp="${idx}" data-ing="${s}" ${owned?'disabled':''}>${icon(s,'sti')}<b>${owned?'✓':'🪙'+STATION_COST}</b></button>`;
+      }).join('') + `</div>`;
+    }
+    card.innerHTML = html; body.appendChild(card);
+  });
+  body.querySelectorAll('.rbtn').forEach(b => b.addEventListener('click', () => { save.employees[+b.dataset.emp].recipe = b.dataset.rec; persist(); renderShop(); beep(520,.05,'sine'); }));
+  body.querySelectorAll('.stbtn:not([disabled])').forEach(b => b.addEventListener('click', () => {
+    if (save.coins < STATION_COST) { toast('not enough coins'); return; }
+    const e = save.employees[+b.dataset.emp]; if (!e.access.includes(b.dataset.ing)) { save.coins-=STATION_COST; e.access.push(b.dataset.ing); persist(); renderShop(); beep(600,.05,'triangle'); }
+  }));
 }
 let bookReturn=null;
 function openBook(list, newR) {
@@ -691,12 +823,14 @@ $('serve-btn').addEventListener('click', serve);
 $('btn-play').addEventListener('click', ()=>{ try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();}catch(e){} toMap(); });
 $('btn-title-book').addEventListener('click', ()=>openBook(unlockedRecipes()));
 $('btn-map-book').addEventListener('click', ()=>openBook(unlockedRecipes()));
+$('btn-map-shop').addEventListener('click', toShop);
 $('btn-map-back').addEventListener('click', toTitle);
 $('btn-intro-book').addEventListener('click', ()=>openBook(LEVELS[selLevel].pool, LEVELS[selLevel].newR));
 $('btn-intro-back').addEventListener('click', toMap);
 $('btn-go').addEventListener('click', ()=>{ try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();}catch(e){} startLevel(selLevel); });
 $('book-btn').addEventListener('click', ()=>openBook(bookList(), screen==='intro'?LEVELS[selLevel].newR:null));
 $('btn-book-close').addEventListener('click', closeBook);
+$('btn-shop-done').addEventListener('click', toMap);
 
 /* ---------- debug ---------- */
 window.TG = {
@@ -707,8 +841,12 @@ window.TG = {
   plate(){ const o=activeOrder(); return o?{recipe:o.recipe, plate:o.plate.slice(), ruined:o.ruined}:null; },
   reorder(from,to){ const o=activeOrder(); const [x]=o.plate.splice(from,1); o.plate.splice(to,0,x); checkDone(o); renderPlate(); },
   counter(){ return PALETTE.slice(); },
-  book(){ openBook(bookList()); return $('ov-book').classList.contains('show'); }, closeBook, toMap,
+  book(){ openBook(bookList()); return $('ov-book').classList.contains('show'); }, closeBook, toMap, toShop,
   tick(dt){ frame(lastTs + (dt||0.1)*1000); }, setTime(t){ G.timeLeft=t; },
+  giveCoins(n){ save.coins+=n; persist(); }, coins(){ return save.coins; },
+  hire(recipe){ save.employees.push({recipe:recipe||null, access:[]}); persist(); },
+  equip(idx, recipe){ const e=save.employees[idx]; if(recipe)e.recipe=recipe; e.access=RECIPES[e.recipe].steps.slice(); persist(); },
+  emps(){ return (G?G.emps:save.employees).map(e=>({recipe:e.recipe, access:e.access, busy:e.busy, prog:e.prog})); },
 };
 
 /* boot */
