@@ -8,1044 +8,470 @@
   :root {
     --ink: #4a3526;
     --cream: #fff6e6;
-    --peach: #ffe6c9;
-    --wood: #d9b389;
-    --wood-lt: #e7cba6;
+    --paper: #fff3dc;
     --red: #ef6f5b;
     --orange: #f8a24b;
-    --teal: #4bb3a3;
+    --teal: #3fb0a0;
     --yellow: #ffcf5c;
-    --green: #7ac77a;
-    --pink: #f6a6b2;
-    --sky: #bfe3e0;
+    --green: #6ec46e;
+    --steel: #c9d3d9;
+    --steel-d: #9aa8b1;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; overflow: hidden; }
   body {
     font-family: ui-rounded, "Arial Rounded MT Bold", "Baloo 2", "Nunito", system-ui, sans-serif;
-    background: linear-gradient(170deg, #ffd9a8, #ffb98f 60%, #f79c8e);
-    color: var(--ink);
-    user-select: none; -webkit-user-select: none;
-    touch-action: manipulation;
-    overscroll-behavior: none;
+    background: #2a1c14; color: var(--ink);
+    user-select: none; -webkit-user-select: none; touch-action: manipulation; overscroll-behavior: none;
   }
-  #app {
-    max-width: 480px; height: 100%; height: 100dvh; margin: 0 auto;
-    display: flex; flex-direction: column; position: relative; overflow: hidden;
-  }
+  #app { max-width: 480px; height: 100%; height: 100dvh; margin: 0 auto; position: relative; overflow: hidden;
+    display: flex; flex-direction: column; background: #241811; }
 
   /* ---------- HUD ---------- */
-  #hud {
-    display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    padding: 7px 12px; flex: 0 0 auto;
-    background: var(--ink); color: var(--cream); font-weight: 800; font-size: 15px;
-  }
-  #hud .pill { background: rgba(255,255,255,.14); border-radius: 999px; padding: 3px 12px; white-space: nowrap; display: flex; align-items: center; gap: 5px; }
+  #hud { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 7px 12px; background: var(--ink); color: var(--cream); font-weight: 800; font-size: 15px; z-index: 5; }
+  #hud .pill { background: rgba(255,255,255,.14); border-radius: 999px; padding: 3px 12px; white-space: nowrap; display: flex; gap: 5px; align-items: center; }
   #hud-timer.low { color: #ffb1a1; animation: blink .6s steps(2) infinite; }
   @keyframes blink { 50% { opacity: .35; } }
 
-  /* ---------- Orders ---------- */
-  #orders {
-    flex: 0 0 auto; display: flex; gap: 7px; padding: 8px 10px; overflow-x: auto; overflow-y: hidden;
-    background: rgba(74,53,38,.14); min-height: 74px; scrollbar-width: none;
+  /* ---------- Window (looking out) ---------- */
+  #view { flex: 1 1 auto; position: relative; min-height: 0;
+    background: linear-gradient(#bfe6f5 0%, #d8f0f6 45%, #eaf6ef 62%, #cdeacb 62%, #bfe3bd 100%);
+    overflow: hidden; }
+  /* distant street */
+  #view::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 38%;
+    background: linear-gradient(#c7ac86, #b69670); }
+  .cloud { position: absolute; font-size: 34px; opacity: .9; animation: drift linear infinite; }
+  @keyframes drift { from { transform: translateX(-60px);} to { transform: translateX(520px);} }
+  /* street scene behind the tickets */
+  #street { position: absolute; left: 0; right: 0; bottom: 0; height: 40%; z-index: 1; pointer-events: none; }
+  .bldg { position: absolute; bottom: 38%; border-radius: 6px 6px 0 0; box-shadow: inset 0 0 0 2px rgba(0,0,0,.06); }
+  .bldg::after { content: ""; position: absolute; inset: 8px 6px auto 6px; height: 60%;
+    background-image: radial-gradient(rgba(255,255,255,.5) 2px, transparent 2.5px); background-size: 11px 13px; border-radius: 3px; }
+  .ped { position: absolute; bottom: 4%; font-size: 30px; filter: drop-shadow(0 2px 2px rgba(0,0,0,.2)); animation: bobp 1.6s ease-in-out infinite; }
+  @keyframes bobp { 50% { transform: translateY(-3px); } }
+
+  /* awning */
+  #awning { position: absolute; top: 0; left: 0; right: 0; height: 34px; z-index: 3;
+    background: repeating-linear-gradient(90deg, var(--red) 0 26px, #fff 26px 52px);
+    border-bottom: 4px solid #d85b48;
+    -webkit-mask: radial-gradient(13px 15px at 13px 0, #0000 98%, #000) repeat-x;
+    -webkit-mask-size: 26px 100%; mask: radial-gradient(13px 15px at 13px 0, #0000 98%, #000) repeat-x; mask-size: 26px 100%;
   }
+  #awning-shadow { position: absolute; top: 34px; left: 0; right: 0; height: 14px; z-index: 3;
+    background: linear-gradient(rgba(0,0,0,.18), transparent); pointer-events: none; }
+
+  /* order tickets rail */
+  #orders { position: absolute; top: 54px; left: 0; right: 0; height: 150px; z-index: 4;
+    display: flex; align-items: flex-start; justify-content: flex-start; gap: 10px; padding: 6px 12px; overflow-x: auto; overflow-y: visible; scrollbar-width: none; }
   #orders::-webkit-scrollbar { display: none; }
-  #orders:empty::after { content: "Waiting for hungry customers…"; font-size: 12px; opacity: .55; align-self: center; padding-left: 6px; font-weight: 700; }
-  .ticket {
-    flex: 0 0 auto; width: 74px; background: var(--cream); border-radius: 12px;
-    border: 2px solid rgba(74,53,38,.15); box-shadow: 0 3px 0 rgba(74,53,38,.14);
-    padding: 5px 4px 4px; text-align: center; position: relative; animation: pop .25s ease-out;
-  }
-  .ticket .t-emoji { font-size: 25px; line-height: 1; }
-  .ticket .t-name { font-size: 9px; font-weight: 800; opacity: .8; margin-top: 1px; white-space: nowrap; }
-  .ticket .t-comp { font-size: 11px; letter-spacing: -1px; margin-top: 1px; height: 13px; }
-  .ticket .t-pat { height: 6px; border-radius: 999px; background: #e7d8c2; overflow: hidden; margin-top: 4px; }
-  .ticket .t-pat > i { display: block; height: 100%; background: var(--green); }
-  @keyframes pop { from { transform: scale(.4); opacity: 0; } }
+  #orders:empty::after { content: "🙂 waiting for customers…"; color: #5c7a86; font-weight: 800; font-size: 14px; align-self: center; }
 
-  /* ---------- Stage ---------- */
-  #stage { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; padding: 8px; min-height: 0; position: relative; }
-  #game { image-rendering: auto; max-width: 100%; max-height: 100%; border-radius: 16px; box-shadow: 0 8px 24px rgba(74,53,38,.32); touch-action: none; cursor: pointer; }
+  .ticket { flex: 0 0 auto; width: 118px; background: var(--paper); border-radius: 14px;
+    border: 3px solid var(--ink); box-shadow: 0 5px 0 rgba(74,53,38,.3); padding: 8px 8px 9px; position: relative;
+    transition: transform .12s; cursor: pointer; }
+  .ticket .cust { position: absolute; top: -22px; left: 50%; transform: translateX(-50%); font-size: 30px;
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,.25)); }
+  .ticket.active { transform: translateY(-4px) scale(1.05); border-color: var(--teal); box-shadow: 0 7px 0 var(--teal); z-index: 2; }
+  .ticket .dish { text-align: center; font-weight: 800; font-size: 14px; margin-top: 10px; }
+  .ticket .steps { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin: 6px 0 7px; min-height: 30px; }
+  .step { width: 28px; height: 28px; border-radius: 8px; background: #fff; border: 2px solid #e0d3bd;
+    display: flex; align-items: center; justify-content: center; font-size: 17px; position: relative; }
+  .step.done { background: var(--green); border-color: #4f9f4f; }
+  .step.done .em { filter: grayscale(.1) brightness(1.05); }
+  .step.next { border-color: var(--teal); animation: pulse 1s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{ box-shadow: 0 0 0 0 rgba(63,176,160,.6);} 50%{ box-shadow: 0 0 0 5px rgba(63,176,160,0);} }
+  .ticket .pat { height: 7px; border-radius: 999px; background: #e7d8c2; overflow: hidden; }
+  .ticket .pat > i { display: block; height: 100%; background: var(--green); }
+  .ticket.wrong { animation: shake .3s; }
+  @keyframes shake { 0%,100%{transform:translateX(0) translateY(-4px) scale(1.05);} 25%{transform:translateX(-6px) translateY(-4px) scale(1.05);} 75%{transform:translateX(6px) translateY(-4px) scale(1.05);} }
+  .ticket.serving { animation: serveout .4s ease-in forwards; }
+  @keyframes serveout { to { transform: translateY(-60px) scale(.6) rotate(-8deg); opacity: 0; } }
 
-  /* ---------- Controls hint ---------- */
-  #controls { flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: 8px 16px 16px; }
-  #ctrl-hint {
-    font-size: 12.5px; font-weight: 800; color: var(--ink); opacity: .72;
-    background: rgba(255,255,255,.4); border-radius: 999px; padding: 7px 16px; text-align: center;
-  }
+  /* ---------- Counter (prep) ---------- */
+  #counter { flex: 0 0 auto; z-index: 5;
+    background: linear-gradient(#e7edf0, var(--steel) 20%, #b7c2c9);
+    border-top: 5px solid #8fa0a9; padding: 10px 10px 14px;
+    box-shadow: 0 -4px 12px rgba(0,0,0,.25); }
+  #counter-label { text-align: center; font-size: 10px; font-weight: 800; letter-spacing: 2px; color: #6d7b83; margin-bottom: 7px; }
+  #grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .ing { background: var(--cream); border: 3px solid var(--ink); border-radius: 13px; box-shadow: 0 4px 0 var(--ink);
+    padding: 7px 2px 5px; display: flex; flex-direction: column; align-items: center; gap: 1px; cursor: pointer; }
+  .ing:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .ing .em { font-size: 27px; line-height: 1; }
+  .ing .nm { font-size: 9.5px; font-weight: 800; opacity: .78; }
+  .ing.hot { border-color: var(--teal); box-shadow: 0 4px 0 var(--teal), 0 0 0 3px rgba(63,176,160,.25); }
+  .ing.bad { animation: shakeb .3s; border-color: var(--red); }
+  @keyframes shakeb { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} }
+  .ing.pop { animation: popb .2s; }
+  @keyframes popb { 50% { transform: scale(1.12); } }
+
+  /* combo + floaters */
+  #combo { position: absolute; top: 52px; right: 14px; z-index: 6; font-weight: 800; color: var(--orange);
+    text-shadow: 1px 1px 0 var(--ink); font-size: 17px; display: none; }
+  #combo.show { display: block; animation: cpop .25s; }
+  @keyframes cpop { from { transform: scale(1.4);} }
+  .float { position: absolute; z-index: 20; font-weight: 800; font-size: 20px; color: var(--yellow);
+    text-shadow: 2px 2px 0 var(--ink); pointer-events: none; animation: fl 1s ease-out forwards; }
+  @keyframes fl { to { transform: translateY(-46px); opacity: 0; } }
+  #toast { position: absolute; top: 50%; left: 50%; transform: translateX(-50%); z-index: 22;
+    background: var(--ink); color: var(--yellow); font-weight: 800; padding: 8px 18px; border-radius: 999px; display: none; }
+  #toast.show { display: block; animation: tst 1.4s ease-out forwards; }
+  @keyframes tst { 0%{opacity:0;} 12%,72%{opacity:1;} 100%{opacity:0;} }
 
   /* ---------- Overlays ---------- */
   .overlay { position: absolute; inset: 0; z-index: 30; display: none; flex-direction: column; align-items: center; justify-content: center;
-    padding: 22px; text-align: center; overflow-y: auto; }
+    padding: 24px; text-align: center; }
   .overlay.show { display: flex; }
-  .overlay::before { content: ""; position: absolute; inset: 0; background: rgba(74,53,38,.55); backdrop-filter: blur(3px); z-index: -1; }
-  .card {
-    background: var(--cream); border-radius: 22px; border: 3px solid var(--ink);
-    box-shadow: 0 10px 0 rgba(74,53,38,.35); padding: 22px 22px 24px; max-width: 380px; width: 100%;
-  }
-  h1.logo { font-size: 46px; color: var(--yellow); -webkit-text-stroke: 2px var(--ink); text-stroke: 2px var(--ink); letter-spacing: 1px; line-height: 1; }
-  h1.logo .sub2 { display: block; font-size: 15px; color: var(--red); -webkit-text-stroke: 0; margin-top: 8px; font-weight: 800; }
+  .overlay::before { content: ""; position: absolute; inset: 0; background: rgba(36,24,17,.62); backdrop-filter: blur(3px); z-index: -1; }
+  .card { background: var(--cream); border-radius: 22px; border: 3px solid var(--ink); box-shadow: 0 10px 0 rgba(74,53,38,.35);
+    padding: 22px; max-width: 360px; width: 100%; }
+  h1.logo { font-size: 44px; color: var(--yellow); -webkit-text-stroke: 2px var(--ink); letter-spacing: 1px; line-height: 1; }
+  h1.logo .s { display: block; font-size: 14px; color: var(--red); -webkit-text-stroke: 0; margin-top: 8px; font-weight: 800; }
   .card h2 { font-size: 26px; color: var(--red); }
-  .card p { font-size: 14px; line-height: 1.5; margin: 8px 0; color: var(--ink); }
-  .btn { font-family: inherit; font-weight: 800; font-size: 18px; background: var(--red); color: #fff;
-    border: 3px solid var(--ink); border-radius: 14px; box-shadow: 0 5px 0 var(--ink); padding: 12px 26px; cursor: pointer; margin: 6px 4px 0; }
+  .how { text-align: left; background: var(--paper); border-radius: 14px; padding: 12px 15px; font-size: 13.5px; line-height: 1.75; margin: 10px 0; }
+  .btn { font-family: inherit; font-weight: 800; font-size: 19px; background: var(--red); color: #fff;
+    border: 3px solid var(--ink); border-radius: 14px; box-shadow: 0 5px 0 var(--ink); padding: 12px 30px; cursor: pointer; margin-top: 6px; }
   .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
-  .btn.alt { background: var(--teal); }
-  .btn.ghost { background: #fff; color: var(--ink); }
-  .btn.sm { font-size: 14px; padding: 9px 18px; }
-
-  .how { text-align: left; background: var(--peach); border-radius: 14px; padding: 12px 14px; font-size: 13px; line-height: 1.8; margin-top: 6px; }
-
-  /* map */
-  .loc { margin-top: 14px; background: var(--peach); border-radius: 16px; padding: 12px 12px 14px; border: 2px solid rgba(74,53,38,.15); }
-  .loc.locked { opacity: .55; }
-  .loc h3 { font-size: 17px; display: flex; align-items: center; gap: 7px; }
-  .loc .blurb { font-size: 11.5px; opacity: .8; margin: 3px 0 9px; line-height: 1.35; }
-  .lvls { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
-  .lvl {
-    width: 54px; height: 60px; border-radius: 13px; background: var(--cream); border: 2.5px solid var(--ink);
-    box-shadow: 0 3px 0 var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: center;
-    cursor: pointer; font-weight: 800; position: relative; padding-top: 3px;
-  }
-  .lvl.locked { background: #e3d3bd; color: #a08c74; box-shadow: 0 3px 0 #a08c74; border-color: #a08c74; cursor: default; }
-  .lvl .n { font-size: 19px; }
-  .lvl .st { font-size: 10px; letter-spacing: -1px; height: 12px; }
-  .lvl .lock { font-size: 17px; }
-
-  .stars-big { font-size: 34px; letter-spacing: 3px; margin: 6px 0; }
-  .res-row { display: flex; justify-content: space-between; font-size: 15px; padding: 4px 2px; border-bottom: 2px dashed rgba(74,53,38,.2); }
-  .res-row b { color: var(--teal); }
-  .toast { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 40;
-    background: var(--ink); color: var(--yellow); font-weight: 800; font-size: 14px; padding: 8px 18px; border-radius: 999px; display: none; }
-  .toast.show { display: block; animation: tst 1.5s ease-out forwards; }
-  @keyframes tst { 0%{opacity:0;transform:translateX(-50%) translateY(-8px);} 12%,72%{opacity:1;transform:translateX(-50%) translateY(0);} 100%{opacity:0;} }
-
-  #tut { position: absolute; left: 12px; right: 12px; bottom: 12px; z-index: 24; display: none;
-    background: var(--cream); border: 3px solid var(--ink); border-radius: 16px; box-shadow: 0 5px 0 rgba(74,53,38,.35);
-    padding: 11px 15px; font-size: 15px; font-weight: 800; text-align: center; line-height: 1.3; }
-  #tut.show { display: block; animation: pop .25s ease-out; }
-  #tut .tut-sub { display: block; font-size: 12px; font-weight: 700; opacity: .72; margin-top: 3px; }
-  #tut::before { content: "👨‍🍳"; margin-right: 6px; }
+  .stars { font-size: 40px; letter-spacing: 4px; margin: 8px 0; }
+  .row { display: flex; justify-content: space-between; font-size: 16px; padding: 5px 2px; border-bottom: 2px dashed rgba(74,53,38,.2); }
+  .row b { color: var(--teal); }
 </style>
 </head>
 <body>
 <div id="app">
   <div id="hud">
-    <span class="pill" id="hud-level">🚚 Taco Truck · 1</span>
-    <span class="pill" id="hud-timer">1:20</span>
+    <span class="pill">🌮 <span id="hud-shift">Shift 1</span></span>
+    <span class="pill" id="hud-timer">1:40</span>
     <span class="pill">⭐ <span id="hud-score">0</span></span>
   </div>
-  <div id="orders"></div>
-  <div id="stage"><canvas id="game" width="432" height="432"></canvas><div id="tut"></div></div>
-  <div id="controls">
-    <span id="ctrl-hint">👆 Tap a spot to walk &nbsp;·&nbsp; tap a station to use it</span>
+
+  <div id="view">
+    <div id="street"></div>
+    <div id="awning"></div><div id="awning-shadow"></div>
+    <div id="combo"></div>
+    <div id="orders"></div>
   </div>
-  <div class="toast" id="toast"></div>
+
+  <div id="counter">
+    <div id="counter-label">◍ PREP COUNTER — TAP INGREDIENTS IN ORDER ◍</div>
+    <div id="grid"></div>
+  </div>
+
+  <div id="toast"></div>
 
   <!-- Title -->
   <div class="overlay show" id="ov-title">
     <div class="card">
-      <h1 class="logo">TACO LOCO<span class="sub2">a cozy taco kitchen</span></h1>
+      <h1 class="logo">TACO LOCO<span class="s">food truck rush</span></h1>
       <div class="how">
-        👆 <b>Tap</b> to walk — tap a <b>station</b> to walk up &amp; use it<br>
-        🍽️ Grab plates from the stack, set several on counters at once<br>
-        🔥 Cook meat on the grill &nbsp;·&nbsp; 🔪 chop veg on the board<br>
-        🥘 Add prepped items to your plates, then 🔔 serve the finished dish<br>
-        💡 Glowing stations show your next move · ⏱️ beat the clock for stars!
+        🚚 You're working the window of your taco truck.<br>
+        🎫 Customers show up with orders at the window.<br>
+        👆 Tap the ingredients on your counter <b>in the order shown</b> on the ticket.<br>
+        ✨ The next ingredient <b>glows</b> — finish fast for tips &amp; combos!<br>
+        ⏱️ Don't let hungry customers run out of patience.
       </div>
-      <button class="btn" id="btn-play">Let's cook! 🌮</button>
-      <div><button class="btn ghost sm" id="btn-reset">reset progress</button></div>
-    </div>
-  </div>
-
-  <!-- Map / level select -->
-  <div class="overlay" id="ov-map">
-    <div class="card">
-      <h2>Choose a Kitchen</h2>
-      <div id="map-body"></div>
-      <button class="btn ghost sm" id="btn-map-back">back</button>
-    </div>
-  </div>
-
-  <!-- Level intro -->
-  <div class="overlay" id="ov-intro">
-    <div class="card">
-      <h2 id="intro-title">Taco Truck · 1</h2>
-      <p id="intro-goal"></p>
-      <div id="intro-recipes" class="how"></div>
-      <button class="btn" id="btn-go">Start! 🔔</button>
-      <button class="btn ghost sm" id="btn-intro-back">back</button>
+      <button class="btn" id="btn-play">Open Up! 🌮</button>
     </div>
   </div>
 
   <!-- Results -->
   <div class="overlay" id="ov-res">
     <div class="card">
-      <h2 id="res-title">Service done!</h2>
-      <div class="stars-big" id="res-stars">⭐⭐⭐</div>
-      <div class="res-row"><span>Served</span><b id="res-served">0</b></div>
-      <div class="res-row"><span>Missed</span><b id="res-missed">0</b></div>
-      <div class="res-row"><span>Score</span><b id="res-score">0</b></div>
-      <div id="res-btns" style="margin-top:12px"></div>
+      <h2 id="res-title">Shift over!</h2>
+      <div class="stars" id="res-stars">⭐⭐⭐</div>
+      <div class="row"><span>Served</span><b id="res-served">0</b></div>
+      <div class="row"><span>Best combo</span><b id="res-combo">0</b></div>
+      <div class="row"><span>Missed</span><b id="res-missed">0</b></div>
+      <div class="row"><span>Score</span><b id="res-score">0</b></div>
+      <button class="btn" id="btn-again">Next Shift ▶</button>
     </div>
   </div>
 </div>
 
 <script>
 'use strict';
-/* ============================================================
-   TACO LOCO — top-down Overcooked-style co(z)y taco kitchen
-   Single file, no deps. Canvas render + DOM UI overlays.
-   ============================================================ */
+/* ==========================================================
+   TACO LOCO — Food Truck Rush
+   First-person truck window. Orders arrive; tap ingredients
+   in the correct sequence to build each order.
+   ========================================================== */
 
-/* ---------------- data ---------------- */
 const ING = {
-  tortilla: { emoji: '🫓', prep: null },
-  meat:     { emoji: '🥩', cooked: '🍖', prep: 'cook' },
-  fish:     { emoji: '🐟', cooked: '🍤', prep: 'cook' },
-  lettuce:  { emoji: '🥬', prep: 'chop' },
-  jalapeno: { emoji: '🌶️', prep: 'chop' },
-  cheese:   { emoji: '🧀', prep: null },
-  chips:    { emoji: '🌽', prep: null },
-  salsa:    { emoji: '🥫', prep: null },
+  tortilla: { emoji: '🫓', name: 'Tortilla' },
+  chips:    { emoji: '🌽', name: 'Chips' },
+  rice:     { emoji: '🍚', name: 'Rice' },
+  meat:     { emoji: '🥩', name: 'Beef' },
+  chicken:  { emoji: '🍗', name: 'Chicken' },
+  beans:    { emoji: '🫘', name: 'Beans' },
+  cheese:   { emoji: '🧀', name: 'Cheese' },
+  lettuce:  { emoji: '🥬', name: 'Lettuce' },
+  salsa:    { emoji: '🥫', name: 'Salsa' },
+  guac:     { emoji: '🥑', name: 'Guac' },
+  jalapeno: { emoji: '🌶️', name: 'Jalapeño' },
 };
-const CRATE = { t:'tortilla', m:'meat', f:'fish', l:'lettuce', j:'jalapeno', c:'cheese', h:'chips', s:'salsa' };
+// counter layout (order of buttons)
+const PALETTE = ['tortilla','chips','rice','meat','chicken','beans','cheese','lettuce','salsa','guac','jalapeno'];
 
 const RECIPES = {
-  tacoSimple: { name: 'Taco',      emoji: '🌮', comp: ['tortilla','meat'] },
-  taco:       { name: 'Taco',      emoji: '🌮', comp: ['tortilla','meat','lettuce'] },
-  nachos:     { name: 'Nachos',    emoji: '🧀', comp: ['chips','cheese','jalapeno'] },
-  burrito:    { name: 'Burrito',   emoji: '🌯', comp: ['tortilla','meat','lettuce','cheese'] },
-  quesadilla: { name: 'Quesadilla',emoji: '🫓', comp: ['tortilla','cheese','jalapeno'] },
-  fishtaco:   { name: 'Fish Taco', emoji: '🐟', comp: ['tortilla','fish','lettuce','salsa'] },
-  loaded:     { name: 'Loaded Nachos', emoji: '🌶️', comp: ['chips','cheese','jalapeno','salsa'] },
+  taco:       { name: 'Taco',       emoji: '🌮', steps: ['tortilla','meat','lettuce','salsa'] },
+  quesadilla: { name: 'Quesadilla', emoji: '🫓', steps: ['tortilla','cheese','chicken'] },
+  nachos:     { name: 'Nachos',     emoji: '🧀', steps: ['chips','cheese','meat','jalapeno'] },
+  burrito:    { name: 'Burrito',    emoji: '🌯', steps: ['tortilla','beans','meat','cheese','salsa'] },
+  bowl:       { name: 'Bowl',       emoji: '🥗', steps: ['rice','beans','chicken','guac'] },
 };
+const CUSTOMERS = ['😀','🤠','👵','🧑‍🎤','👷','🕵️','🧛','👩‍🚀','🤡','🧙','👨‍🎨','🦸','🧕','👨‍🍳','🧟','👽'];
 
-// Compact kitchens with a central plating ISLAND (## in the middle) you set plates on,
-// and a plate dispenser (P). Small footprint = little walking. Char key:
-//   t m l c h j f s = ingredient crates · G grill · B board/chop · P plate stack
-//   D serve window · W bin/trash · # counter (holds plates or staged items) · . floor
-const LAYOUT_S = [   // taco kitchen (tortilla, meat, lettuce)
-  "#t.G.m.#",
-  "#......#",
-  "l..##..P",
-  "B..##..D",
-  "#......#",
-  "#..W...#",
-];
-const LAYOUT_M = [   // full truck (adds cheese, chips, jalapeño, 2nd grill)
-  "#t.G.m.#",
-  "c......h",
-  "l..##..P",
-  "B..##..D",
-  "j......G",
-  "#......#",
-  "#..W...#",
-];
-const LAYOUT_BEACH = [ // seaside (fish, salsa, cheese, jalapeño)
-  "#t.G.f.#",
-  "c......s",
-  "l..##..P",
-  "B..##..D",
-  "j......G",
-  "#......#",
-  "#..W...#",
-];
+const SHIFT_LEN = 100;   // seconds
+const $ = id => document.getElementById(id);
 
-const LOCATIONS = [
-  {
-    id: 'truck', name: 'Taco Truck', emoji: '🚚',
-    blurb: 'Where every taco legend begins. Learn the ropes: grill, chop, plate, serve.',
-    mod: {},
-    levels: [
-      { name: 'First Shift',   layout: LAYOUT_S, start: [4,4], recipes: ['tacoSimple'],           time: 80,  every: 9,   delay: 1.2, queue: 3, patience: 48, stars: [25,50,75] },
-      { name: 'Add the Greens',layout: LAYOUT_S, start: [4,4], recipes: ['taco'],                 time: 85,  every: 8.5, delay: 1.2, queue: 3, patience: 48, stars: [30,60,90] },
-      { name: 'Nacho Night',   layout: LAYOUT_M, start: [4,5], recipes: ['taco','nachos'],        time: 95,  every: 7.5, delay: 1.0, queue: 4, patience: 46, stars: [45,85,125] },
-      { name: 'Burrito Rush',  layout: LAYOUT_M, start: [4,5], recipes: ['taco','burrito'],       time: 100, every: 7.2, delay: 1.0, queue: 4, patience: 46, stars: [50,95,135] },
-      { name: 'The Big Lunch', layout: LAYOUT_M, start: [4,5], recipes: ['taco','nachos','burrito'], time: 110, every: 6.2, delay: 0.8, queue: 5, patience: 44, stars: [65,115,165] },
-    ],
-  },
-  {
-    id: 'beach', name: 'Beach Cantina', emoji: '🏖️',
-    blurb: 'Sandy floors make you slide and beach-goers are impatient. New: fish 🐟 & salsa 🥫.',
-    mod: { slippery: true, patienceScale: 0.85 },
-    levels: [
-      { name: 'Sandy Feet',    layout: LAYOUT_BEACH, start: [4,5], recipes: ['quesadilla'],            time: 85,  every: 9,   delay: 1.2, queue: 3, patience: 50, stars: [28,55,82] },
-      { name: 'Catch of Day',  layout: LAYOUT_BEACH, start: [4,5], recipes: ['fishtaco'],             time: 92,  every: 8.0, delay: 1.0, queue: 3, patience: 48, stars: [35,70,105] },
-      { name: 'Surf & Spice',  layout: LAYOUT_BEACH, start: [4,5], recipes: ['fishtaco','quesadilla'],time: 98,  every: 7.2, delay: 1.0, queue: 4, patience: 46, stars: [50,95,140] },
-      { name: 'Beach Party',   layout: LAYOUT_BEACH, start: [4,5], recipes: ['fishtaco','quesadilla'],time: 104, every: 6.6, delay: 0.9, queue: 5, patience: 45, stars: [60,110,160] },
-      { name: 'High Tide',     layout: LAYOUT_BEACH, start: [4,5], recipes: ['fishtaco','quesadilla'],time: 110, every: 6.0, delay: 0.8, queue: 5, patience: 44, stars: [70,125,180] },
-    ],
-  },
-];
+/* ---------- audio ---------- */
+let actx = null;
+function beep(f, d, t, v) { try {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = t || 'sine'; o.frequency.value = f; g.gain.value = v || 0.05;
+  o.connect(g); g.connect(actx.destination); o.start();
+  g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (d || 0.08)); o.stop(actx.currentTime + (d || 0.08));
+} catch (e) {} }
 
-/* ---------------- save ---------------- */
-const SAVE_KEY = 'tacoLoco.save.v2';
-let save = { stars: {} };
+/* ---------- persistent ---------- */
+const SAVE_KEY = 'tacoLoco.truck.v1';
+let save = { shift: 1, best: 0 };
 try { const r = localStorage.getItem(SAVE_KEY); if (r) save = Object.assign(save, JSON.parse(r)); } catch (e) {}
 const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} };
-const starKey = (li, lv) => LOCATIONS[li].id + ':' + lv;
-const starsOf = (li, lv) => save.stars[starKey(li, lv)] || 0;
-function levelUnlocked(li, lv) {
-  if (li > 0) { // previous location must be fully cleared (all levels >=1 star)
-    const prev = LOCATIONS[li - 1];
-    for (let k = 0; k < prev.levels.length; k++) if (!(save.stars[prev.id + ':' + k] > 0)) return false;
-  }
-  if (lv === 0) return true;
-  return starsOf(li, lv - 1) > 0;
-}
 
-/* ---------------- constants ---------------- */
-const TILE = 48, R = 15;
-// 2.5D camera: foreshorten the vertical axis and stand counters up as tall blocks.
-const YSCALE = 0.72;         // vertical squash → angled "looking-down-the-counter" view
-const CH = TILE * YSCALE;    // a cell's on-screen height
-const BLOCK_H = 22;          // counter/wall block height in px
-const OFF_Y = BLOCK_H + 6;   // top margin so the back row's tall blocks aren't clipped
-const DIRS = { up:[0,-1], down:[0,1], left:[-1,0], right:[1,0] };
-const $ = id => document.getElementById(id);
-const canvas = $('game'), ctx = canvas.getContext('2d');
-// world (px) → screen (px)
-const sX = wx => wx;
-const sY = wy => OFF_Y + wy * YSCALE;
-const cellSX = gx => gx * TILE;
-const cellSY = gy => OFF_Y + gy * TILE * YSCALE;
+/* ---------- state ---------- */
+let G = null, lastTs = 0, screen = 'title';
 
-/* ---------------- audio (tiny, optional) ---------------- */
-let actx = null;
-function beep(freq, dur, type, vol) {
-  try {
-    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
-    const o = actx.createOscillator(), g = actx.createGain();
-    o.type = type || 'sine'; o.frequency.value = freq;
-    g.gain.value = vol || 0.05; o.connect(g); g.connect(actx.destination);
-    o.start(); g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + (dur || 0.08));
-    o.stop(actx.currentTime + (dur || 0.08));
-  } catch (e) {}
+function recipesForTime(elapsed) {
+  const r = ['taco', 'quesadilla'];
+  if (elapsed > 22) r.push('nachos', 'bowl');
+  if (elapsed > 55) r.push('burrito');
+  return r;
 }
+function spawnInterval(elapsed) { return Math.max(2.2, 5.2 - elapsed / 28); }
+function patienceFor(steps) { return 15 + steps * 3.2; }
 
-/* ---------------- game state ---------------- */
-let G = null;      // active level runtime
-let screen = 'title';
-let sel = { li: 0, lv: 0 };
-let lastTs = 0;
-
-function mkItem(base, state) {
-  const p = ING[base].prep;
-  if (state === undefined) state = p === 'cook' ? 'raw' : 'whole';
-  return { base, state };
-}
-function isReady(it) {
-  if (!it || it.base === 'plate' || !ING[it.base]) return false;
-  const p = ING[it.base].prep;
-  if (p === null) return it.state === 'whole';
-  if (p === 'cook') return it.state === 'cooked';
-  if (p === 'chop') return it.state === 'chopped';
-  return false;
-}
-const canGrill = it => it && ING[it.base] && ING[it.base].prep === 'cook' && it.state === 'raw';
-const canChop  = it => it && ING[it.base] && ING[it.base].prep === 'chop' && it.state === 'whole';
-const mkPlate = () => ({ base: 'plate', contents: [], dish: null });
-// Can this prepped-ingredient base still be added to this plate toward some enabled recipe?
-function canPlate(plate, b) {
-  if (plate.dish) return false;
-  for (const rid of G.L.recipes) {
-    const pool = RECIPES[rid].comp.slice();
-    let ok = true;
-    for (const c of plate.contents) { const i = pool.indexOf(c); if (i < 0) { ok = false; break; } pool.splice(i, 1); }
-    if (ok && pool.indexOf(b) >= 0) return true;
-  }
-  return false;
-}
-function checkPlate(plate, st) {
-  const key = [...plate.contents].sort().join(',');
-  for (const rid of G.L.recipes) {
-    if ([...RECIPES[rid].comp].sort().join(',') === key) { plate.dish = rid; beep(880, .12, 'triangle'); poof('✨', st.gx, st.gy); return; }
-  }
-}
-
-/* ---------------- level loader ---------------- */
-function loadLevel(li, lv) {
-  const loc = LOCATIONS[li], L = loc.levels[lv];
-  const grid = L.layout;
-  const rows = grid.length, cols = grid[0].length;
-  canvas.width = cols * TILE;
-  canvas.height = Math.ceil(OFF_Y + rows * CH + BLOCK_H + 8);
-  const stationMap = new Map(), stations = [];
-  for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
-    const ch = grid[y][x];
-    if (ch === '.') continue;
-    let st = null;
-    if (ch === '#') st = { type: 'counter', hold: null };
-    else if (CRATE[ch]) st = { type: 'crate', base: CRATE[ch] };
-    else if (ch === 'G') st = { type: 'grill', hold: null, t: 0, state: null };
-    else if (ch === 'B') st = { type: 'board', hold: null, prog: 0, on: false };
-    else if (ch === 'P') st = { type: 'dispenser' };
-    else if (ch === 'D') st = { type: 'deliver' };
-    else if (ch === 'W') st = { type: 'bin' };
-    if (st) { st.gx = x; st.gy = y; stationMap.set(x + ',' + y, st); stations.push(st); }
-  }
-  G = {
-    li, lv, loc, L, grid, rows, cols, stationMap, stations,
-    mod: loc.mod || {},
-    player: { px: (L.start[0] + 0.5) * TILE, py: (L.start[1] + 0.5) * TILE, vx: 0, vy: 0, face: 'down', carry: null, step: 0, path: null, pending: null, dest: null },
-    orders: [], oseq: 0, spawnT: L.delay, timeLeft: L.time,
-    score: 0, served: 0, missed: 0, running: true, parts: [],
-    orderEls: new Map(), tut: null,
-  };
-}
-
-/* ---------------- interaction ---------------- */
-function frontStation() {
-  const p = G.player, d = DIRS[p.face];
-  const gx = Math.floor(p.px / TILE) + d[0], gy = Math.floor(p.py / TILE) + d[1];
-  return G.stationMap.get(gx + ',' + gy);
-}
-function poof(text, gx, gy) { G.parts.push({ text, x: (gx + 0.5) * TILE, y: (gy + 0.5) * TILE, life: 1 }); }
-
-function interact() {
-  if (!G || !G.running) return;
-  const p = G.player, st = frontStation();
-  if (!st) return;
-  const P = p.carry;
-  switch (st.type) {
-    case 'crate':
-      if (!P) { p.carry = mkItem(st.base); beep(660, .05, 'triangle'); }
-      break;
-    case 'dispenser':
-      if (!P) { p.carry = mkPlate(); beep(680, .05, 'triangle'); }
-      break;
-    case 'counter': {
-      const h = st.hold;
-      if (!P) { if (h) { p.carry = h; st.hold = null; beep(520,.05,'sine'); } }        // pick up plate / item
-      else if (P.base === 'plate') { if (!h) { st.hold = P; p.carry = null; beep(440,.05,'sine'); } } // set a plate down
-      else if (isReady(P)) {                                                            // add prepped item to a plate here
-        if (h && h.base === 'plate' && canPlate(h, P.base)) { h.contents.push(P.base); p.carry = null; beep(500 + h.contents.length*60, .05,'sine'); checkPlate(h, st); }
-        else if (!h) { st.hold = P; p.carry = null; beep(440,.05,'sine'); }             // or just stage it
-      } else if (!h) { st.hold = P; p.carry = null; beep(440,.05,'sine'); }             // stage a raw item
-      break;
-    }
-    case 'board':
-      if (P && !st.hold && canChop(P)) { st.hold = P; p.carry = null; st.on = true; st.prog = 0; beep(300,.05,'square'); }
-      else if (!P && st.hold && !st.on) { p.carry = st.hold; st.hold = null; beep(560,.05,'triangle'); }
-      break;
-    case 'grill':
-      if (P && !st.hold && canGrill(P)) { st.hold = P; p.carry = null; st.state = 'cooking'; st.t = 0; beep(240,.06,'sawtooth'); }
-      else if (!P && st.hold) { p.carry = st.hold; st.hold = null; st.state = null; st.t = 0; beep(560,.05,'triangle'); }
-      break;
-    case 'deliver':
-      if (P && P.base === 'plate' && P.dish) { deliver(P); p.carry = null; }
-      break;
-    case 'bin':
-      if (P) { p.carry = null; poof('🗑️', st.gx, st.gy); beep(160,.08,'square'); }
-      break;
-  }
-}
-function deliver(plate) {
-  const cands = G.orders.filter(o => o.recipe === plate.dish && !o.done);
-  if (!cands.length) { G.score = Math.max(0, G.score - 4); const f = frontFace(); poof('❌', f[0], f[1]); beep(140,.15,'square'); return; }
-  cands.sort((a, b) => a.pat - b.pat);
-  const o = cands[0]; o.done = true;
-  const frac = Math.max(0, o.pat / o.maxPat);
-  const val = RECIPES[o.recipe].comp.length * 5 + 5 + Math.round(frac * 10);
-  G.score += val; G.served++;
-  const f = frontFace(); poof('+' + val, f[0], f[1]);
-  beep(720,.08,'triangle'); setTimeout(() => beep(960,.1,'triangle'), 70);
-  G.orders = G.orders.filter(x => x !== o);
-}
-function frontFace() { const p = G.player, d = DIRS[p.face]; return [Math.floor(p.px/TILE)+d[0], Math.floor(p.py/TILE)+d[1]]; }
-
-/* ---------------- orders ---------------- */
-function spawnOrder() {
-  const L = G.L, pat = L.patience * (G.mod.patienceScale || 1);
-  const rid = L.recipes[Math.floor(Math.random() * L.recipes.length)];
-  G.orders.push({ id: ++G.oseq, recipe: rid, pat, maxPat: pat, done: false });
-}
-
-/* ---------------- update ---------------- */
-let input = { x: 0, y: 0 };   // keyboard vector (desktop convenience; pointer is primary)
-const tileOf = p => [Math.floor(p.px / TILE), Math.floor(p.py / TILE)];
-
-// BFS over floor tiles → shortest tile path (excludes start). null if unreachable.
-function bfsPath(sx, sy, gx, gy) {
-  if (solid(gx, gy)) return null;
-  const key = (x, y) => x + ',' + y;
-  const q = [[sx, sy]], prev = new Map(); prev.set(key(sx, sy), null);
-  while (q.length) {
-    const [x, y] = q.shift();
-    if (x === gx && y === gy) {
-      const path = []; let k = key(x, y);
-      while (k) { const [px, py] = k.split(',').map(Number); if (!(px === sx && py === sy)) path.unshift([px, py]); k = prev.get(k); }
-      return path;
-    }
-    for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
-      const nx = x + dx, ny = y + dy, nk = key(nx, ny);
-      if (!solid(nx, ny) && !prev.has(nk)) { prev.set(nk, key(x, y)); q.push([nx, ny]); }
-    }
-  }
-  return null;
-}
-// Turn a tap into a walk order (and, for a station, an action-on-arrival).
-function goTo(wx, wy, station) {
-  const p = G.player, [sx, sy] = tileOf(p);
-  let goal, pending = null;
-  if (station) {
-    pending = station;
-    // pick the reachable floor neighbour of the station with the shortest path
-    let best = null, bestLen = 1e9;
-    for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
-      const nx = station.gx + dx, ny = station.gy + dy;
-      if (solid(nx, ny)) continue;
-      const pth = bfsPath(sx, sy, nx, ny);
-      if (pth && pth.length < bestLen) { bestLen = pth.length; best = [nx, ny]; }
-    }
-    if (!best) return;
-    goal = best;
-  } else {
-    let gx = Math.max(0, Math.min(G.cols - 1, Math.floor(wx / TILE)));
-    let gy = Math.max(0, Math.min(G.rows - 1, Math.floor(wy / TILE)));
-    if (solid(gx, gy)) return; // ignore taps on counters that aren't stations
-    goal = [gx, gy];
-  }
-  const path = bfsPath(sx, sy, goal[0], goal[1]) || [];
-  p.path = path.map(([tx, ty]) => ({ x: (tx + 0.5) * TILE, y: (ty + 0.5) * TILE }));
-  p.pending = pending;
-  p.dest = { x: (goal[0] + 0.5) * TILE, y: (goal[1] + 0.5) * TILE };
-  input.x = 0; input.y = 0;
-}
-function faceToward(gx, gy) {
-  const [tx, ty] = tileOf(G.player);
-  const dx = gx - tx, dy = gy - ty;
-  if (Math.abs(dx) >= Math.abs(dy)) G.player.face = dx >= 0 ? 'right' : 'left';
-  else G.player.face = dy >= 0 ? 'down' : 'up';
-}
-function updateMove(dt) {
-  const p = G.player;
-  let ix = input.x, iy = input.y;
-  // keyboard overrides any tap-path
-  if (ix || iy) { p.path = null; p.pending = null; p.dest = null; }
-  else if (p.path && p.path.length) {
-    // consume every waypoint we could reach this frame so we never overshoot & stall
-    const step = 172 * dt + 4;
-    let wp = p.path[0], dx = wp.x - p.px, dy = wp.y - p.py, d = Math.hypot(dx, dy);
-    while (d <= step && p.path.length) { p.path.shift(); wp = p.path[0]; if (wp) { dx = wp.x - p.px; dy = wp.y - p.py; d = Math.hypot(dx, dy); } }
-    if (p.path.length) { ix = dx / d; iy = dy / d; } else { ix = 0; iy = 0; }
-  }
-  const mag = Math.hypot(ix, iy);
-  if (mag > 1) { ix /= mag; iy /= mag; }
-  if (mag > 0.15) p.face = Math.abs(ix) > Math.abs(iy) ? (ix > 0 ? 'right' : 'left') : (iy > 0 ? 'down' : 'up');
-  const speed = 194;
-  if (G.mod.slippery) {
-    p.vx += (ix * speed - p.vx) * Math.min(1, dt * 3.2);
-    p.vy += (iy * speed - p.vy) * Math.min(1, dt * 3.2);
-  } else { p.vx = ix * speed; p.vy = iy * speed; }
-  const nx = p.px + p.vx * dt;
-  if (!blocked(nx, p.py)) p.px = nx; else { p.vx = 0; }
-  const ny = p.py + p.vy * dt;
-  if (!blocked(p.px, ny)) p.py = ny; else { p.vy = 0; }
-  if (mag > 0.15) p.step += dt * 10; else p.step = 0;
-  // interact as soon as we're orthogonally adjacent to the tapped station (robust vs exact arrival)
-  if (p.pending) {
-    const [tx, ty] = tileOf(p);
-    if (Math.abs(tx - p.pending.gx) + Math.abs(ty - p.pending.gy) === 1) {
-      const st = p.pending; p.pending = null; p.path = null; p.dest = null;
-      faceToward(st.gx, st.gy);
-      interact();
-    }
-  } else if ((!p.path || !p.path.length) && Math.hypot(p.vx, p.vy) < 30) {
-    p.dest = null;
-  }
-}
-function solid(gx, gy) {
-  if (gx < 0 || gy < 0 || gx >= G.cols || gy >= G.rows) return true;
-  return G.grid[gy][gx] !== '.';
-}
-function blocked(x, y) {
-  const minx = Math.floor((x - R) / TILE), maxx = Math.floor((x + R) / TILE);
-  const miny = Math.floor((y - R) / TILE), maxy = Math.floor((y + R) / TILE);
-  for (let gy = miny; gy <= maxy; gy++) for (let gx = minx; gx <= maxx; gx++) if (solid(gx, gy)) return true;
-  return false;
-}
-function updateStations(dt) {
-  for (const st of G.stations) {
-    if (st.type === 'board' && st.on) {
-      st.prog += dt / 2.5;
-      if (st.prog >= 1) { st.on = false; st.prog = 1; if (st.hold) st.hold.state = 'chopped'; }
-    } else if (st.type === 'grill' && st.state === 'cooking' && st.hold) {
-      st.t += dt;
-      if (st.hold.state === 'raw' && st.t >= 4) st.hold.state = 'cooked';
-      if (st.hold.state === 'cooked' && st.t >= 9 && !(G && G.tut)) { st.hold.state = 'burnt'; }
-    }
-  }
-}
-function update(dt) {
-  if (!G || !G.running) return;
-  if (G.tut) { updateTutorial(dt); return; }
-  updateMove(dt);
-  updateStations(dt);
-  // orders
-  G.spawnT -= dt;
-  const active = G.orders.filter(o => !o.done).length;
-  if (G.spawnT <= 0 && active < G.L.queue) { spawnOrder(); G.spawnT = G.L.every; }
-  for (const o of G.orders) {
-    o.pat -= dt;
-    if (o.pat <= 0 && !o.done) { o.done = true; o.expired = true; G.missed++; G.score = Math.max(0, G.score - 6); beep(150,.2,'square'); }
-  }
-  G.orders = G.orders.filter(o => !(o.expired));
-  // particles
-  for (const pt of G.parts) pt.life -= dt * 1.4;
-  G.parts = G.parts.filter(pt => pt.life > 0);
-  // time
-  G.timeLeft -= dt;
-  if (G.timeLeft <= 0) { G.timeLeft = 0; endLevel(); }
-}
-
-/* ---------------- render ---------------- */
-function rr(x, y, w, h, r) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
-if (!CanvasRenderingContext2D.prototype.roundRect) {
-  CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
-    if (typeof r === 'number') r = { tl:r, tr:r, br:r, bl:r }; else r = { tl:r[0], tr:r[1], br:r[2], bl:r[3] };
-    this.moveTo(x + r.tl, y); this.lineTo(x + w - r.tr, y); this.arcTo(x + w, y, x + w, y + r.tr, r.tr);
-    this.lineTo(x + w, y + h - r.br); this.arcTo(x + w, y + h, x + w - r.br, y + h, r.br);
-    this.lineTo(x + r.bl, y + h); this.arcTo(x, y + h, x, y + h - r.bl, r.bl);
-    this.lineTo(x, y + r.tl); this.arcTo(x, y, x + r.tl, y, r.tl); this.closePath(); return this;
-  };
-}
-function glyph(txt, cx, cy, size) {
-  ctx.font = size + 'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",serif';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(txt, cx, cy);
-}
-function drawPlate(cx, cy, plate, size) {
-  ctx.save();
-  ctx.fillStyle = 'rgba(74,53,38,.16)'; ctx.beginPath(); ctx.ellipse(cx, cy + size*0.22, size*0.52, size*0.2, 0, 0, 7); ctx.fill();
-  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(cx, cy, size*0.52, size*0.44, 0, 0, 7); ctx.fill();
-  ctx.strokeStyle = '#e3d6c4'; ctx.lineWidth = 2; ctx.stroke();
-  ctx.fillStyle = '#f6efe2'; ctx.beginPath(); ctx.ellipse(cx, cy, size*0.36, size*0.3, 0, 0, 7); ctx.fill();
-  ctx.restore();
-  if (plate.dish) glyph(RECIPES[plate.dish].emoji, cx, cy - 1, size * 0.74);
-  else if (plate.contents.length) {
-    plate.contents.forEach((b, i) => {
-      const a = -Math.PI/2 + (i / Math.max(1, plate.contents.length)) * Math.PI * 2;
-      const r = plate.contents.length > 1 ? size*0.2 : 0;
-      glyph(ING[b].emoji, cx + Math.cos(a)*r, cy + Math.sin(a)*r*0.85, size*0.42);
-    });
-  }
-}
-function drawItem(it, cx, cy, size) {
-  if (!it) return;
-  if (it.base === 'plate') { drawPlate(cx, cy, it, size); return; }
-  const m = ING[it.base];
-  if (m.prep === 'chop' && it.state === 'chopped') {
-    glyph(m.emoji, cx - size*0.16, cy, size * 0.62);
-    glyph(m.emoji, cx + size*0.16, cy + size*0.04, size * 0.62);
-  } else if (m.prep === 'cook' && (it.state === 'cooked' || it.state === 'burnt')) {
-    glyph(m.cooked, cx, cy, size);
-    if (it.state === 'burnt') { ctx.save(); ctx.fillStyle = 'rgba(30,15,10,.55)'; ctx.beginPath(); ctx.arc(cx, cy, size*0.42, 0, 7); ctx.fill(); ctx.restore(); }
-  } else {
-    glyph(m.emoji, cx, cy, size);
-  }
-}
-function bar(x, y, w, frac, col) {
-  ctx.fillStyle = 'rgba(74,53,38,.25)'; rr(x, y, w, 6, 3); ctx.fill();
-  ctx.fillStyle = col; rr(x, y, Math.max(0, w * frac), 6, 3); ctx.fill();
-}
-const STCOL = {
-  crate: ['#c69a68', '#a97f4f'], grill: ['#5c626b', '#3f444c'], board: ['#e7c9a0', '#caa877'],
-  dispenser: ['#eaf1f4', '#c3d0d6'], deliver: ['#ffd873', '#f2b53c'], bin: ['#93a2ae', '#75828d'], counter: ['#d9b389','#c39c6f'],
-};
-const STLABEL = { grill: 'GRILL', board: 'CHOP', dispenser: 'PLATES', deliver: 'SERVE', bin: 'TRASH' };
-const INGNAME = { tortilla:'TORTILLA', meat:'MEAT', fish:'FISH', lettuce:'LETTUCE', jalapeno:'JALAPEÑO', cheese:'CHEESE', chips:'CHIPS', salsa:'SALSA' };
-const LIGHT_FRONT = { board:1, dispenser:1, deliver:1 };
-function shade(hex, amt) {
-  const n = parseInt(hex.slice(1), 16);
-  const cl = v => Math.max(0, Math.min(255, v));
-  return 'rgb(' + cl((n>>16)+amt) + ',' + cl(((n>>8)&255)+amt) + ',' + cl((n&255)+amt) + ')';
-}
-// Which stations should glow given what the chef is holding — the core "what do I do now" hint.
-function isTarget(st) {
-  const c = G.player.carry;
-  if (!c) {
-    if (st.type === 'crate' || st.type === 'dispenser') return 0.4;
-    if (st.type === 'grill' && st.hold && st.hold.state === 'cooked') return 1;
-    if (st.type === 'board' && st.hold && !st.on) return 1;
-    if (st.type === 'counter' && st.hold) return st.hold.base === 'plate' && st.hold.dish ? 1 : 0.7;
-    return 0;
-  }
-  if (c.base === 'plate') {
-    if (c.dish) return st.type === 'deliver' ? 1 : 0;                 // finished plate → serve window
-    return st.type === 'counter' && !st.hold ? 0.85 : 0;             // empty plate → set it on a counter
-  }
-  if (canGrill(c)) return st.type === 'grill' && !st.hold ? 1 : 0;
-  if (canChop(c)) return st.type === 'board' && !st.hold ? 1 : 0;
-  if (isReady(c)) return (st.type === 'counter' && st.hold && st.hold.base === 'plate' && canPlate(st.hold, c.base)) ? 1 : 0; // add to a plate
-  return st.type === 'bin' ? 1 : 0;                                   // burnt / stuck → trash it
-}
-function drawStation(st) {
-  const x = cellSX(st.gx), topY = cellSY(st.gy) - BLOCK_H, w = TILE, h = CH;
-  const cx = x + w/2, cy = topY + h/2;   // centre of the raised top face
-  const col = STCOL[st.type] || STCOL.counter;
-  // front (side) face
-  ctx.fillStyle = shade(col[1], -34);
-  rr(x+3, topY + h - 6, w-6, BLOCK_H + 4, [0,0,10,10]); ctx.fill();
-  // top face + highlight + outline
-  ctx.fillStyle = col[0]; rr(x+3, topY+2, w-6, h-3, 10); ctx.fill();
-  ctx.fillStyle = 'rgba(255,255,255,.22)'; rr(x+3, topY+2, w-6, 8, [10,10,0,0]); ctx.fill();
-  ctx.strokeStyle = 'rgba(74,53,38,.22)'; ctx.lineWidth = 2; rr(x+3, topY+2, w-6, h-3, 10); ctx.stroke();
-  // contextual glow ring (what to do next)
-  const tg = G.running ? isTarget(st) : 0;
-  if (tg > 0) {
-    const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 240);
-    ctx.save(); ctx.globalAlpha = tg * (0.5 + 0.5 * pulse); ctx.strokeStyle = '#63d67f';
-    ctx.lineWidth = 3.5; ctx.shadowColor = '#63d67f'; ctx.shadowBlur = 9;
-    rr(x+3, topY+2, w-6, h-3, 10); ctx.stroke(); ctx.restore();
-  }
-
-  if (st.type === 'crate') {
-    ctx.strokeStyle = 'rgba(74,53,38,.26)'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(x+7, cy+3); ctx.lineTo(x+w-7, cy+3); ctx.stroke();
-    glyph(ING[st.base].emoji, cx, cy - 3, 25);
-  } else if (st.type === 'grill') {
-    ctx.fillStyle = '#2c2f35'; rr(x+8, topY+7, w-16, h-11, 6); ctx.fill();
-    for (let i=0;i<3;i++){ ctx.strokeStyle='#4a5058'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(x+11, topY+12+i*5); ctx.lineTo(x+w-11, topY+12+i*5); ctx.stroke(); }
-    if (st.hold) {
-      drawItem(st.hold, cx, cy - 2, 25);
-      if (st.state === 'cooking') {
-        if (st.hold.state === 'raw') bar(x+9, topY+h-8, w-18, st.t/4, '#ff8b3d');
-        else if (st.hold.state === 'cooked') bar(x+9, topY+h-8, w-18, (st.t-4)/5, '#e0453a');
-      }
-    } else glyph('🔥', cx, cy - 2, 19);
-  } else if (st.type === 'board') {
-    glyph('🔪', x + 13, topY + 12, 14);
-    if (st.hold) drawItem(st.hold, cx + 3, cy, 22);
-    if (st.on) bar(x+9, topY+h-8, w-18, st.prog, '#7ac77a');
-  } else if (st.type === 'dispenser') {
-    // a little stack of clean plates
-    for (let i = 2; i >= 0; i--) {
-      ctx.fillStyle = i === 0 ? '#fff' : '#eef4f6';
-      ctx.beginPath(); ctx.ellipse(cx, cy - 1 - i*2.5, w*0.32, h*0.24, 0, 0, 7); ctx.fill();
-      ctx.strokeStyle = '#cdd8dc'; ctx.lineWidth = 1.5; ctx.stroke();
-    }
-  } else if (st.type === 'deliver') {
-    glyph('🔔', cx, cy - 2, 22);
-  } else if (st.type === 'bin') {
-    glyph('🗑️', cx, cy - 1, 23);
-  } else if (st.type === 'counter') {
-    if (st.hold) drawItem(st.hold, cx, cy - 2, 27);
-  }
-  // name label on the front face
-  const lab = st.type === 'crate' ? INGNAME[st.base] : STLABEL[st.type];
-  if (lab) {
-    ctx.fillStyle = LIGHT_FRONT[st.type] ? 'rgba(74,53,38,.8)' : 'rgba(255,255,255,.92)';
-    ctx.font = 'bold 8px "Nunito",system-ui,sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(lab, cx, topY + h + BLOCK_H/2 - 3);
-  }
-}
-function drawChef() {
-  const p = G.player, cx = sX(p.px), base = sY(p.py), bob = Math.sin(p.step) * 2;
-  // contact shadow on the floor
-  ctx.fillStyle = 'rgba(74,53,38,.12)'; ctx.beginPath(); ctx.ellipse(cx, base + 2, 16, 6, 0, 0, 7); ctx.fill();
-  ctx.fillStyle = 'rgba(74,53,38,.20)'; ctx.beginPath(); ctx.ellipse(cx, base + 1, 12, 4.5, 0, 0, 7); ctx.fill();
-  const f = base - 2 + bob;   // feet anchor
-  // body (apron)
-  ctx.fillStyle = '#ef6f5b'; ctx.strokeStyle = '#4a3526'; ctx.lineWidth = 2.5;
-  ctx.beginPath(); ctx.roundRect(cx - 12, f - 22, 24, 22, 9); ctx.fill(); ctx.stroke();
-  // head
-  ctx.fillStyle = '#f4c9a0'; ctx.beginPath(); ctx.arc(cx, f - 28, 10, 0, 7); ctx.fill(); ctx.stroke();
-  // chef hat
-  ctx.fillStyle = '#fff';
-  ctx.beginPath(); ctx.roundRect(cx - 9, f - 42, 18, 8, 4); ctx.fill(); ctx.stroke();
-  ctx.beginPath(); ctx.arc(cx - 6, f - 42, 5, 0, 7); ctx.arc(cx + 6, f - 42, 5, 0, 7); ctx.arc(cx, f - 45, 6, 0, 7); ctx.fill();
-  ctx.strokeStyle = '#4a3526'; ctx.lineWidth = 1;
-  // eyes
-  const d = DIRS[p.face], ex = d[0]*3, ey = d[1]*2;
-  ctx.fillStyle = '#4a3526';
-  if (p.face !== 'up') { ctx.beginPath(); ctx.arc(cx - 3.5 + ex, f - 28 + ey, 1.7, 0, 7); ctx.arc(cx + 3.5 + ex, f - 28 + ey, 1.7, 0, 7); ctx.fill(); }
-  // carried item floats above head
-  if (p.carry) drawItem(p.carry, cx, f - 52, 26);
-}
-function drawDest(dz) {
-  const t = (performance.now() % 750) / 750, cx = sX(dz.x), cy = sY(dz.y);
-  ctx.save();
-  ctx.globalAlpha = 0.55 * (1 - t); ctx.strokeStyle = '#39a99a'; ctx.lineWidth = 3;
-  ctx.beginPath(); ctx.ellipse(cx, cy, 7 + t*15, (7 + t*15)*YSCALE, 0, 0, 7); ctx.stroke();
-  ctx.globalAlpha = 0.85; ctx.fillStyle = '#39a99a';
-  ctx.beginPath(); ctx.ellipse(cx, cy, 4, 4*YSCALE, 0, 0, 7); ctx.fill();
-  ctx.restore();
-}
-function render() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  const beach = G.loc.id === 'beach';
-  // foreshortened floor
-  for (let y = 0; y < G.rows; y++) for (let x = 0; x < G.cols; x++) {
-    const even = (x + y) % 2 === 0, px = cellSX(x), py = cellSY(y);
-    ctx.fillStyle = even ? (beach ? '#f7e6c2' : '#fce9cc') : (beach ? '#eedcae' : '#f5ddb4');
-    ctx.fillRect(px, py, TILE, CH + 1);
-    ctx.fillStyle = 'rgba(255,255,255,.045)'; ctx.fillRect(px, py, TILE, 2);
-  }
-  if (G.player.dest) drawDest(G.player.dest);
-  // depth-sorted counters + chef so the chef passes correctly in front of / behind them
-  const list = [];
-  for (const st of G.stations) list.push({ y: cellSY(st.gy) + CH, f: () => drawStation(st) });
-  list.push({ y: sY(G.player.py) + 0.5, f: drawChef });
-  list.sort((a, b) => a.y - b.y);
-  for (const e of list) e.f();
-  // particles (world → screen, floating above the counters)
-  for (const pt of G.parts) {
-    ctx.globalAlpha = Math.max(0, Math.min(1, pt.life));
-    ctx.fillStyle = '#4a3526'; ctx.font = 'bold 17px "Nunito",sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillText(pt.text, sX(pt.x), sY(pt.y) - BLOCK_H - (1 - pt.life) * 22);
-    ctx.globalAlpha = 1;
-  }
-}
-
-/* ---------------- HUD / orders DOM ---------------- */
-function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.remove('show'); void t.offsetWidth; t.classList.add('show'); }
-function fmt(t) { t = Math.max(0, Math.ceil(t)); return Math.floor(t/60) + ':' + String(t%60).padStart(2,'0'); }
-let hudAcc = 0;
-function syncHud() {
-  $('hud-level').textContent = G.loc.emoji + ' ' + G.loc.name + ' · ' + (G.lv + 1);
-  $('hud-score').textContent = G.score;
-  const t = $('hud-timer'); t.textContent = fmt(G.timeLeft); t.classList.toggle('low', G.timeLeft < 15);
-  reconcileOrders();
-}
-// Create each ticket's DOM once; update only its patience bar per frame (no flashing).
-function reconcileOrders() {
-  const cont = $('orders'), seen = new Set();
-  for (const o of G.orders) {
-    if (o.done) continue;
-    seen.add(o.id);
-    let rec = G.orderEls.get(o.id);
-    if (!rec) {
-      const r = RECIPES[o.recipe];
-      const el = document.createElement('div'); el.className = 'ticket';
-      el.innerHTML = `<div class="t-emoji">${r.emoji}</div><div class="t-name">${r.name}</div>`
-        + `<div class="t-comp">${r.comp.map(b => ING[b].emoji).join('')}</div>`
-        + `<div class="t-pat"><i></i></div>`;
-      cont.appendChild(el);
-      rec = { el, fill: el.querySelector('.t-pat > i') };
-      G.orderEls.set(o.id, rec);
-    }
-    const frac = Math.max(0, o.pat / o.maxPat);
-    rec.fill.style.width = (frac * 100).toFixed(1) + '%';
-    rec.fill.style.background = frac > 0.5 ? 'var(--green)' : frac > 0.25 ? 'var(--yellow)' : 'var(--red)';
-  }
-  for (const [id, rec] of G.orderEls) if (!seen.has(id)) { rec.el.remove(); G.orderEls.delete(id); }
-}
-
-/* ---------------- tutorial ---------------- */
-function setupTutorial() {
-  const carryIs = (b, s) => { const c = G.player.carry; return c && c.base === b && (!s || c.state === s); };
-  const carryPlate = () => { const c = G.player.carry; return c && c.base === 'plate'; };
-  const plateDown = () => G.stations.some(s => s.type === 'counter' && s.hold && s.hold.base === 'plate');
-  const plateHas = b => G.stations.some(s => s.type === 'counter' && s.hold && s.hold.base === 'plate' && s.hold.contents.includes(b));
-  const plateDone = () => G.stations.some(s => s.type === 'counter' && s.hold && s.hold.base === 'plate' && s.hold.dish);
-  const grillMeat = () => G.stations.some(s => s.type === 'grill' && s.hold && s.hold.base === 'meat');
-  const grillCooked = () => G.stations.some(s => s.type === 'grill' && s.hold && s.hold.state === 'cooked');
-  G.tut = { step: 0, moved: 0, spawned: false, steps: [
-    { text: 'Welcome to the kitchen! 👋', sub: 'Tap anywhere on the floor to walk there.', check: () => G.tut.moved > 80 },
-    { text: 'Grab a plate 🍽️', sub: 'Tap the glowing PLATES stack.', check: carryPlate },
-    { text: 'Set the plate on a counter', sub: 'Tap a glowing counter (the middle island works).', check: plateDown },
-    { text: 'Grab the raw meat 🥩', sub: 'Tap the glowing MEAT crate.', check: () => carryIs('meat') },
-    { text: 'Cook it on the grill 🔥', sub: 'Tap the glowing GRILL.', check: grillMeat },
-    { text: 'Let it sizzle…', sub: 'Wait until the meat is cooked 🍖.', check: grillCooked },
-    { text: 'Pick the cooked meat up', sub: 'Tap the glowing grill again.', check: () => carryIs('meat', 'cooked') },
-    { text: 'Add it to your plate 🍽️', sub: 'Tap the glowing plate on the counter.', check: () => plateHas('meat') },
-    { text: 'Grab a tortilla 🫓', sub: 'Tap the glowing TORTILLA crate.', check: () => carryIs('tortilla') },
-    { text: 'Add it to the plate', sub: 'Tortilla + meat = a Taco 🌮!', check: plateDone },
-    { text: 'Pick up the finished plate 🌮', sub: 'Tap the glowing plate.', check: carryPlate,
-      onEnter: () => { if (!G.tut.spawned) { spawnOrder(); G.tut.spawned = true; } } },
-    { text: 'Serve it! 🔔', sub: 'Tap the glowing SERVE window.', check: () => G.served > 0 },
-  ] };
-  showTut();
-}
-function updateTutorial(dt) {
-  updateMove(dt); updateStations(dt);
-  G.tut.moved += Math.hypot(G.player.vx, G.player.vy) * dt;
-  const step = G.tut.steps[G.tut.step];
-  if (step && step.check()) {
-    G.tut.step++;
-    beep(760, .09, 'triangle');
-    const nx = G.tut.steps[G.tut.step];
-    if (nx) { if (nx.onEnter) nx.onEnter(); showTut(); }
-    else finishTutorial();
-  }
-  for (const pt of G.parts) pt.life -= dt * 1.4;
-  G.parts = G.parts.filter(p => p.life > 0);
-}
-function finishTutorial() {
-  save.tutorialDone = true; persist();
-  G.tut = null; hideTut();
-  toast('You got it! Real orders incoming 🌮'); beep(980, .12, 'triangle');
-  G.spawnT = 1.4;
-}
-function showTut() { const s = G.tut.steps[G.tut.step]; const el = $('tut'); el.innerHTML = s.text + (s.sub ? `<span class="tut-sub">${s.sub}</span>` : ''); el.classList.add('show'); }
-function hideTut() { $('tut').classList.remove('show'); }
-
-/* ---------------- loop ---------------- */
-function frame(ts) {
-  requestAnimationFrame(frame);
-  const dt = Math.min(0.05, (ts - lastTs) / 1000 || 0); lastTs = ts;
-  if (screen === 'play' && G) {
-    update(dt);
-    render();
-    hudAcc += dt; if (hudAcc > 0.1) { hudAcc = 0; syncHud(); }
-  }
-}
-
-/* ---------------- flow / screens ---------------- */
-function showOverlay(id) {
-  for (const o of document.querySelectorAll('.overlay')) o.classList.remove('show');
-  if (id) { $(id).classList.add('show'); hideTut(); }
-}
-function toMap() {
-  screen = 'map'; showOverlay('ov-map');
-  const body = $('map-body'); body.innerHTML = '';
-  LOCATIONS.forEach((loc, li) => {
-    const unlockedLoc = li === 0 || levelUnlocked(li, 0);
-    const div = document.createElement('div');
-    div.className = 'loc' + (unlockedLoc ? '' : ' locked');
-    let lvHtml = '';
-    loc.levels.forEach((L, lv) => {
-      const s = starsOf(li, lv), open = levelUnlocked(li, lv);
-      if (open) {
-        lvHtml += `<div class="lvl" data-li="${li}" data-lv="${lv}"><div class="n">${lv+1}</div>`
-               +  `<div class="st">${'⭐'.repeat(s)}${'·'.repeat(3-s)}</div></div>`;
-      } else {
-        lvHtml += `<div class="lvl locked"><div class="lock">🔒</div></div>`;
-      }
-    });
-    div.innerHTML = `<h3>${loc.emoji} ${loc.name}</h3><div class="blurb">${loc.blurb}</div><div class="lvls">${lvHtml}</div>`;
-    body.appendChild(div);
-  });
-  body.querySelectorAll('.lvl[data-li]').forEach(el => {
-    el.addEventListener('click', () => { sel = { li: +el.dataset.li, lv: +el.dataset.lv }; toIntro(); });
-  });
-}
-function toIntro() {
-  screen = 'intro'; showOverlay('ov-intro');
-  const loc = LOCATIONS[sel.li], L = loc.levels[sel.lv];
-  $('intro-title').textContent = loc.emoji + ' ' + loc.name + ' · Level ' + (sel.lv + 1) + ' — ' + L.name;
-  const mods = [];
-  if (loc.mod.slippery) mods.push('🏖️ slippery sandy floor');
-  if (loc.mod.patienceScale) mods.push('⏱️ impatient customers');
-  $('intro-goal').innerHTML = `You have <b>${fmt(L.time)}</b> to earn <b>⭐ ${L.stars[0]}</b> points.` + (mods.length ? '<br><span style="font-size:12px;opacity:.8">Twist: ' + mods.join(' · ') + '</span>' : '');
-  let rh = '<b>On the menu:</b><br>';
-  for (const rid of L.recipes) {
-    const r = RECIPES[rid];
-    rh += `${r.emoji} <b>${r.name}</b> = ` + r.comp.map(b => {
-      const m = ING[b]; const tag = m.prep === 'cook' ? '🔥' : m.prep === 'chop' ? '🔪' : '';
-      return m.emoji + tag;
-    }).join(' + ') + '<br>';
-  }
-  $('intro-recipes').innerHTML = rh;
-}
-function startLevel() {
-  loadLevel(sel.li, sel.lv);
-  screen = 'play'; showOverlay(null);
+function startShift() {
+  G = { running: true, timeLeft: SHIFT_LEN, score: 0, served: 0, missed: 0,
+        combo: 0, bestCombo: 0, orders: [], seq: 0, spawnT: 1.0, activeId: null };
+  screen = 'play';
   $('orders').innerHTML = '';
-  if (sel.li === 0 && sel.lv === 0 && !save.tutorialDone) setupTutorial(); else hideTut();
+  buildGrid();
+  showOverlay(null);
   syncHud();
   if (actx && actx.state === 'suspended') actx.resume();
+  lastTs = performance.now();
 }
-function endLevel() {
-  G.running = false; screen = 'results';
-  const L = G.L, s = G.score;
-  let stars = 0;
-  if (s >= L.stars[2]) stars = 3; else if (s >= L.stars[1]) stars = 2; else if (s >= L.stars[0]) stars = 1;
-  const prev = starsOf(G.li, G.lv);
-  if (stars > prev) { save.stars[starKey(G.li, G.lv)] = stars; persist(); }
-  $('res-title').textContent = stars > 0 ? (stars === 3 ? '¡Perfecto! 🎉' : 'Service done! 😊') : 'Out of time 😅';
-  $('res-stars').textContent = stars > 0 ? '⭐'.repeat(stars) + '☆'.repeat(3 - stars) : '☆☆☆';
-  $('res-served').textContent = G.served;
-  $('res-missed').textContent = G.missed;
-  $('res-score').textContent = s + '  (need ' + L.stars[0] + ')';
-  const btns = $('res-btns'); btns.innerHTML = '';
-  const retry = mkBtn('Retry 🔁', 'ghost sm', () => { toIntro(); });
-  btns.appendChild(retry);
-  const nextLv = G.lv + 1, hasNext = nextLv < LOCATIONS[G.li].levels.length;
-  if (stars > 0 && hasNext) {
-    btns.appendChild(mkBtn('Next ▶', 'alt', () => { sel = { li: G.li, lv: nextLv }; toIntro(); }));
-  } else if (stars > 0 && !hasNext) {
-    const nextLoc = G.li + 1;
-    if (nextLoc < LOCATIONS.length && levelUnlocked(nextLoc, 0)) {
-      btns.appendChild(mkBtn('New Kitchen! 🏖️', 'alt', () => { sel = { li: nextLoc, lv: 0 }; toIntro(); }));
+
+function spawnOrder() {
+  const elapsed = SHIFT_LEN - G.timeLeft;
+  const pool = recipesForTime(elapsed);
+  const rid = pool[Math.floor(Math.random() * pool.length)];
+  const steps = RECIPES[rid].steps;
+  const pat = patienceFor(steps.length);
+  const o = { id: ++G.seq, recipe: rid, cust: CUSTOMERS[Math.floor(Math.random()*CUSTOMERS.length)],
+              progress: 0, clean: true, pat, maxPat: pat, el: null };
+  G.orders.push(o);
+  if (G.activeId == null) G.activeId = o.id;
+  beep(560, .06, 'sine');
+}
+
+function activeOrder() { return G.orders.find(o => o.id === G.activeId) || G.orders[0] || null; }
+
+function tapIngredient(id, btnEl) {
+  if (!G || !G.running) return;
+  let o = activeOrder();
+  if (!o) return;
+  const steps = RECIPES[o.recipe].steps;
+  const need = steps[o.progress];
+  if (id === need) {
+    o.progress++;
+    btnEl && flash(btnEl, 'pop');
+    beep(480 + o.progress * 90, .05, 'triangle');
+    if (o.progress >= steps.length) completeOrder(o);
+    render();
+  } else {
+    // wrong ingredient
+    o.clean = false;
+    o.pat = Math.max(0, o.pat - 1.6);
+    G.combo = 0;
+    btnEl && flash(btnEl, 'bad');
+    if (o.el) { o.el.classList.remove('wrong'); void o.el.offsetWidth; o.el.classList.add('wrong'); }
+    beep(150, .12, 'square');
+    render();
+  }
+}
+
+function completeOrder(o) {
+  const frac = Math.max(0, o.pat / o.maxPat);
+  G.combo++; G.bestCombo = Math.max(G.bestCombo, G.combo);
+  const mult = comboMult();
+  const base = RECIPES[o.recipe].steps.length * 4;
+  const tip = Math.round((o.clean ? 6 : 2) + frac * 8);
+  const gain = Math.round((base + tip) * mult);
+  G.score += gain; G.served++;
+  if (o.el) { const r = o.el.getBoundingClientRect(); floatText('+' + gain, r.left + r.width/2, r.top); o.el.classList.add('serving'); }
+  beep(720, .08, 'triangle'); setTimeout(() => beep(980, .1, 'triangle'), 70);
+  if (G.combo >= 2) showCombo();
+  const wasActive = G.activeId === o.id;
+  setTimeout(() => { G.orders = G.orders.filter(x => x !== o); if (o.el) o.el.remove();
+    if (wasActive) G.activeId = G.orders[0] ? G.orders[0].id : null; render(); }, 380);
+  syncHud();
+}
+
+function missOrder(o) {
+  G.missed++; G.combo = 0; G.score = Math.max(0, G.score - 6);
+  if (o.el) o.el.remove();
+  G.orders = G.orders.filter(x => x !== o);
+  if (G.activeId === o.id) G.activeId = G.orders[0] ? G.orders[0].id : null;
+  toast(o.cust + ' left hungry 😞');
+  beep(140, .2, 'square');
+}
+
+const comboMult = () => G.combo >= 8 ? 2 : G.combo >= 5 ? 1.6 : G.combo >= 3 ? 1.3 : 1;
+
+/* ---------- render ---------- */
+function buildGrid() {
+  const g = $('grid'); g.innerHTML = '';
+  for (const id of PALETTE) {
+    const b = document.createElement('button'); b.className = 'ing'; b.dataset.id = id;
+    b.innerHTML = `<span class="em">${ING[id].emoji}</span><span class="nm">${ING[id].name}</span>`;
+    b.addEventListener('pointerdown', e => { e.preventDefault(); tapIngredient(id, b); });
+    g.appendChild(b);
+  }
+}
+function flash(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); setTimeout(() => el.classList.remove(cls), 320); }
+function floatText(txt, x, y) { const el = document.createElement('div'); el.className = 'float'; el.textContent = txt;
+  const a = $('app').getBoundingClientRect(); el.style.left = (x - a.left) + 'px'; el.style.top = (y - a.top) + 'px';
+  $('app').appendChild(el); setTimeout(() => el.remove(), 1000); }
+function toast(m) { const t = $('toast'); t.textContent = m; t.classList.remove('show'); void t.offsetWidth; t.classList.add('show'); }
+function showCombo() { const c = $('combo'); c.textContent = 'COMBO x' + G.combo + (comboMult() > 1 ? '  (' + comboMult() + '×)' : '');
+  c.classList.remove('show'); void c.offsetWidth; c.classList.add('show');
+  clearTimeout(c._t); c._t = setTimeout(() => c.classList.remove('show'), 1400); }
+
+function render() {
+  const cont = $('orders');
+  // create/remove ticket elements
+  const ids = new Set(G.orders.map(o => o.id));
+  for (const o of G.orders) {
+    if (!o.el) {
+      const el = document.createElement('div'); el.className = 'ticket'; el.dataset.id = o.id;
+      el.addEventListener('pointerdown', () => { G.activeId = o.id; render(); });
+      cont.appendChild(el); o.el = el;
     }
   }
-  btns.appendChild(mkBtn('Map 🗺️', 'sm', () => toMap()));
+  // build correct-next hint on the counter
+  const act = activeOrder();
+  const nextNeed = act ? RECIPES[act.recipe].steps[act.progress] : null;
+  for (const b of document.querySelectorAll('.ing')) b.classList.toggle('hot', b.dataset.id === nextNeed);
+  // update tickets
+  for (const o of G.orders) {
+    const r = RECIPES[o.recipe];
+    const active = o.id === G.activeId;
+    o.el.classList.toggle('active', active);
+    const stepsHtml = r.steps.map((s, i) => {
+      const cls = i < o.progress ? 'done' : (active && i === o.progress ? 'next' : '');
+      return `<div class="step ${cls}"><span class="em">${ING[s].emoji}</span></div>`;
+    }).join('');
+    const frac = Math.max(0, o.pat / o.maxPat);
+    const col = frac > 0.5 ? 'var(--green)' : frac > 0.25 ? 'var(--yellow)' : 'var(--red)';
+    o.el.innerHTML = `<div class="cust">${o.cust}</div><div class="dish">${r.emoji} ${r.name}</div>`
+      + `<div class="steps">${stepsHtml}</div><div class="pat"><i style="width:${(frac*100).toFixed(1)}%;background:${col}"></i></div>`;
+  }
+}
+
+/* ---------- loop ---------- */
+function syncHud() {
+  $('hud-shift').textContent = 'Shift ' + save.shift;
+  $('hud-score').textContent = G.score;
+  const t = $('hud-timer'); const s = Math.max(0, Math.ceil(G.timeLeft));
+  t.textContent = Math.floor(s/60) + ':' + String(s%60).padStart(2,'0'); t.classList.toggle('low', G.timeLeft < 12);
+}
+function frame(ts) {
+  requestAnimationFrame(frame);
+  const dt = Math.min(0.1, (ts - lastTs) / 1000 || 0); lastTs = ts;
+  if (screen !== 'play' || !G || !G.running) return;
+  G.timeLeft -= dt;
+  if (G.timeLeft <= 0) { G.timeLeft = 0; return endShift(); }
+  G.spawnT -= dt;
+  const elapsed = SHIFT_LEN - G.timeLeft;
+  if (G.spawnT <= 0 && G.orders.length < 5) { spawnOrder(); G.spawnT = spawnInterval(elapsed); render(); }
+  // patience
+  for (const o of [...G.orders]) { o.pat -= dt; if (o.pat <= 0) missOrder(o); }
+  // live patience bar update (cheap: just widths)
+  for (const o of G.orders) { if (!o.el) continue; const bar = o.el.querySelector('.pat > i'); if (bar) {
+    const frac = Math.max(0, o.pat / o.maxPat); bar.style.width = (frac*100).toFixed(1) + '%';
+    bar.style.background = frac > 0.5 ? 'var(--green)' : frac > 0.25 ? 'var(--yellow)' : 'var(--red)'; } }
+  syncHud();
+}
+
+function endShift() {
+  G.running = false; screen = 'results';
+  const s = G.score;
+  const t1 = 60, t2 = 120, t3 = 190;
+  let stars = 0; if (s >= t3) stars = 3; else if (s >= t2) stars = 2; else if (s >= t1) stars = 1;
+  if (s > save.best) save.best = s;
+  save.shift++; persist();
+  $('res-title').textContent = stars === 3 ? '¡Perfecto! 🎉' : stars ? 'Nice shift! 😊' : 'Rough day 😅';
+  $('res-stars').textContent = stars ? '⭐'.repeat(stars) + '☆'.repeat(3 - stars) : '☆☆☆';
+  $('res-served').textContent = G.served;
+  $('res-combo').textContent = 'x' + G.bestCombo;
+  $('res-missed').textContent = G.missed;
+  $('res-score').textContent = s + '   (best ' + save.best + ')';
   showOverlay('ov-res');
 }
-function mkBtn(txt, cls, fn) { const b = document.createElement('button'); b.className = 'btn ' + cls; b.textContent = txt; b.addEventListener('click', fn); return b; }
 
-/* ---------------- input: keyboard ---------------- */
-const keys = {};
-window.addEventListener('keydown', e => {
-  const k = e.key.toLowerCase();
-  if (['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k)) e.preventDefault();
-  if (!document.body.classList.contains('has-kb')) document.body.classList.add('has-kb');
-  if (k === ' ' || k === 'e' || k === 'enter' && screen === 'play') { if (screen === 'play') interact(); }
-  keys[k] = true; recompute();
-});
-window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; recompute(); });
-function recompute() {
-  let x = 0, y = 0;
-  if (keys['arrowleft'] || keys['a']) x -= 1;
-  if (keys['arrowright']|| keys['d']) x += 1;
-  if (keys['arrowup']   || keys['w']) y -= 1;
-  if (keys['arrowdown'] || keys['s']) y += 1;
-  if (screen !== 'play') { input.x = 0; input.y = 0; return; }
-  input.x = x; input.y = y;
-}
+/* ---------- overlays ---------- */
+function showOverlay(id) { for (const o of document.querySelectorAll('.overlay')) o.classList.remove('show'); if (id) $(id).classList.add('show'); }
 
-/* ---------------- input: tap / click to move (touch + mouse) ---------------- */
-function canvasPoint(e) {
-  const r = canvas.getBoundingClientRect();
-  return [(e.clientX - r.left) * (canvas.width / r.width), (e.clientY - r.top) * (canvas.height / r.height)];
+/* ---------- ambiance: clouds + street ---------- */
+function initClouds() {
+  const v = $('view');
+  ['☁️','☁️','🌤️'].forEach((c, i) => {
+    const el = document.createElement('div'); el.className = 'cloud'; el.textContent = c;
+    el.style.top = (4 + i * 4) + 'px'; el.style.animationDuration = (30 + i * 10) + 's'; el.style.animationDelay = (-i * 11) + 's';
+    v.appendChild(el);
+  });
 }
-function stationAtScreen(sx, sy) {
-  // front-to-back: things with a larger gy are drawn later / on top, so test them first
-  const sorted = G.stations.slice().sort((a, b) => b.gy - a.gy);
-  for (const st of sorted) {
-    const x = cellSX(st.gx), topY = cellSY(st.gy) - BLOCK_H;
-    if (sx >= x + 2 && sx <= x + TILE - 2 && sy >= topY - 2 && sy <= topY + CH + BLOCK_H) return st;
+function initStreet() {
+  const s = $('street');
+  const cols = ['#e6a06a','#d98f8f','#8fb8c9','#c9b48f','#b79cc7','#9cc7a4','#e0b76a'];
+  const heights = [64, 92, 52, 108, 76, 96, 58, 84];
+  let x = -6;
+  for (let i = 0; x < 470; i++) {
+    const w = 40 + (i % 3) * 12, h = heights[i % heights.length];
+    const b = document.createElement('div'); b.className = 'bldg';
+    b.style.left = x + 'px'; b.style.width = w + 'px'; b.style.height = h + 'px';
+    b.style.background = cols[i % cols.length];
+    s.appendChild(b); x += w + 5;
   }
-  return null;
+  ['🧑','🧓','🧑‍🦱','👩'].forEach((p, i) => {
+    const el = document.createElement('div'); el.className = 'ped'; el.textContent = p;
+    el.style.left = (40 + i * 92) + 'px'; el.style.animationDelay = (-i * 0.4) + 's';
+    s.appendChild(el);
+  });
 }
-function onTap(e) {
-  if (screen !== 'play' || !G || !G.running) return;
-  if (actx && actx.state === 'suspended') actx.resume();
-  const [sx, sy] = canvasPoint(e);
-  const st = stationAtScreen(sx, sy);
-  if (st) { goTo(0, 0, st); return; }
-  goTo(sx, (sy - OFF_Y) / YSCALE, null);
-}
-canvas.addEventListener('pointerdown', e => { e.preventDefault(); onTap(e); });
-canvas.addEventListener('contextmenu', e => e.preventDefault());
 
-/* ---------------- buttons ---------------- */
-$('btn-play').addEventListener('click', () => { try { actx = actx || new (window.AudioContext||window.webkitAudioContext)(); } catch(e){} toMap(); });
-$('btn-reset').addEventListener('click', () => { if (confirm('Reset all stars and progress?')) { save = { stars: {} }; persist(); toMap(); } });
-$('btn-map-back').addEventListener('click', () => { screen = 'title'; showOverlay('ov-title'); });
-$('btn-go').addEventListener('click', startLevel);
-$('btn-intro-back').addEventListener('click', toMap);
+/* ---------- buttons ---------- */
+$('btn-play').addEventListener('click', () => { try { actx = actx || new (window.AudioContext||window.webkitAudioContext)(); } catch (e) {} startShift(); });
+$('btn-again').addEventListener('click', startShift);
 
-/* ---------------- debug hooks (for automated verification) ---------------- */
-window.TL = {
+/* ---------- debug ---------- */
+window.TG = {
   get G() { return G; }, get screen() { return screen; },
-  start(li, lv) { sel = { li, lv }; startLevel(); },
-  teleport(gx, gy) { G.player.px = (gx + 0.5) * TILE; G.player.py = (gy + 0.5) * TILE; G.player.vx = 0; G.player.vy = 0; },
-  face(d) { G.player.face = d; },
-  use() { interact(); },
-  front() { const s = frontStation(); return s ? s.type + (s.base ? ':' + s.base : '') : null; },
-  carry() { const c = G.player.carry; return c ? (c.base === 'plate' ? 'plate:[' + c.contents.join('+') + (c.dish ? '=' + c.dish : '') + ']' : c.base + ':' + c.state) : null; },
+  start() { startShift(); },
+  tap(id) { tapIngredient(id, document.querySelector('.ing[data-id="' + id + '"]')); },
+  active() { const o = activeOrder(); return o ? { recipe: o.recipe, progress: o.progress, need: RECIPES[o.recipe].steps[o.progress] } : null; },
+  autoserveActive() { const o = activeOrder(); if (!o) return null; const steps = RECIPES[o.recipe].steps; while (o.progress < steps.length && G.running) this.tap(steps[o.progress]); return G.score; },
+  tick(dt) { const now = lastTs + (dt||0.1)*1000; frame(now); },
   setTime(t) { G.timeLeft = t; },
-  tick(dt) { update(dt); },
-  tapStation(gx, gy) { const st = G.stationMap.get(gx + ',' + gy); if (st) goTo(0, 0, st); },
-  tapTile(gx, gy) { goTo((gx + 0.5) * TILE, (gy + 0.5) * TILE, null); },
-  settle(n) { for (let i = 0; i < (n || 200); i++) { update(0.05); if ((!G.player.path || !G.player.path.length) && !G.player.pending) break; } },
 };
 
 /* boot */
+initStreet();
+initClouds();
 requestAnimationFrame(ts => { lastTs = ts; requestAnimationFrame(frame); });
 </script>
 </body>
