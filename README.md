@@ -28,13 +28,14 @@ characters later.)
 
 ## How it plays
 
-- **Blob customers** wait at the **window**; a **speech bubble** shows *which*
-  ingredients they want (as an unordered set) and a patience bar — but **not the
-  order**. Tap a customer to make their plate active.
-- The correct **order** lives in the **📖 Recipe Book** (button in the window). Open
-  it any time — the game **pauses** while it's open.
+- **Blob customers** wait at the **window**; a **speech bubble** shows the
+  **finished dish** they want (e.g. a taco) and a patience bar. Tap a customer to
+  make their plate active.
+- The recipe — which ingredients, in what **order** — lives in the **📖 Recipe
+  Book** (button in the window). Open it any time; the game **pauses** while it's open.
 - **Build the plate**: tap ingredients on the counter to stack them, then **drag the
-  chips to reorder** them into the right sequence, and hit **Serve**.
+  chips to reorder** them. When the plate matches the recipe exactly it **transforms
+  into the finished dish** — then hit **Serve**.
 - **Ruined plates**: adding an ingredient that doesn't belong, or serving a wrong
   order, **ruins the plate** — you must hit the **🗑 Trash** to throw it out and
   start that order over. (Right ingredients in the wrong order are *not* ruined —

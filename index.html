@@ -68,9 +68,9 @@
     border: 8px solid transparent; border-top-color: var(--ink); }
   .bubble::before { content: ""; position: absolute; left: 50%; bottom: -7px; transform: translateX(-50%); z-index: 1;
     border: 6px solid transparent; border-top-color: #fff; }
-  .bubble .bname { font-size: 12px; font-weight: 800; text-align: center; margin-bottom: 4px; }
-  .bubble .bset { display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; }
-  .bubble .bi { width: 22px; height: 22px; }
+  .bubble .bname { font-size: 12px; font-weight: 800; text-align: center; margin-bottom: 2px; }
+  .bubble .bdish-wrap { display: flex; justify-content: center; }
+  .bubble .bdish { width: 50px; height: 50px; }
   .bubble .bpat { height: 6px; border-radius: 999px; background: #e7d8c2; overflow: hidden; margin-top: 6px; }
   .bubble .bpat > i { display: block; height: 100%; background: var(--green); }
   .blob { width: 64px; height: 60px; margin-top: 8px; transition: transform .12s; }
@@ -100,7 +100,7 @@
   .act.serve { background: var(--green); }
   .act:disabled { opacity: .4; filter: grayscale(.4); cursor: default; }
   .act.pulse { animation: apulse .7s ease-in-out infinite; }
-  @keyframes apulse { 50% { box-shadow: 0 4px 0 var(--ink), 0 0 0 4px rgba(239,111,91,.4); } }
+  @keyframes apulse { 50% { box-shadow: 0 4px 0 var(--ink), 0 0 0 5px rgba(255,255,255,.55); } }
 
   #plate-wrap { flex: 1 1 auto; position: relative; border-radius: 16px; background: #f4ede0;
     border: 3px solid var(--ink); box-shadow: inset 0 3px 8px rgba(58,39,27,.15); overflow: hidden; min-width: 0; }
@@ -113,7 +113,14 @@
   .chip.dragging { opacity: .25; }
   #plate-wrap.ruined { background: #ffdcd4; border-color: var(--red-d); animation: shake .3s; }
   #plate-wrap.ruined .chip { filter: grayscale(.7) brightness(.9); }
+  #plate-wrap.ready { background: #e8f7e2; border-color: var(--green-d); }
+  #plate-wrap.cooked { animation: cookflash .5s ease-out; }
+  @keyframes cookflash { 0%{ background:#fff6b0; } 100%{ background:#e8f7e2; } }
   @keyframes shake { 0%,100%{transform:translateX(0);} 20%{transform:translateX(-5px);} 60%{transform:translateX(5px);} }
+  .finished { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .finished .fdish { width: 46px; height: 46px; animation: cookpop .4s cubic-bezier(.2,1.4,.4,1); }
+  .finished .fready { font-size: 13px; font-weight: 800; color: var(--green-d); }
+  @keyframes cookpop { 0%{ transform: scale(.3) rotate(-12deg); opacity: 0; } 100%{ transform: scale(1) rotate(0); opacity: 1; } }
   #drag-ghost { position: fixed; z-index: 90; width: 46px; height: 46px; border-radius: 12px; background: #fff; border: 2.5px solid var(--ink);
     box-shadow: 0 6px 10px rgba(0,0,0,.3); display: none; padding: 5px; pointer-events: none; transform: translate(-50%,-50%) scale(1.1); }
 
@@ -295,6 +302,26 @@ function blobSVG(color, mood) {
     <circle cx="31" cy="41" r="3.1" fill="#3a271b"/><circle cx="51" cy="41" r="3.1" fill="#3a271b"/>
     <circle cx="22" cy="34" r="3.5" fill="rgba(255,255,255,.45)"/>${mouth}</svg>`;
 }
+/* finished-dish icons (the "order") */
+const OT = 'stroke="#3a271b" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"';
+const DISH = {
+  taco: `<path d="M9 44 C9 22 55 22 55 44 Z" fill="#f2ca7a" ${O}/>
+    <path d="M13 33 q6 -7 11 -1 q6 -7 12 -1 q6 -7 11 -1 q4 5 -3 7 q-16 4 -31 0 q-6 -2 0 -7 Z" fill="#86c46a" ${OT}/>
+    <circle cx="23" cy="35" r="3" fill="#b5654a"/><circle cx="41" cy="35" r="3" fill="#b5654a"/><circle cx="32" cy="33" r="2.6" fill="#e0503c"/>`,
+  quesadilla: `<path d="M10 45 L32 13 L54 45 Z" fill="#edd08f" ${O}/>
+    <path d="M20 40 q12 6 24 0" stroke="#ffcf5c" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M26 28 l5 5 M34 24 l5 5" stroke="#c79a5a" stroke-width="3" stroke-linecap="round"/>`,
+  nachos: `<path d="M12 43 L22 25 L32 43 Z" fill="#f0b74e" ${O}/><path d="M32 43 L42 23 L52 43 Z" fill="#f0b74e" ${O}/>
+    <path d="M21 41 L31 27 L41 43 Z" fill="#f5c96e" ${O}/><path d="M16 34 q16 9 32 0" stroke="#ffcf5c" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <circle cx="30" cy="30" r="2.6" fill="#5aa64a"/><circle cx="36" cy="33" r="2.4" fill="#e0503c"/>`,
+  burrito: `<rect x="12" y="17" width="40" height="20" rx="9" fill="#ecd3a5" ${O}/>
+    <path d="M8 33 h48 v4 a8 8 0 0 1 -8 8 h-32 a8 8 0 0 1 -8 -8 Z" fill="#cfd6da" ${O}/>
+    <path d="M18 23 l7 4 M32 21 l7 4" stroke="#d8bd8f" stroke-width="2.5" stroke-linecap="round"/>`,
+  bowl: `<path d="M11 31 h42 a21 15 0 0 1 -42 0 Z" fill="#e3d9c8" ${O}/><path d="M13 31 Q32 19 51 31 Z" fill="#f6efe0" ${OT}/>
+    <circle cx="24" cy="29" r="3.2" fill="#8dbf5f"/><circle cx="33" cy="30" r="3.2" fill="#b5654a"/><circle cx="41" cy="28" r="2.8" fill="#7a4a2f"/>`,
+};
+function dishIcon(rid, cls) { return `<svg viewBox="0 0 64 64" class="${cls||'isvg'}">${DISH[rid]}</svg>`; }
+
 const UI_TRASH = `<svg viewBox="0 0 24 24" class="ui"><path d="M5 7h14M9.5 7V5h5v2M7 7l1 12h8l1-12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const UI_CHECK = `<svg viewBox="0 0 24 24" class="ui"><path d="M5 13l4 4L19 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const UI_BOOK = `<svg viewBox="0 0 24 24" class="ui"><path d="M4 5c3-1 6-1 8 1 2-2 5-2 8-1v14c-3-1-6-1-8 1-2-2-5-2-8-1z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 7v13" stroke="currentColor" stroke-width="2"/></svg>`;
@@ -361,7 +388,7 @@ function spawnOrder() {
   const pool = G.L.pool, rid = pool[Math.floor(Math.random()*pool.length)];
   const pat = patienceFor(RECIPES[rid].steps.length, G.L.patScale);
   const o = { id:++G.seq, recipe:rid, color:BLOB_COLS[Math.floor(Math.random()*BLOB_COLS.length)],
-              pat, maxPat:pat, plate:[], ruined:false, el:null, blobEl:null };
+              pat, maxPat:pat, plate:[], ruined:false, done:false, el:null, blobEl:null };
   G.orders.push(o); const first = G.activeId==null; if (first) G.activeId=o.id; render(); if (first) renderPlate(); beep(560,.06,'sine');
 }
 const activeOrder = () => G.orders.find(o => o.id===G.activeId) || G.orders[0] || null;
@@ -372,10 +399,19 @@ function addIngredient(id, btn) {
   const o = activeOrder();
   if (!o) { toast('tap a customer first'); return; }
   if (o.ruined) { buzzPlate(); toast('Plate ruined — trash it! 🗑️'); return; }
+  if (o.done) { toast("It's ready — serve it! ✓"); return; }
   o.plate.push(id); btn && flash(btn,'pop');
   if (!subMultiset(o.plate, RECIPES[o.recipe].steps)) { o.ruined = true; ruinPlate(o, 'wrong ingredient!'); }
-  else { beep(430 + o.plate.length*80, .05, 'triangle'); }
+  else { beep(430 + o.plate.length*80, .05, 'triangle'); checkDone(o); }
   render(); renderPlate();
+}
+// when the plate exactly matches the recipe, it "cooks" into the finished dish
+function checkDone(o) {
+  const was = o.done;
+  o.done = !o.ruined && seqEqual(o.plate, RECIPES[o.recipe].steps);
+  if (o.done && !was) { beep(680,.1,'triangle'); setTimeout(()=>beep(940,.12,'triangle'),90);
+    const w = $('plate-wrap'); w.classList.remove('cooked'); void w.offsetWidth; w.classList.add('cooked'); }
+  return o.done;
 }
 function ruinPlate(o, why) {
   o.ruined = true; G.combo = 0; o.pat = Math.max(0, o.pat - 2.5);
@@ -386,16 +422,16 @@ function serve() {
   if (!G || !G.running || G.paused) return;
   const o = activeOrder(); if (!o) return;
   if (o.ruined) { buzzPlate(); toast('Trash the ruined plate first! 🗑️'); return; }
+  if (o.done) { completeOrder(o); return; }
   const steps = RECIPES[o.recipe].steps;
   if (o.plate.length < steps.length) { toast('Not finished — add more'); beep(240,.08,'sine'); return; }
-  if (seqEqual(o.plate, steps)) completeOrder(o);
-  else { ruinPlate(o, 'wrong order!'); render(); renderPlate(); }
+  ruinPlate(o, 'wrong order!'); render(); renderPlate();   // full plate but not cooked = wrong order
 }
 function trashPlate() {
   if (!G || !G.running || G.paused) return;
   const o = activeOrder(); if (!o) return;
   if (!o.plate.length && !o.ruined) return;
-  o.plate = []; o.ruined = false; beep(300,.08,'square'); render(); renderPlate();
+  o.plate = []; o.ruined = false; o.done = false; beep(300,.08,'square'); render(); renderPlate();
 }
 function completeOrder(o) {
   const frac = Math.max(0, o.pat/o.maxPat);
@@ -479,10 +515,10 @@ function render() {
     const r = RECIPES[o.recipe], active = o.id===G.activeId;
     o.el.classList.toggle('active', active);
     o.el.classList.toggle('building', o.plate.length>0 && !active);
-    const set = [...r.steps].sort().map(s => icon(s,'bi')).join('');
     const frac = Math.max(0, o.pat/o.maxPat);
     const col = frac>0.5?'var(--green)':frac>0.25?'var(--yellow)':'var(--red)';
-    o.el.innerHTML = `<div class="bubble"><div class="bname">${r.name}</div><div class="bset">${set}</div>`
+    // the order is the FINISHED product
+    o.el.innerHTML = `<div class="bubble"><div class="bname">${r.name}</div><div class="bdish-wrap">${dishIcon(o.recipe,'bdish')}</div>`
       + `<div class="bpat"><i style="width:${(frac*100).toFixed(1)}%;background:${col}"></i></div></div>`
       + `<div class="blob">${blobSVG(o.color, moodOf(o))}</div>`;
   }
@@ -492,8 +528,13 @@ function renderPlate() {
   const wrap = $('plate-wrap'), plate = $('plate'), hint = $('plate-hint');
   const o = activeOrder();
   wrap.classList.toggle('ruined', !!(o && o.ruined));
+  wrap.classList.toggle('ready', !!(o && o.done));
   plate.innerHTML = '';
-  if (!o || (!o.plate.length)) {
+  if (o && o.done) {
+    // the ingredients have transformed into the finished dish
+    hint.style.display = 'none';
+    plate.innerHTML = `<div class="finished"><div class="fdish">${dishIcon(o.recipe,'isvg')}</div><div class="fready">Ready! ✓ Serve</div></div>`;
+  } else if (!o || (!o.plate.length)) {
     hint.style.display = 'flex';
     hint.textContent = o ? (o.ruined ? 'Ruined! Throw it out 🗑️' : 'tap ingredients below to build ↓') : 'tap a customer to start';
   } else {
@@ -506,6 +547,7 @@ function renderPlate() {
     });
   }
   $('serve-btn').disabled = !(o && o.plate.length && !o.ruined);
+  $('serve-btn').classList.toggle('pulse', !!(o && o.done));
   $('trash-btn').classList.toggle('pulse', !!(o && o.ruined));
 }
 /* drag to reorder chips */
@@ -536,7 +578,7 @@ function endChipDrag() {
     const o = drag.o, arr = o.plate; const [it] = arr.splice(drag.from,1);
     let t = drag.target; if (t>drag.from) t--; if (t<0) t=0; if (t>arr.length) t=arr.length;
     arr.splice(t, 0, it); beep(360,.04,'sine');
-    drag = null; renderPlate();
+    drag = null; checkDone(o); render(); renderPlate();
   }
 }
 
@@ -657,7 +699,7 @@ window.TG = {
   add(id){ addIngredient(id, document.querySelector('.ing[data-id="'+id+'"]')); },
   serve, trash: trashPlate,
   plate(){ const o=activeOrder(); return o?{recipe:o.recipe, plate:o.plate.slice(), ruined:o.ruined}:null; },
-  reorder(from,to){ const o=activeOrder(); const [x]=o.plate.splice(from,1); o.plate.splice(to,0,x); renderPlate(); },
+  reorder(from,to){ const o=activeOrder(); const [x]=o.plate.splice(from,1); o.plate.splice(to,0,x); checkDone(o); renderPlate(); },
   counter(){ return PALETTE.slice(); },
   book(){ openBook(bookList()); return $('ov-book').classList.contains('show'); }, closeBook, toMap,
   tick(dt){ frame(lastTs + (dt||0.1)*1000); }, setTime(t){ G.timeLeft=t; },
