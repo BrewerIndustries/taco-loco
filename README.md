@@ -55,7 +55,12 @@ You run a growing kitchen, not just one window:
 - **Stations are assigned to cooks.** You and an employee can't share one station,
   so if your taco-cook needs tortillas and you do too, you buy a *second* tortilla
   station and assign it to them. Equip a cook fully and they **auto-cook their
-  recipe** during service, in parallel with you.
+  recipe(s)** during service, in parallel with you.
+- **Cooks level up.** Every dish an employee makes earns **XP**; crossing an XP
+  threshold unlocks another **recipe slot**, so a seasoned cook can be trained on a
+  2nd recipe, then a 3rd, and so on (up to 5). A multi-recipe cook takes whichever
+  of their orders is most urgent — you just have to own the ingredient stations for
+  each recipe they know.
 - During a shift, orders your employees take are marked **claimed** (dashed, with a
   👨‍🍳 badge) and cook themselves on their station; you handle the rest. Everything
   (coins, cooks, stations) is saved and carries across the campaign.
