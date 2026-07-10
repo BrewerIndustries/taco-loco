@@ -20,18 +20,26 @@ Designed for **portrait phone** (tap), works with a mouse on desktop.
 
 ## How it plays
 
-- Customers appear at the **window** with order tickets. Each ticket shows the dish
-  and the **exact sequence** of ingredients as icons, plus a patience bar.
-- Build the **active** order (highlighted) by tapping ingredient buttons on the prep
-  counter **in the order shown**. Tap another ticket to switch which order you work.
-- The **next ingredient glows** — on the ticket and on the counter button — so the
-  right move is always obvious.
-- A **wrong** ingredient is a small penalty: it breaks your combo and nicks the
-  customer's patience, but your progress isn't wiped.
+- Customers appear at the **window** with order tickets. A ticket shows the dish and
+  **which ingredients** it needs (as an unordered set) plus a patience bar — but
+  **not the order**.
+- The correct **order** lives in the **📖 Recipe Book** (button in the window). You
+  can open it any time — the game **pauses** while it's open. Learn the sequence,
+  then build it.
+- Build the **active** order (highlighted) by tapping the counter ingredients **in
+  the right order**. Tap another ticket to switch which order you're working.
+- A **wrong** ingredient breaks your combo and nicks that customer's patience, but
+  your progress isn't wiped.
 - Finish orders fast and clean for **tips** and a **combo multiplier** (x1.3 → x2).
-  Let a customer's patience run out and they leave hungry (score penalty).
-- A shift lasts ~100s with orders arriving faster and new recipes unlocking; the end
-  screen scores you 1–3 ⭐. Recipes: Taco, Quesadilla, Nachos, Burrito, Bowl.
+  A customer whose patience runs out leaves hungry (score penalty).
+
+## Levels & recipes
+
+Five levels, each ~70–100s. **Clearing a level (≥1 ⭐) unlocks the next one and a new
+recipe** into your book: Taco → Quesadilla → Nachos → Burrito → Bowl. Later levels
+mix in all the recipes you've learned and spawn faster. Progress (stars per level,
+best score, unlocks) is saved to `localStorage` (`tacoLoco.truck.v2`). A level-select
+screen lets you replay any unlocked level and consult the book.
 
 ## Tech
 

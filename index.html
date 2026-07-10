@@ -133,9 +133,33 @@
   .btn { font-family: inherit; font-weight: 800; font-size: 19px; background: var(--red); color: #fff;
     border: 3px solid var(--ink); border-radius: 14px; box-shadow: 0 5px 0 var(--ink); padding: 12px 30px; cursor: pointer; margin-top: 6px; }
   .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+  .btn.ghost { background: #fff; color: var(--ink); }
+  .btn.alt { background: var(--teal); }
   .stars { font-size: 40px; letter-spacing: 4px; margin: 8px 0; }
   .row { display: flex; justify-content: space-between; font-size: 16px; padding: 5px 2px; border-bottom: 2px dashed rgba(74,53,38,.2); }
   .row b { color: var(--teal); }
+
+  /* recipe book button (in the window) */
+  #book-btn { position: absolute; right: 12px; bottom: 10px; z-index: 6; width: 52px; height: 52px; border-radius: 14px;
+    background: var(--yellow); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink); font-size: 26px; cursor: pointer; padding: 0; display: none; }
+  #book-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  #book-btn.on { display: block; }
+
+  /* recipe rows in the book */
+  .rec { background: var(--paper); border: 2.5px solid var(--ink); border-radius: 13px; padding: 9px 11px; margin-bottom: 9px; text-align: left; }
+  .rec.new { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(63,176,160,.2); }
+  .rec .rh { font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 6px; }
+  .rec .rh .tag { margin-left: auto; font-size: 10px; background: var(--teal); color: #fff; padding: 2px 7px; border-radius: 999px; }
+  .rec .rs { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-top: 6px; }
+  .rec .rstep { display: flex; align-items: center; gap: 3px; background: #fff; border: 2px solid #e0d3bd; border-radius: 8px; padding: 3px 6px 3px 4px; font-size: 18px; }
+  .rec .rstep b { font-size: 11px; color: var(--teal); }
+  .rec .arrow { color: #b9a988; font-weight: 800; }
+
+  /* level select buttons */
+  .lvl { width: 88px; background: var(--cream); border: 3px solid var(--ink); border-radius: 14px; box-shadow: 0 4px 0 var(--ink);
+    padding: 8px 4px; cursor: pointer; }
+  .lvl.locked { background: #e3d3bd; color: #a08c74; border-color: #a08c74; box-shadow: 0 4px 0 #a08c74; cursor: default; }
+  .lvl .lem { font-size: 26px; } .lvl .lnm { font-size: 10px; font-weight: 800; margin: 2px 0; } .lvl .lst { font-size: 12px; letter-spacing: -1px; }
 </style>
 </head>
 <body>
@@ -151,10 +175,11 @@
     <div id="awning"></div><div id="awning-shadow"></div>
     <div id="combo"></div>
     <div id="orders"></div>
+    <button id="book-btn" title="Recipe book">📖</button>
   </div>
 
   <div id="counter">
-    <div id="counter-label">◍ PREP COUNTER — TAP INGREDIENTS IN ORDER ◍</div>
+    <div id="counter-label">◍ PREP COUNTER — TAP IN THE RIGHT ORDER (see 📖) ◍</div>
     <div id="grid"></div>
   </div>
 
@@ -165,26 +190,58 @@
     <div class="card">
       <h1 class="logo">TACO LOCO<span class="s">food truck rush</span></h1>
       <div class="how">
-        🚚 You're working the window of your taco truck.<br>
-        🎫 Customers show up with orders at the window.<br>
-        👆 Tap the ingredients on your counter <b>in the order shown</b> on the ticket.<br>
-        ✨ The next ingredient <b>glows</b> — finish fast for tips &amp; combos!<br>
-        ⏱️ Don't let hungry customers run out of patience.
+        🚚 Work the window of your taco truck.<br>
+        🎫 Tickets show <b>what</b> a customer wants — but not the order.<br>
+        📖 The <b>recipe book</b> shows the correct sequence. Tap it anytime.<br>
+        👆 Tap the ingredients on your counter <b>in that order</b> to build each dish.<br>
+        ⭐ Clear a level to unlock a new recipe. Fast + clean = tips &amp; combos!
       </div>
-      <button class="btn" id="btn-play">Open Up! 🌮</button>
+      <button class="btn" id="btn-play">Play 🌮</button>
+      <div><button class="btn ghost" id="btn-title-book" style="font-size:15px;padding:9px 20px">📖 Recipe Book</button></div>
+    </div>
+  </div>
+
+  <!-- Level select -->
+  <div class="overlay" id="ov-map">
+    <div class="card">
+      <h2>Choose a Level</h2>
+      <div id="map-grid" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:14px 0"></div>
+      <button class="btn ghost" id="btn-map-book" style="font-size:15px;padding:9px 20px">📖 Recipe Book</button>
+      <div><button class="btn ghost" id="btn-map-back" style="font-size:14px;padding:8px 16px">back</button></div>
+    </div>
+  </div>
+
+  <!-- Level intro -->
+  <div class="overlay" id="ov-intro">
+    <div class="card">
+      <h2 id="intro-title">Level 1</h2>
+      <div id="intro-new"></div>
+      <div class="how" id="intro-note">Tickets show the ingredients — check the 📖 recipe book for the right <b>order</b>, then build it on the counter.</div>
+      <button class="btn" id="btn-go">Start! 🔔</button>
+      <div><button class="btn ghost" id="btn-intro-book" style="font-size:15px;padding:9px 20px">📖 Recipe Book</button></div>
+      <div><button class="btn ghost" id="btn-intro-back" style="font-size:14px;padding:8px 16px">back</button></div>
     </div>
   </div>
 
   <!-- Results -->
   <div class="overlay" id="ov-res">
     <div class="card">
-      <h2 id="res-title">Shift over!</h2>
+      <h2 id="res-title">Level clear!</h2>
       <div class="stars" id="res-stars">⭐⭐⭐</div>
       <div class="row"><span>Served</span><b id="res-served">0</b></div>
       <div class="row"><span>Best combo</span><b id="res-combo">0</b></div>
       <div class="row"><span>Missed</span><b id="res-missed">0</b></div>
       <div class="row"><span>Score</span><b id="res-score">0</b></div>
-      <button class="btn" id="btn-again">Next Shift ▶</button>
+      <div id="res-btns" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <!-- Recipe book -->
+  <div class="overlay" id="ov-book">
+    <div class="card">
+      <h2>📖 Recipe Book</h2>
+      <div id="book-body" style="margin:12px 0; max-height:56vh; overflow-y:auto"></div>
+      <button class="btn" id="btn-book-close">Got it! ✕</button>
     </div>
   </div>
 </div>
@@ -220,9 +277,17 @@ const RECIPES = {
   burrito:    { name: 'Burrito',    emoji: '🌯', steps: ['tortilla','beans','meat','cheese','salsa'] },
   bowl:       { name: 'Bowl',       emoji: '🥗', steps: ['rice','beans','chicken','guac'] },
 };
+// Each level introduces one new recipe; its pool is cumulative. Cleared level (≥1★) unlocks the next.
+const LEVELS = [
+  { name: 'Grand Opening', newR: 'taco',       pool: ['taco'],                                        time: 70, every: [4.6, 3.2], patScale: 1.2,  stars: [22, 44, 66] },
+  { name: 'Cheese, Please',newR: 'quesadilla', pool: ['taco','quesadilla'],                           time: 80, every: [4.2, 2.9], patScale: 1.12, stars: [34, 68, 102] },
+  { name: 'Nacho Average', newR: 'nachos',     pool: ['taco','quesadilla','nachos'],                  time: 88, every: [3.9, 2.6], patScale: 1.06, stars: [48, 92, 136] },
+  { name: 'Big Burrito',   newR: 'burrito',    pool: ['taco','quesadilla','nachos','burrito'],        time: 95, every: [3.6, 2.4], patScale: 1.0,  stars: [58, 112, 165] },
+  { name: 'Bowl Bonanza',  newR: 'bowl',       pool: ['taco','quesadilla','nachos','burrito','bowl'], time: 100, every: [3.2, 2.2], patScale: 1.0, stars: [72, 138, 200] },
+];
 const CUSTOMERS = ['😀','🤠','👵','🧑‍🎤','👷','🕵️','🧛','👩‍🚀','🤡','🧙','👨‍🎨','🦸','🧕','👨‍🍳','🧟','👽'];
 
-const SHIFT_LEN = 100;   // seconds
+const lerp = (a, b, t) => a + (b - a) * t;
 const $ = id => document.getElementById(id);
 
 /* ---------- audio ---------- */
@@ -236,41 +301,40 @@ function beep(f, d, t, v) { try {
 } catch (e) {} }
 
 /* ---------- persistent ---------- */
-const SAVE_KEY = 'tacoLoco.truck.v1';
-let save = { shift: 1, best: 0 };
+const SAVE_KEY = 'tacoLoco.truck.v2';
+let save = { unlocked: 1, stars: {}, best: {} };   // unlocked = # of playable levels
 try { const r = localStorage.getItem(SAVE_KEY); if (r) save = Object.assign(save, JSON.parse(r)); } catch (e) {}
 const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} };
+const levelUnlocked = i => i < save.unlocked;
+const starsOf = i => save.stars[i] || 0;
+// recipes the player has unlocked = pool of the highest unlocked level (pools are cumulative)
+const unlockedRecipes = () => LEVELS[Math.min(save.unlocked, LEVELS.length) - 1].pool;
 
 /* ---------- state ---------- */
-let G = null, lastTs = 0, screen = 'title';
+let G = null, lastTs = 0, screen = 'title', selLevel = 0;
 
-function recipesForTime(elapsed) {
-  const r = ['taco', 'quesadilla'];
-  if (elapsed > 22) r.push('nachos', 'bowl');
-  if (elapsed > 55) r.push('burrito');
-  return r;
-}
-function spawnInterval(elapsed) { return Math.max(2.2, 5.2 - elapsed / 28); }
-function patienceFor(steps) { return 15 + steps * 3.2; }
+function patienceFor(steps, scale) { return (13 + steps * 3.4) * (scale || 1); }
 
-function startShift() {
-  G = { running: true, timeLeft: SHIFT_LEN, score: 0, served: 0, missed: 0,
-        combo: 0, bestCombo: 0, orders: [], seq: 0, spawnT: 1.0, activeId: null };
+function startLevel(idx) {
+  selLevel = idx;
+  const L = LEVELS[idx];
+  G = { running: true, paused: false, idx, L, timeLeft: L.time, score: 0, served: 0, missed: 0,
+        combo: 0, bestCombo: 0, orders: [], seq: 0, spawnT: 0.8, activeId: null };
   screen = 'play';
   $('orders').innerHTML = '';
   buildGrid();
   showOverlay(null);
+  updateBookBtn();
   syncHud();
   if (actx && actx.state === 'suspended') actx.resume();
   lastTs = performance.now();
 }
 
 function spawnOrder() {
-  const elapsed = SHIFT_LEN - G.timeLeft;
-  const pool = recipesForTime(elapsed);
+  const pool = G.L.pool;
   const rid = pool[Math.floor(Math.random() * pool.length)];
   const steps = RECIPES[rid].steps;
-  const pat = patienceFor(steps.length);
+  const pat = patienceFor(steps.length, G.L.patScale);
   const o = { id: ++G.seq, recipe: rid, cust: CUSTOMERS[Math.floor(Math.random()*CUSTOMERS.length)],
               progress: 0, clean: true, pat, maxPat: pat, el: null };
   G.orders.push(o);
@@ -362,18 +426,15 @@ function render() {
       cont.appendChild(el); o.el = el;
     }
   }
-  // build correct-next hint on the counter
-  const act = activeOrder();
-  const nextNeed = act ? RECIPES[act.recipe].steps[act.progress] : null;
-  for (const b of document.querySelectorAll('.ing')) b.classList.toggle('hot', b.dataset.id === nextNeed);
-  // update tickets
+  // update tickets — show WHICH items are needed (as a set), not the order. The book has the order.
   for (const o of G.orders) {
     const r = RECIPES[o.recipe];
     const active = o.id === G.activeId;
     o.el.classList.toggle('active', active);
-    const stepsHtml = r.steps.map((s, i) => {
-      const cls = i < o.progress ? 'done' : (active && i === o.progress ? 'next' : '');
-      return `<div class="step ${cls}"><span class="em">${ING[s].emoji}</span></div>`;
+    const doneSet = new Set(r.steps.slice(0, o.progress));   // ingredients already added, order-agnostic
+    const display = [...r.steps].sort();                     // alphabetical → never leaks the cook order
+    const stepsHtml = display.map(s => {
+      return `<div class="step ${doneSet.has(s) ? 'done' : ''}"><span class="em">${ING[s].emoji}</span></div>`;
     }).join('');
     const frac = Math.max(0, o.pat / o.maxPat);
     const col = frac > 0.5 ? 'var(--green)' : frac > 0.25 ? 'var(--yellow)' : 'var(--red)';
@@ -384,7 +445,7 @@ function render() {
 
 /* ---------- loop ---------- */
 function syncHud() {
-  $('hud-shift').textContent = 'Shift ' + save.shift;
+  $('hud-shift').textContent = 'Lvl ' + (G.idx + 1);
   $('hud-score').textContent = G.score;
   const t = $('hud-timer'); const s = Math.max(0, Math.ceil(G.timeLeft));
   t.textContent = Math.floor(s/60) + ':' + String(s%60).padStart(2,'0'); t.classList.toggle('low', G.timeLeft < 12);
@@ -392,39 +453,97 @@ function syncHud() {
 function frame(ts) {
   requestAnimationFrame(frame);
   const dt = Math.min(0.1, (ts - lastTs) / 1000 || 0); lastTs = ts;
-  if (screen !== 'play' || !G || !G.running) return;
+  if (screen !== 'play' || !G || !G.running || G.paused) return;
   G.timeLeft -= dt;
-  if (G.timeLeft <= 0) { G.timeLeft = 0; return endShift(); }
+  if (G.timeLeft <= 0) { G.timeLeft = 0; return endLevel(); }
   G.spawnT -= dt;
-  const elapsed = SHIFT_LEN - G.timeLeft;
-  if (G.spawnT <= 0 && G.orders.length < 5) { spawnOrder(); G.spawnT = spawnInterval(elapsed); render(); }
+  const frac = 1 - G.timeLeft / G.L.time;
+  if (G.spawnT <= 0 && G.orders.length < 5) { spawnOrder(); G.spawnT = lerp(G.L.every[0], G.L.every[1], frac); render(); }
   // patience
   for (const o of [...G.orders]) { o.pat -= dt; if (o.pat <= 0) missOrder(o); }
-  // live patience bar update (cheap: just widths)
   for (const o of G.orders) { if (!o.el) continue; const bar = o.el.querySelector('.pat > i'); if (bar) {
-    const frac = Math.max(0, o.pat / o.maxPat); bar.style.width = (frac*100).toFixed(1) + '%';
-    bar.style.background = frac > 0.5 ? 'var(--green)' : frac > 0.25 ? 'var(--yellow)' : 'var(--red)'; } }
+    const f = Math.max(0, o.pat / o.maxPat); bar.style.width = (f*100).toFixed(1) + '%';
+    bar.style.background = f > 0.5 ? 'var(--green)' : f > 0.25 ? 'var(--yellow)' : 'var(--red)'; } }
   syncHud();
 }
 
-function endShift() {
-  G.running = false; screen = 'results';
-  const s = G.score;
-  const t1 = 60, t2 = 120, t3 = 190;
-  let stars = 0; if (s >= t3) stars = 3; else if (s >= t2) stars = 2; else if (s >= t1) stars = 1;
-  if (s > save.best) save.best = s;
-  save.shift++; persist();
-  $('res-title').textContent = stars === 3 ? '¡Perfecto! 🎉' : stars ? 'Nice shift! 😊' : 'Rough day 😅';
+function endLevel() {
+  G.running = false; screen = 'results'; updateBookBtn();
+  const s = G.score, L = G.L, i = G.idx;
+  let stars = 0; if (s >= L.stars[2]) stars = 3; else if (s >= L.stars[1]) stars = 2; else if (s >= L.stars[0]) stars = 1;
+  if (stars > starsOf(i)) save.stars[i] = stars;
+  if (s > (save.best[i] || 0)) save.best[i] = s;
+  const unlockedNew = stars > 0 && i + 1 < LEVELS.length && save.unlocked < i + 2;
+  if (unlockedNew) save.unlocked = i + 2;
+  persist();
+  $('res-title').textContent = stars === 3 ? '¡Perfecto! 🎉' : stars ? 'Level clear! 😊' : 'Not quite 😅';
   $('res-stars').textContent = stars ? '⭐'.repeat(stars) + '☆'.repeat(3 - stars) : '☆☆☆';
   $('res-served').textContent = G.served;
   $('res-combo').textContent = 'x' + G.bestCombo;
   $('res-missed').textContent = G.missed;
-  $('res-score').textContent = s + '   (best ' + save.best + ')';
+  $('res-score').textContent = s + '   (need ' + L.stars[0] + ')';
+  // buttons
+  const btns = $('res-btns'); btns.innerHTML = '';
+  btns.appendChild(mkBtn('Retry 🔁', 'ghost', () => startLevel(i)));
+  const hasNext = i + 1 < LEVELS.length;
+  if (stars > 0 && hasNext) btns.appendChild(mkBtn('Next ▶', '', () => { selLevel = i + 1; toIntro(); }));
+  btns.appendChild(mkBtn('Levels 🗺️', 'ghost', toMap));
+  if (unlockedNew) toast('New recipe unlocked: ' + RECIPES[LEVELS[i+1].newR].name + ' ' + RECIPES[LEVELS[i+1].newR].emoji);
   showOverlay('ov-res');
 }
+function mkBtn(txt, cls, fn) { const b = document.createElement('button'); b.className = 'btn ' + cls; b.textContent = txt; b.addEventListener('click', fn); return b; }
 
-/* ---------- overlays ---------- */
+/* ---------- overlays / screens ---------- */
 function showOverlay(id) { for (const o of document.querySelectorAll('.overlay')) o.classList.remove('show'); if (id) $(id).classList.add('show'); }
+function updateBookBtn() { $('book-btn').classList.toggle('on', screen === 'play'); }
+
+function toTitle() { screen = 'title'; showOverlay('ov-title'); updateBookBtn(); }
+function toMap() {
+  screen = 'map'; showOverlay('ov-map'); updateBookBtn();
+  const g = $('map-grid'); g.innerHTML = '';
+  LEVELS.forEach((L, i) => {
+    const open = levelUnlocked(i), s = starsOf(i);
+    const el = document.createElement('div'); el.className = 'lvl' + (open ? '' : ' locked');
+    el.innerHTML = open
+      ? `<div class="lem">${RECIPES[L.newR].emoji}</div><div class="lnm">${i+1}. ${L.name}</div><div class="lst">${'⭐'.repeat(s)}${'·'.repeat(3-s)}</div>`
+      : `<div class="lem">🔒</div><div class="lnm">Level ${i+1}</div><div class="lst">···</div>`;
+    if (open) el.addEventListener('click', () => { selLevel = i; toIntro(); });
+    g.appendChild(el);
+  });
+}
+function toIntro() {
+  screen = 'intro'; showOverlay('ov-intro'); updateBookBtn();
+  const L = LEVELS[selLevel];
+  $('intro-title').textContent = 'Level ' + (selLevel + 1) + ' — ' + L.name;
+  const r = RECIPES[L.newR];
+  $('intro-new').innerHTML = `<div style="font-size:14px;margin:6px 0 2px">✨ New recipe:</div>`
+    + `<div class="rec new">${recipeRowHtml(L.newR, false)}</div>`;
+}
+function recipeRowHtml(rid, showTag) {
+  const r = RECIPES[rid];
+  const steps = r.steps.map((s, i) => `<span class="rstep"><b>${i+1}</b>${ING[s].emoji}</span>`).join('<span class="arrow">›</span>');
+  return `<div class="rh">${r.emoji} ${r.name}${showTag ? '<span class="tag">NEW</span>' : ''}</div><div class="rs">${steps}</div>`;
+}
+let bookReturn = null;
+function openBook(list, newR) {
+  bookReturn = screen;
+  if (screen === 'play' && G) G.paused = true;
+  const body = $('book-body'); body.innerHTML = '';
+  list.forEach(rid => { const d = document.createElement('div'); d.className = 'rec' + (rid === newR ? ' new' : '');
+    d.innerHTML = recipeRowHtml(rid, rid === newR); body.appendChild(d); });
+  $('ov-book').classList.add('show');
+}
+function closeBook() {
+  $('ov-book').classList.remove('show');
+  if (bookReturn === 'play' && G) { G.paused = false; lastTs = performance.now(); }
+  bookReturn = null;
+}
+// which recipes to show in the book, given context
+function bookList() {
+  if (screen === 'play' && G) return G.L.pool;
+  if (screen === 'intro') return LEVELS[selLevel].pool;
+  return unlockedRecipes();
+}
 
 /* ---------- ambiance: clouds + street ---------- */
 function initClouds() {
@@ -455,16 +574,26 @@ function initStreet() {
 }
 
 /* ---------- buttons ---------- */
-$('btn-play').addEventListener('click', () => { try { actx = actx || new (window.AudioContext||window.webkitAudioContext)(); } catch (e) {} startShift(); });
-$('btn-again').addEventListener('click', startShift);
+function startAt(i) { try { actx = actx || new (window.AudioContext||window.webkitAudioContext)(); } catch (e) {} startLevel(i); }
+$('btn-play').addEventListener('click', () => { try { actx = actx || new (window.AudioContext||window.webkitAudioContext)(); } catch (e) {} toMap(); });
+$('btn-title-book').addEventListener('click', () => openBook(unlockedRecipes()));
+$('btn-map-book').addEventListener('click', () => openBook(unlockedRecipes()));
+$('btn-map-back').addEventListener('click', toTitle);
+$('btn-intro-book').addEventListener('click', () => openBook(LEVELS[selLevel].pool, LEVELS[selLevel].newR));
+$('btn-intro-back').addEventListener('click', toMap);
+$('btn-go').addEventListener('click', () => startAt(selLevel));
+$('book-btn').addEventListener('click', () => openBook(bookList(), screen === 'intro' ? LEVELS[selLevel].newR : null));
+$('btn-book-close').addEventListener('click', closeBook);
 
 /* ---------- debug ---------- */
 window.TG = {
   get G() { return G; }, get screen() { return screen; },
-  start() { startShift(); },
+  start(i) { startLevel(i || 0); },
   tap(id) { tapIngredient(id, document.querySelector('.ing[data-id="' + id + '"]')); },
   active() { const o = activeOrder(); return o ? { recipe: o.recipe, progress: o.progress, need: RECIPES[o.recipe].steps[o.progress] } : null; },
   autoserveActive() { const o = activeOrder(); if (!o) return null; const steps = RECIPES[o.recipe].steps; while (o.progress < steps.length && G.running) this.tap(steps[o.progress]); return G.score; },
+  book() { openBook(bookList()); return $('ov-book').classList.contains('show'); },
+  closeBook, toMap, toIntro,
   tick(dt) { const now = lastTs + (dt||0.1)*1000; frame(now); },
   setTime(t) { G.timeLeft = t; },
 };
