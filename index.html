@@ -122,12 +122,14 @@
     border-top: 5px solid #91a1aa; padding: 8px 10px 12px; box-shadow: 0 -4px 12px rgba(0,0,0,.22); }
   #grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
   .ing { background: var(--cream); border: 3px solid var(--ink); border-radius: 13px; box-shadow: 0 4px 0 var(--ink);
-    padding: 5px 2px 4px; display: flex; flex-direction: column; align-items: center; gap: 0; cursor: pointer; }
+    padding: 5px 2px 4px; display: flex; flex-direction: column; align-items: center; gap: 0; cursor: pointer; touch-action: none; transition: transform .1s; }
   .ing:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
-  .ing .ci { width: 34px; height: 34px; }
-  .ing .nm { font-size: 9px; font-weight: 800; opacity: .78; margin-top: 1px; }
+  .ing .ci { width: 34px; height: 34px; pointer-events: none; }
+  .ing .nm { font-size: 9px; font-weight: 800; opacity: .78; margin-top: 1px; pointer-events: none; }
   .ing.pop { animation: popb .2s; }
   @keyframes popb { 50% { transform: scale(1.12); } }
+  .ing.dragging { opacity: .3; }
+  .ing.drop { border-color: var(--teal); box-shadow: 0 4px 0 var(--teal-d), 0 0 0 3px rgba(63,176,160,.25); transform: scale(1.05); }
 
   /* floaters + toast */
   .float { position: absolute; z-index: 40; font-weight: 800; font-size: 20px; color: var(--yellow);
@@ -206,7 +208,8 @@
         🧾 A speech bubble shows <b>which</b> ingredients they want (not the order).<br>
         📖 The <b>recipe book</b> shows the correct <b>sequence</b> — check it anytime.<br>
         👆 Tap ingredients to stack a plate, <b>drag to reorder</b>, then <b>Serve</b>.<br>
-        🗑️ Wrong ingredients or a bad order <b>ruin the plate</b> — throw it in the trash and redo!
+        🗑️ Wrong ingredients or a bad order <b>ruin the plate</b> — throw it in the trash and redo!<br>
+        🔧 Tip: <b>drag</b> the counter buttons to arrange your station how you like.
       </div>
       <button class="btn" id="btn-play">Play</button>
       <div><button class="btn ghost" id="btn-title-book">📖 Recipe Book</button></div>
@@ -301,7 +304,8 @@ const ING = {
   tortilla:{name:'Tortilla'}, chips:{name:'Chips'}, rice:{name:'Rice'}, meat:{name:'Beef'}, chicken:{name:'Chicken'},
   beans:{name:'Beans'}, cheese:{name:'Cheese'}, lettuce:{name:'Lettuce'}, salsa:{name:'Salsa'}, guac:{name:'Guac'}, jalapeno:{name:'Jalapeño'},
 };
-const PALETTE = ['tortilla','chips','rice','meat','chicken','beans','cheese','lettuce','salsa','guac','jalapeno'];
+const DEFAULT_PALETTE = ['tortilla','chips','rice','meat','chicken','beans','cheese','lettuce','salsa','guac','jalapeno'];
+let PALETTE = DEFAULT_PALETTE.slice();   // player-reorderable counter layout (persisted)
 const RECIPES = {
   taco:       { name:'Taco',       steps:['tortilla','meat','lettuce','salsa'] },
   quesadilla: { name:'Quesadilla', steps:['tortilla','cheese','chicken'] },
@@ -327,9 +331,13 @@ function beep(f,d,t,v){ try { if(!actx) actx=new (window.AudioContext||window.we
 
 /* ---------- save ---------- */
 const SAVE_KEY = 'tacoLoco.truck.v3';
-let save = { unlocked:1, stars:{}, best:{} };
+let save = { unlocked:1, stars:{}, best:{}, counter:null };
 try { const r = localStorage.getItem(SAVE_KEY); if (r) save = Object.assign(save, JSON.parse(r)); } catch(e){}
+// restore a valid saved counter layout (same set of ingredients, any order)
+if (Array.isArray(save.counter) && save.counter.length === DEFAULT_PALETTE.length
+    && DEFAULT_PALETTE.every(id => save.counter.includes(id))) PALETTE = save.counter.slice();
 const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch(e){} };
+const persistCounter = () => { save.counter = PALETTE.slice(); persist(); };
 const levelUnlocked = i => i < save.unlocked;
 const starsOf = i => save.stars[i] || 0;
 const unlockedRecipes = () => LEVELS[Math.min(save.unlocked, LEVELS.length)-1].pool;
@@ -414,12 +422,47 @@ const comboMult = () => G.combo>=8?2:G.combo>=5?1.6:G.combo>=3?1.3:1;
 /* ---------- render: customers ---------- */
 function buildGrid() {
   const g = $('grid'); g.innerHTML='';
-  for (const id of PALETTE) {
-    const b = document.createElement('button'); b.className='ing'; b.dataset.id=id;
+  PALETTE.forEach((id, i) => {
+    const b = document.createElement('button'); b.className='ing'; b.dataset.id=id; b.dataset.index=i;
     b.innerHTML = icon(id,'ci') + `<span class="nm">${ING[id].name}</span>`;
-    b.addEventListener('pointerdown', e => { e.preventDefault(); addIngredient(id, b); });
+    b.addEventListener('pointerdown', e => startIngPress(e, id, i, b));
     g.appendChild(b);
+  });
+}
+// Tap adds the ingredient; press-and-drag rearranges the counter.
+let ingDrag = null;
+function startIngPress(e, id, index, btn) {
+  e.preventDefault();
+  ingDrag = { id, index, btn, sx:e.clientX, sy:e.clientY, moved:false, target:index };
+  window.addEventListener('pointermove', onIngMove);
+  window.addEventListener('pointerup', endIngPress);
+}
+function onIngMove(e) {
+  if (!ingDrag) return;
+  if (!ingDrag.moved) {
+    if (Math.hypot(e.clientX-ingDrag.sx, e.clientY-ingDrag.sy) < 9) return;
+    ingDrag.moved = true;                          // promote to a drag
+    ingDrag.btn.classList.add('dragging');
+    const gh = $('drag-ghost'); gh.innerHTML = icon(ingDrag.id,'ci'); gh.style.display='block';
   }
+  const gh = $('drag-ghost'); gh.style.left=e.clientX+'px'; gh.style.top=e.clientY+'px';
+  const over = document.elementsFromPoint(e.clientX, e.clientY).find(el => el.classList && el.classList.contains('ing'));
+  document.querySelectorAll('.ing.drop').forEach(el => el.classList.remove('drop'));
+  if (over && over !== ingDrag.btn) { over.classList.add('drop'); ingDrag.target = +over.dataset.index; }
+}
+function endIngPress(e) {
+  window.removeEventListener('pointermove', onIngMove);
+  window.removeEventListener('pointerup', endIngPress);
+  const d = ingDrag; ingDrag = null;
+  if (!d) return;
+  $('drag-ghost').style.display='none';
+  document.querySelectorAll('.ing.drop').forEach(el => el.classList.remove('drop'));
+  if (!d.moved) { addIngredient(d.id, d.btn); return; }      // it was a tap
+  // it was a drag → move id to the target slot
+  const [it] = PALETTE.splice(d.index, 1);
+  let t = d.target; if (t > d.index) t--; t = Math.max(0, Math.min(PALETTE.length, t));
+  PALETTE.splice(t, 0, it);
+  persistCounter(); buildGrid(); beep(360,.04,'sine');
 }
 function moodOf(o){ const f=o.pat/o.maxPat; return o.ruined?'sad':f>0.45?'happy':f>0.22?'neutral':'sad'; }
 function render() {
@@ -615,6 +658,7 @@ window.TG = {
   serve, trash: trashPlate,
   plate(){ const o=activeOrder(); return o?{recipe:o.recipe, plate:o.plate.slice(), ruined:o.ruined}:null; },
   reorder(from,to){ const o=activeOrder(); const [x]=o.plate.splice(from,1); o.plate.splice(to,0,x); renderPlate(); },
+  counter(){ return PALETTE.slice(); },
   book(){ openBook(bookList()); return $('ov-book').classList.contains('show'); }, closeBook, toMap,
   tick(dt){ frame(lastTs + (dt||0.1)*1000); }, setTime(t){ G.timeLeft=t; },
 };

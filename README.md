@@ -41,6 +41,8 @@ characters later.)
   just drag to fix them before serving.)
 - Finish orders fast and clean for **tips** and a **combo multiplier** (x1.3 → x2).
   A customer whose patience runs out leaves hungry (score penalty).
+- **Arrange your station**: drag the counter ingredient buttons to reorder them
+  however you like — the layout is saved. (Tap = add, press-and-drag = rearrange.)
 
 ## Levels & recipes
 
