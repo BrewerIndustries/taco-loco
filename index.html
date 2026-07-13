@@ -131,6 +131,18 @@
   .act.pulse { animation: apulse .7s ease-in-out infinite; }
   @keyframes apulse { 50% { box-shadow: 0 4px 0 var(--ink), 0 0 0 5px rgba(255,255,255,.55); } }
 
+  /* warming shelf (holding area for finished dishes with no free customer) */
+  #shelf { flex: 0 0 auto; z-index: 5; display: flex; align-items: center; gap: 8px; padding: 5px 12px;
+    background: linear-gradient(#4a3a2a, #3c2f22); border-top: 3px solid #2a2016; }
+  .shelf-lbl { font-size: 9px; font-weight: 800; letter-spacing: 1px; color: #d9b389; flex: 0 0 auto; }
+  #shelf-slots { display: flex; gap: 8px; flex: 1; }
+  .slot { width: 46px; height: 38px; border-radius: 10px; border: 2px dashed rgba(217,179,137,.4);
+    background: rgba(0,0,0,.18); display: flex; align-items: center; justify-content: center; }
+  .slot.full { background: #f4ede0; border: 2px solid var(--ink); box-shadow: 0 3px 0 rgba(0,0,0,.35); cursor: pointer; }
+  .slot.glow { border-color: var(--green); border-style: solid; cursor: pointer; animation: slotp 1s ease-in-out infinite; }
+  @keyframes slotp { 50% { box-shadow: 0 0 0 4px rgba(110,196,110,.3); background: rgba(110,196,110,.12); } }
+  .slot .sdish { width: 34px; height: 34px; }
+
   #plate-wrap { flex: 1 1 auto; position: relative; border-radius: 16px; background: #f4ede0;
     border: 3px solid var(--ink); box-shadow: inset 0 3px 8px rgba(58,39,27,.15); overflow: hidden; min-width: 0; }
   #plate { position: absolute; inset: 0; display: flex; align-items: center; gap: 6px; padding: 0 10px; touch-action: none; }
@@ -246,6 +258,8 @@
     <div id="sill"></div>
   </div>
 
+  <div id="shelf"><span class="shelf-lbl">🔥 SHELF</span><div id="shelf-slots"></div></div>
+
   <div id="stage">
     <button class="act trash" id="trash-btn"><span class="ui"></span><span>Trash</span></button>
     <div id="plate-wrap"><div id="plate"></div><div id="plate-hint">tap ingredients below to build ↓</div></div>
@@ -265,6 +279,7 @@
         📖 The <b>recipe book</b> shows each dish's ingredient <b>order</b> — check it anytime.<br>
         👆 Tap ingredients to build a dish (<b>drag to reorder</b>). Right order = it cooks!<br>
         🧑‍🍳 Then <b>tap a customer</b> who wants that dish to serve them — you choose who!<br>
+        🔥 No free customer? <b>Park the dish on the shelf</b> and build the next one.<br>
         🗑️ A wrong ingredient <b>ruins the plate</b> — trash it (costs a little) and redo.
       </div>
       <button class="btn" id="btn-play">Play</button>
@@ -459,9 +474,10 @@ function startLevel(idx) {
   G = { running:true, paused:false, idx, L, timeLeft:L.time, score:0, served:0, missed:0, ruinedCount:0, coinsEarned:0,
         combo:0, bestCombo:0, orders:[], seq:0, spawnT:0.8,
         plate:{ contents:[], done:false, recipe:null, ruined:false },   // single working plate; delivered by tapping a customer
+        holding:[],                                                       // finished dishes parked on the warming shelf
         emps: save.employees.map((e,i)=>({ recipes:e.recipes.slice(), access:e.access.slice(), xp:e.xp, busy:false, order:null, prog:0, i })) };
   screen = 'play'; $('customers').innerHTML=''; $('emps').innerHTML=''; buildGrid(); showOverlay(null); updateBookBtn();
-  renderPlate(); renderEmps(); syncHud();
+  renderPlate(); renderEmps(); renderShelf(); syncHud();
   if (actx && actx.state==='suspended') actx.resume();
   lastTs = performance.now();
 }
@@ -525,17 +541,39 @@ function ruinPlate(why) {
   beep(150,.14,'square'); buzzPlate(); if (why) toast(why + ' 🗑️ trash it');
 }
 function buzzPlate() { const w = $('plate-wrap'); w.classList.remove('ruined'); void w.offsetWidth; w.classList.add('ruined'); }
-// tapping a customer delivers the finished plate to THEM (player chooses who to serve)
+const HOLD_SLOTS = 3;
+const canServe = rid => G.holding.includes(rid) || (G.plate.done && G.plate.recipe === rid);   // a finished dish is available
+// tapping a customer delivers a matching finished dish to THEM (from the shelf first, else the plate)
 function serveTo(o) {
   if (!G || !G.running || G.paused) return;
   const p = G.plate;
   if (o.claimedBy) { toast('your cook is on it 👨‍🍳'); return; }
+  const hi = G.holding.indexOf(o.recipe);
+  if (hi >= 0) { G.holding.splice(hi, 1); completeOrder(o, false); renderShelf(); render(); return; }   // serve a held dish
+  if (p.done && p.recipe === o.recipe) { completeOrder(o, false); G.plate = { contents:[], done:false, recipe:null, ruined:false }; renderPlate(); return; }
   if (p.ruined) { buzzPlate(); toast('Trash the ruined plate first! 🗑️'); return; }
-  if (!p.done) { toast(p.contents.length ? 'Finish the dish first' : 'Build a dish first'); beep(240,.08,'sine'); return; }
-  if (o.recipe !== p.recipe) { toast('They ordered '+RECIPES[o.recipe].name+'!'); if(o.el){o.el.classList.remove('nope');void o.el.offsetWidth;o.el.classList.add('nope');} beep(200,.09,'square'); return; }
-  completeOrder(o, false);
-  G.plate = { contents:[], done:false, recipe:null, ruined:false };
-  renderPlate();
+  if (!p.done && !G.holding.length) { toast(p.contents.length ? 'Finish the dish first' : 'Build a dish first'); beep(240,.08,'sine'); return; }
+  toast('They ordered '+RECIPES[o.recipe].name+'!'); if(o.el){o.el.classList.remove('nope');void o.el.offsetWidth;o.el.classList.add('nope');} beep(200,.09,'square');
+}
+// park a finished dish on the warming shelf so you can build the next one
+function onShelfTap(i) {
+  if (!G || !G.running || G.paused) return;
+  if (i >= G.holding.length && G.plate.done && G.holding.length < HOLD_SLOTS) {
+    G.holding.push(G.plate.recipe);
+    G.plate = { contents:[], done:false, recipe:null, ruined:false };
+    beep(560,.06,'sine'); render(); renderPlate(); renderShelf();
+  }
+}
+function renderShelf() {
+  const cont = $('shelf-slots'); if (!cont || !G) return;
+  const room = G.plate.done && G.holding.length < HOLD_SLOTS;
+  let html = '';
+  for (let i = 0; i < HOLD_SLOTS; i++) {
+    if (i < G.holding.length) html += `<div class="slot full" data-i="${i}">${dishIcon(G.holding[i],'sdish')}</div>`;
+    else html += `<div class="slot ${room ? 'glow' : ''}" data-i="${i}"></div>`;
+  }
+  cont.innerHTML = html;
+  cont.querySelectorAll('.slot').forEach(s => s.addEventListener('pointerdown', () => onShelfTap(+s.dataset.i)));
 }
 function trashPlate() {
   if (!G || !G.running || G.paused) return;
@@ -624,10 +662,9 @@ function render() {
       cont.appendChild(el); o.el = el;
     }
   }
-  const p = G.plate;
   for (const o of G.orders) {
     const r = RECIPES[o.recipe];
-    const servable = p && p.done && !o.claimedBy && o.recipe === p.recipe;   // finished plate matches this order
+    const servable = !o.claimedBy && canServe(o.recipe);   // a finished dish (plate or shelf) matches this order
     o.el.classList.toggle('servable', servable);
     o.el.classList.toggle('claimed', !!o.claimedBy);
     const frac = Math.max(0, o.pat/o.maxPat);
@@ -667,7 +704,7 @@ function renderPlate() {
   if (p && p.done) {
     // the ingredients have transformed into the finished dish
     hint.style.display = 'none';
-    plate.innerHTML = `<div class="finished"><div class="fdish">${dishIcon(p.recipe,'isvg')}</div><div class="fready">Ready! Tap a customer 👆</div></div>`;
+    plate.innerHTML = `<div class="finished"><div class="fdish">${dishIcon(p.recipe,'isvg')}</div><div class="fready">Tap a customer, or shelf it ↑</div></div>`;
   } else if (!p || !p.contents.length) {
     hint.style.display = 'flex';
     hint.textContent = p && p.ruined ? 'Ruined! Throw it out 🗑️' : 'tap ingredients below to build a dish ↓';
@@ -681,6 +718,7 @@ function renderPlate() {
     });
   }
   $('trash-btn').classList.toggle('pulse', !!(p && p.ruined));
+  renderShelf();
 }
 /* drag to reorder chips */
 let drag = null;
@@ -884,6 +922,8 @@ window.TG = {
   serveTo(id){ const o=G.orders.find(x=>x.id===id)||G.orders.find(x=>!x.claimedBy); if(o) serveTo(o); return o&&o.id; },
   serveMatch(){ const o=G.orders.find(x=>!x.claimedBy && x.recipe===G.plate.recipe); if(o) serveTo(o); return o&&o.recipe; },
   trash: trashPlate,
+  hold(){ onShelfTap(G.holding.length); return G.holding.slice(); },
+  holding(){ return G.holding.slice(); },
   plate(){ const p=G.plate; return {contents:p.contents.slice(), done:p.done, recipe:p.recipe, ruined:p.ruined}; },
   reorder(from,to){ const c=G.plate.contents; const [x]=c.splice(from,1); c.splice(to,0,x); checkDish(); render(); renderPlate(); },
   counter(){ return PALETTE.slice(); },

@@ -40,6 +40,10 @@ characters later.)
   it's a finished dish, every waiting customer who ordered it **glows** — **tap the
   one you want to serve** (e.g. rescue the most impatient). Tapping a customer who
   wanted something else is politely refused.
+- **Warming shelf**: made a dish but no free customer wants it yet (e.g. your cooks
+  grabbed them all)? **Park it on the 🔥 shelf** (tap a glowing empty slot) and start
+  the next dish. Shelf dishes are served automatically when you tap a matching
+  customer (shelf first, then the plate). Holds up to 3.
 - **Ruined plates**: adding an ingredient that doesn't belong, or serving a wrong
   order, **ruins the plate** — you must hit the **🗑 Trash** to throw it out and
   start that order over. (Right ingredients in the wrong order are *not* ruined —
