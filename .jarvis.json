@@ -4,7 +4,7 @@
   "description": "A cozy top-down Overcooked-style taco kitchen — walk your chef to grill, chop, plate and serve orders before patience runs out. 5-level Taco Truck plus a slippery Beach Cantina with new fish & salsa recipes.",
   "category": "games",
   "tech": ["Vanilla JS", "Canvas 2D", "single-file HTML", "localStorage", "GitHub Pages"],
-  "status": { "prod": "in_progress", "dev": "live" },
+  "status": { "prod": "in_progress", "dev": "in_progress" },
   "deploy": {
     "prod": { "url": "https://tacoloco.dabrewer.dev/" },
     "dev": { "url": "https://tacoloco.dabrewer.dev/dev/" }
