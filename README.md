@@ -34,8 +34,12 @@ characters later.)
 - The recipe — which ingredients, in what **order** — lives in the **📖 Recipe
   Book** (button in the window). Open it any time; the game **pauses** while it's open.
 - **Build the plate**: tap ingredients on the counter to stack them, then **drag the
-  chips to reorder** them. When the plate matches the recipe exactly it **transforms
-  into the finished dish** — then hit **Serve**.
+  chips to reorder** them. When the plate matches a recipe on the menu it **transforms
+  into that finished dish**.
+- **You choose who to serve**: there's one working plate, not one per customer. Once
+  it's a finished dish, every waiting customer who ordered it **glows** — **tap the
+  one you want to serve** (e.g. rescue the most impatient). Tapping a customer who
+  wanted something else is politely refused.
 - **Ruined plates**: adding an ingredient that doesn't belong, or serving a wrong
   order, **ruins the plate** — you must hit the **🗑 Trash** to throw it out and
   start that order over. (Right ingredients in the wrong order are *not* ruined —

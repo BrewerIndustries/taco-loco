@@ -79,6 +79,12 @@
   .guest.building .bubble { border-color: var(--orange); }
   .guest.claimed { opacity: .82; }
   .guest.claimed .bubble { border-color: var(--teal); border-style: dashed; }
+  .guest.servable { cursor: pointer; }
+  .guest.servable .bubble { border-color: var(--green-d); box-shadow: 0 4px 0 var(--green-d), 0 0 0 3px rgba(110,196,110,.35); animation: servp 1s ease-in-out infinite; }
+  .guest.servable .blob { transform: scale(1.1) translateY(-2px); }
+  @keyframes servp { 50% { box-shadow: 0 4px 0 var(--green-d), 0 0 0 7px rgba(110,196,110,0); } }
+  .guest.nope { animation: nope .3s; }
+  @keyframes nope { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);} }
   .bubble .cooking { position: absolute; right: -6px; top: -8px; font-size: 18px; }
   .guest.leaving { animation: leave .45s ease-in forwards; }
   @keyframes leave { to { transform: translateY(40px); opacity: 0; } }
@@ -243,7 +249,6 @@
   <div id="stage">
     <button class="act trash" id="trash-btn"><span class="ui"></span><span>Trash</span></button>
     <div id="plate-wrap"><div id="plate"></div><div id="plate-hint">tap ingredients below to build ↓</div></div>
-    <button class="act serve" id="serve-btn"><span class="ui"></span><span>Serve</span></button>
   </div>
 
   <div id="counter"><div id="grid"></div></div>
@@ -256,12 +261,11 @@
     <div class="card">
       <h1 class="logo">TACO LOCO<span class="s">food truck rush</span></h1>
       <div class="how">
-        🚚 Work the window of your taco truck — customers wait outside with orders.<br>
-        🧾 A speech bubble shows <b>which</b> ingredients they want (not the order).<br>
-        📖 The <b>recipe book</b> shows the correct <b>sequence</b> — check it anytime.<br>
-        👆 Tap ingredients to stack a plate, <b>drag to reorder</b>, then <b>Serve</b>.<br>
-        🗑️ Wrong ingredients or a bad order <b>ruin the plate</b> — throw it in the trash and redo!<br>
-        🔧 Tip: <b>drag</b> the counter buttons to arrange your station how you like.
+        🚚 Work the window of your taco truck — customers wait outside for a dish.<br>
+        📖 The <b>recipe book</b> shows each dish's ingredient <b>order</b> — check it anytime.<br>
+        👆 Tap ingredients to build a dish (<b>drag to reorder</b>). Right order = it cooks!<br>
+        🧑‍🍳 Then <b>tap a customer</b> who wants that dish to serve them — you choose who!<br>
+        🗑️ A wrong ingredient <b>ruins the plate</b> — trash it (costs a little) and redo.
       </div>
       <button class="btn" id="btn-play">Play</button>
       <div><button class="btn ghost" id="btn-title-book">📖 Recipe Book</button></div>
@@ -284,7 +288,7 @@
     <div class="card">
       <h2 id="intro-title">Level 1</h2>
       <div id="intro-new"></div>
-      <div class="how">Bubbles show the ingredients — check the 📖 book for the right <b>order</b>. Stack the plate, drag to fix the order, then Serve. Ruined plate? Trash it!</div>
+      <div class="how">Build a dish in the right <b>order</b> (check the 📖 book), then <b>tap a waiting customer</b> who wants it to serve them. Ruined plate? Trash it!</div>
       <button class="btn" id="btn-go">Start!</button>
       <div><button class="btn ghost" id="btn-intro-book">📖 Recipe Book</button></div>
       <div><button class="btn ghost" id="btn-intro-back">back</button></div>
@@ -453,7 +457,8 @@ const seqEqual = (a, b) => a.length===b.length && a.every((x,i)=>x===b[i]);
 function startLevel(idx) {
   selLevel = idx; const L = LEVELS[idx];
   G = { running:true, paused:false, idx, L, timeLeft:L.time, score:0, served:0, missed:0, ruinedCount:0, coinsEarned:0,
-        combo:0, bestCombo:0, orders:[], seq:0, spawnT:0.8, activeId:null,
+        combo:0, bestCombo:0, orders:[], seq:0, spawnT:0.8,
+        plate:{ contents:[], done:false, recipe:null, ruined:false },   // single working plate; delivered by tapping a customer
         emps: save.employees.map((e,i)=>({ recipes:e.recipes.slice(), access:e.access.slice(), xp:e.xp, busy:false, order:null, prog:0, i })) };
   screen = 'play'; $('customers').innerHTML=''; $('emps').innerHTML=''; buildGrid(); showOverlay(null); updateBookBtn();
   renderPlate(); renderEmps(); syncHud();
@@ -464,13 +469,9 @@ function spawnOrder() {
   const pool = G.L.pool, rid = pool[Math.floor(Math.random()*pool.length)];
   const pat = patienceFor(RECIPES[rid].steps.length, G.L.patScale);
   const o = { id:++G.seq, recipe:rid, color:BLOB_COLS[Math.floor(Math.random()*BLOB_COLS.length)],
-              pat, maxPat:pat, plate:[], ruined:false, done:false, claimedBy:null, el:null, blobEl:null };
-  G.orders.push(o); const first = G.activeId==null; if (first) G.activeId=o.id; render(); if (first) renderPlate(); beep(560,.06,'sine');
+              pat, maxPat:pat, claimedBy:null, el:null };
+  G.orders.push(o); render(); renderPlate(); beep(560,.06,'sine');
 }
-const activeOrder = () => {
-  const a = G.orders.find(o => o.id===G.activeId && !o.claimedBy);
-  return a || G.orders.find(o => !o.claimedBy) || null;
-};
 
 /* ---------- employees (AI cooks) ---------- */
 function updateEmployees(dt) {
@@ -481,7 +482,7 @@ function updateEmployees(dt) {
       e.prog += dt / cookTime(e.order.recipe);
       if (e.prog >= 1) {
         const o = e.order; e.busy=false; e.order=null; e.prog=0;
-        if (o && G.orders.includes(o) && !o.done) {
+        if (o && G.orders.includes(o)) {
           const was = slotsFor(e.xp);
           e.xp += RECIPES[o.recipe].steps.length;                 // earn XP for the dish
           if (save.employees[e.i]) save.employees[e.i].xp = e.xp;  // persist growth
@@ -492,52 +493,55 @@ function updateEmployees(dt) {
       }
     } else {
       // claim the most urgent unclaimed order for a recipe this cook can make
-      const cand = G.orders.filter(x => cookable.includes(x.recipe) && !x.claimedBy && x.id!==G.activeId && x.plate.length===0 && !x.done && !x.ruined);
+      const cand = G.orders.filter(x => cookable.includes(x.recipe) && !x.claimedBy);
       if (cand.length) { cand.sort((a,b)=>a.pat-b.pat); const o=cand[0]; o.claimedBy=e; e.busy=true; e.order=o; e.prog=0; render(); renderEmps(); beep(500,.05,'sine'); }
     }
   }
 }
 
-/* ---------- assembly ---------- */
+/* ---------- assembly (a single working plate; deliver by tapping a customer) ---------- */
+const TRASH_PENALTY = 5;
 function addIngredient(id, btn) {
   if (!G || !G.running || G.paused) return;
-  const o = activeOrder();
-  if (!o) { toast('tap a customer first'); return; }
-  if (o.ruined) { buzzPlate(); toast('Plate ruined — trash it! 🗑️'); return; }
-  if (o.done) { toast("It's ready — serve it! ✓"); return; }
-  o.plate.push(id); btn && flash(btn,'pop');
-  if (!subMultiset(o.plate, RECIPES[o.recipe].steps)) { o.ruined = true; ruinPlate(o, 'wrong ingredient!'); }
-  else { beep(430 + o.plate.length*80, .05, 'triangle'); checkDone(o); }
+  const p = G.plate;
+  if (p.ruined) { buzzPlate(); toast('Plate ruined — trash it! 🗑️'); return; }
+  if (p.done) { toast('Serve it — tap a customer! 👆'); return; }
+  p.contents.push(id); btn && flash(btn,'pop');
+  if (!G.L.pool.some(rid => subMultiset(p.contents, RECIPES[rid].steps))) ruinPlate('wrong ingredient!');
+  else { beep(430 + p.contents.length*80, .05, 'triangle'); checkDish(); }
   render(); renderPlate();
 }
-// when the plate exactly matches the recipe, it "cooks" into the finished dish
-function checkDone(o) {
-  const was = o.done;
-  o.done = !o.ruined && seqEqual(o.plate, RECIPES[o.recipe].steps);
-  if (o.done && !was) { beep(680,.1,'triangle'); setTimeout(()=>beep(940,.12,'triangle'),90);
+// the plate "cooks" into a finished dish the moment its contents match a recipe on the menu
+function checkDish() {
+  const p = G.plate, was = p.done;
+  p.done = false; p.recipe = null;
+  for (const rid of G.L.pool) if (seqEqual(p.contents, RECIPES[rid].steps)) { p.done = true; p.recipe = rid; break; }
+  if (p.done && !was) { beep(680,.1,'triangle'); setTimeout(()=>beep(940,.12,'triangle'),90);
     const w = $('plate-wrap'); w.classList.remove('cooked'); void w.offsetWidth; w.classList.add('cooked'); }
-  return o.done;
+  return p.done;
 }
-function ruinPlate(o, why) {
-  o.ruined = true; G.combo = 0;   // real cost is paid when you trash it
+function ruinPlate(why) {
+  G.plate.ruined = true; G.plate.done = false; G.plate.recipe = null; G.combo = 0;
   beep(150,.14,'square'); buzzPlate(); if (why) toast(why + ' 🗑️ trash it');
 }
-const TRASH_PENALTY = 5;
 function buzzPlate() { const w = $('plate-wrap'); w.classList.remove('ruined'); void w.offsetWidth; w.classList.add('ruined'); }
-function serve() {
+// tapping a customer delivers the finished plate to THEM (player chooses who to serve)
+function serveTo(o) {
   if (!G || !G.running || G.paused) return;
-  const o = activeOrder(); if (!o) return;
-  if (o.ruined) { buzzPlate(); toast('Trash the ruined plate first! 🗑️'); return; }
-  if (o.done) { completeOrder(o); return; }
-  const steps = RECIPES[o.recipe].steps;
-  if (o.plate.length < steps.length) { toast('Not finished — add more'); beep(240,.08,'sine'); return; }
-  ruinPlate(o, 'wrong order!'); render(); renderPlate();   // full plate but not cooked = wrong order
+  const p = G.plate;
+  if (o.claimedBy) { toast('your cook is on it 👨‍🍳'); return; }
+  if (p.ruined) { buzzPlate(); toast('Trash the ruined plate first! 🗑️'); return; }
+  if (!p.done) { toast(p.contents.length ? 'Finish the dish first' : 'Build a dish first'); beep(240,.08,'sine'); return; }
+  if (o.recipe !== p.recipe) { toast('They ordered '+RECIPES[o.recipe].name+'!'); if(o.el){o.el.classList.remove('nope');void o.el.offsetWidth;o.el.classList.add('nope');} beep(200,.09,'square'); return; }
+  completeOrder(o, false);
+  G.plate = { contents:[], done:false, recipe:null, ruined:false };
+  renderPlate();
 }
 function trashPlate() {
   if (!G || !G.running || G.paused) return;
-  const o = activeOrder(); if (!o) return;
-  if (!o.plate.length && !o.ruined) return;
-  o.plate = []; o.ruined = false; o.done = false;
+  const p = G.plate;
+  if (!p.contents.length && !p.ruined) return;
+  G.plate = { contents:[], done:false, recipe:null, ruined:false };
   G.score = Math.max(0, G.score - TRASH_PENALTY); G.combo = 0;
   const r = $('trash-btn').getBoundingClientRect(); floatText('−'+TRASH_PENALTY, r.left+r.width/2, r.top-4, 'neg');
   toast('Plate trashed  −'+TRASH_PENALTY);
@@ -553,17 +557,14 @@ function completeOrder(o, byEmp) {
   if (o.el) { const r = o.el.getBoundingClientRect(); floatText('+'+gain, r.left+r.width/2, r.top+20); o.el.classList.add('leaving'); }
   beep(720,.08,'triangle'); setTimeout(()=>beep(980,.1,'triangle'),70);
   if (!byEmp && G.combo>=2) showCombo();
-  const wasActive = G.activeId===o.id;
-  setTimeout(()=>{ G.orders=G.orders.filter(x=>x!==o); if(o.el)o.el.remove();
-    if(wasActive) G.activeId = (G.orders.find(x=>!x.claimedBy)||{}).id || null; render(); renderPlate(); }, 420);
+  setTimeout(()=>{ G.orders=G.orders.filter(x=>x!==o); if(o.el)o.el.remove(); render(); renderPlate(); }, 420);
   syncHud();
 }
 function missOrder(o) {
   G.missed++; if (!o.claimedBy) G.combo=0; G.score=Math.max(0,G.score-6);
   for (const e of G.emps) if (e.order===o) { e.busy=false; e.order=null; e.prog=0; }
   if (o.el) o.el.remove(); G.orders=G.orders.filter(x=>x!==o);
-  if (G.activeId===o.id) G.activeId = (G.orders.find(x=>!x.claimedBy)||{}).id || null;
-  toast('a customer left hungry'); beep(140,.2,'square'); renderPlate(); renderEmps();
+  toast('a customer left hungry'); beep(140,.2,'square'); render(); renderPlate(); renderEmps();
 }
 const comboMult = () => G.combo>=8?2:G.combo>=5?1.6:G.combo>=3?1.3:1;
 
@@ -612,21 +613,22 @@ function endIngPress(e) {
   PALETTE.splice(t, 0, it);
   persistCounter(); buildGrid(); beep(360,.04,'sine');
 }
-function moodOf(o){ const f=o.pat/o.maxPat; return o.ruined?'sad':f>0.45?'happy':f>0.22?'neutral':'sad'; }
+function moodOf(o){ const f=o.pat/o.maxPat; return f>0.45?'happy':f>0.22?'neutral':'sad'; }
 function render() {
   if (!G) return;
   const cont = $('customers');
   for (const o of G.orders) {
     if (!o.el) {
       const el = document.createElement('div'); el.className='guest'; el.dataset.id=o.id;
-      el.addEventListener('pointerdown', () => { if (o.claimedBy) { toast('your cook is on it 👨‍🍳'); return; } G.activeId=o.id; render(); renderPlate(); });
+      el.addEventListener('pointerdown', () => serveTo(o));   // tap a customer to serve them
       cont.appendChild(el); o.el = el;
     }
   }
+  const p = G.plate;
   for (const o of G.orders) {
-    const r = RECIPES[o.recipe], active = o.id===G.activeId && !o.claimedBy;
-    o.el.classList.toggle('active', active);
-    o.el.classList.toggle('building', o.plate.length>0 && !active && !o.claimedBy);
+    const r = RECIPES[o.recipe];
+    const servable = p && p.done && !o.claimedBy && o.recipe === p.recipe;   // finished plate matches this order
+    o.el.classList.toggle('servable', servable);
     o.el.classList.toggle('claimed', !!o.claimedBy);
     const frac = Math.max(0, o.pat/o.maxPat);
     const col = frac>0.5?'var(--green)':frac>0.25?'var(--yellow)':'var(--red)';
@@ -658,36 +660,34 @@ function renderEmps() {
 /* ---------- render: plate ---------- */
 function renderPlate() {
   const wrap = $('plate-wrap'), plate = $('plate'), hint = $('plate-hint');
-  const o = activeOrder();
-  wrap.classList.toggle('ruined', !!(o && o.ruined));
-  wrap.classList.toggle('ready', !!(o && o.done));
+  const p = G ? G.plate : null;
+  wrap.classList.toggle('ruined', !!(p && p.ruined));
+  wrap.classList.toggle('ready', !!(p && p.done));
   plate.innerHTML = '';
-  if (o && o.done) {
+  if (p && p.done) {
     // the ingredients have transformed into the finished dish
     hint.style.display = 'none';
-    plate.innerHTML = `<div class="finished"><div class="fdish">${dishIcon(o.recipe,'isvg')}</div><div class="fready">Ready! ✓ Serve</div></div>`;
-  } else if (!o || (!o.plate.length)) {
+    plate.innerHTML = `<div class="finished"><div class="fdish">${dishIcon(p.recipe,'isvg')}</div><div class="fready">Ready! Tap a customer 👆</div></div>`;
+  } else if (!p || !p.contents.length) {
     hint.style.display = 'flex';
-    hint.textContent = o ? (o.ruined ? 'Ruined! Throw it out 🗑️' : 'tap ingredients below to build ↓') : 'tap a customer to start';
+    hint.textContent = p && p.ruined ? 'Ruined! Throw it out 🗑️' : 'tap ingredients below to build a dish ↓';
   } else {
     hint.style.display = 'none';
-    o.plate.forEach((id, i) => {
+    p.contents.forEach((id, i) => {
       const c = document.createElement('div'); c.className='chip'; c.dataset.index=i;
       c.innerHTML = icon(id,'ci');
       c.addEventListener('pointerdown', e => startChipDrag(e, i));
       plate.appendChild(c);
     });
   }
-  $('serve-btn').disabled = !(o && o.plate.length && !o.ruined);
-  $('serve-btn').classList.toggle('pulse', !!(o && o.done));
-  $('trash-btn').classList.toggle('pulse', !!(o && o.ruined));
+  $('trash-btn').classList.toggle('pulse', !!(p && p.ruined));
 }
 /* drag to reorder chips */
 let drag = null;
 function startChipDrag(e, index) {
-  const o = activeOrder(); if (!o || o.ruined) return;
+  const p = G.plate; if (!p || p.ruined || p.done) return;
   e.preventDefault();
-  drag = { o, from:index, id:o.plate[index], x:e.clientX, target:index };
+  drag = { from:index, id:p.contents[index], x:e.clientX, target:index };
   const g = $('drag-ghost'); g.innerHTML = icon(drag.id,'ci'); g.style.display='block';
   moveGhost(e);
   $('plate').children[index] && $('plate').children[index].classList.add('dragging');
@@ -707,10 +707,10 @@ function endChipDrag() {
   window.removeEventListener('pointerup', endChipDrag);
   $('drag-ghost').style.display='none';
   if (drag) {
-    const o = drag.o, arr = o.plate; const [it] = arr.splice(drag.from,1);
+    const arr = G.plate.contents; const [it] = arr.splice(drag.from,1);
     let t = drag.target; if (t>drag.from) t--; if (t<0) t=0; if (t>arr.length) t=arr.length;
     arr.splice(t, 0, it); beep(360,.04,'sine');
-    drag = null; checkDone(o); render(); renderPlate();
+    drag = null; checkDish(); render(); renderPlate();
   }
 }
 
@@ -862,10 +862,8 @@ function initStreet() {
 
 /* ---------- wire ---------- */
 $('trash-btn').querySelector('.ui').outerHTML = UI_TRASH;
-$('serve-btn').querySelector('.ui').outerHTML = UI_CHECK;
 $('book-btn').innerHTML = UI_BOOK;
 $('trash-btn').addEventListener('click', trashPlate);
-$('serve-btn').addEventListener('click', serve);
 $('btn-play').addEventListener('click', ()=>{ try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();}catch(e){} toMap(); });
 $('btn-title-book').addEventListener('click', ()=>openBook(unlockedRecipes()));
 $('btn-map-book').addEventListener('click', ()=>openBook(unlockedRecipes()));
@@ -883,9 +881,11 @@ window.TG = {
   get G(){return G;}, get screen(){return screen;},
   start(i){ startLevel(i||0); },
   add(id){ addIngredient(id, document.querySelector('.ing[data-id="'+id+'"]')); },
-  serve, trash: trashPlate,
-  plate(){ const o=activeOrder(); return o?{recipe:o.recipe, plate:o.plate.slice(), ruined:o.ruined}:null; },
-  reorder(from,to){ const o=activeOrder(); const [x]=o.plate.splice(from,1); o.plate.splice(to,0,x); checkDone(o); renderPlate(); },
+  serveTo(id){ const o=G.orders.find(x=>x.id===id)||G.orders.find(x=>!x.claimedBy); if(o) serveTo(o); return o&&o.id; },
+  serveMatch(){ const o=G.orders.find(x=>!x.claimedBy && x.recipe===G.plate.recipe); if(o) serveTo(o); return o&&o.recipe; },
+  trash: trashPlate,
+  plate(){ const p=G.plate; return {contents:p.contents.slice(), done:p.done, recipe:p.recipe, ruined:p.ruined}; },
+  reorder(from,to){ const c=G.plate.contents; const [x]=c.splice(from,1); c.splice(to,0,x); checkDish(); render(); renderPlate(); },
   counter(){ return PALETTE.slice(); },
   book(){ openBook(bookList()); return $('ov-book').classList.contains('show'); }, closeBook, toMap, toShop,
   tick(dt){ frame(lastTs + (dt||0.1)*1000); }, setTime(t){ G.timeLeft=t; },
