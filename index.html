@@ -345,6 +345,7 @@
   </div>
 </div>
 
+<script src="https://arcade.dabrewer.dev/arcade-sdk.js" data-game="taco-loco"></script>
 <script>
 'use strict';
 /* ==========================================================
@@ -447,7 +448,8 @@ save.employees = save.employees.map(e => ({
 // restore a valid saved counter layout (same set of ingredients, any order)
 if (Array.isArray(save.counter) && save.counter.length === DEFAULT_PALETTE.length
     && DEFAULT_PALETTE.every(id => save.counter.includes(id))) PALETTE = save.counter.slice();
-const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch(e){} };
+const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch(e){}
+  if (window.Arcade) { Arcade.report('stars', Object.values(save.stars||{}).reduce((a,b)=>a+b,0)); Arcade.report('coins', save.coins||0); } };
 const persistCounter = () => { save.counter = PALETTE.slice(); persist(); };
 const levelUnlocked = i => i < save.unlocked;
 const starsOf = i => save.stars[i] || 0;
