@@ -54,6 +54,6 @@ mechanics.
 
 - Git: work on `dev`; `main` only via PR the user approves (house rule).
 - Update README.md after any meaningful change (house rule).
-- Deployed: GitHub Pages per `jarvis-launcher/NEW-PROJECT.md` flavor A —
+- Deployed: GitHub Pages per `jarvis-dashboard/NEW-PROJECT.md` flavor A —
   main → `https://tacoloco.dabrewer.dev/`, dev → `https://tacoloco.dabrewer.dev/dev/`.
   The workflow lives on `dev` only; pushing `main` alone does not redeploy.
