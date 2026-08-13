@@ -102,10 +102,6 @@ GitHub Pages via `.github/workflows/pages.yml` (lives on `dev`): **main → `/`*
 `https://tacoloco.dabrewer.dev/dev/`). Pushing `main` alone does not redeploy —
 re-run the workflow or push `dev`.
 
-## Backlog / ideas
+## Backlog
 
-- Multiple trucks / locations with distinct menus and a level map
-- Prep steps that need a station tap (grill/chop) before an ingredient is "ready"
-- Hide the sequence on later levels for a memory challenge
-- Power-ups (freeze patience, auto-prep), day/night, weather
-- Music + richer SFX; happy/angry customer reactions at the window
+See [BACKLOG.md](BACKLOG.md).
